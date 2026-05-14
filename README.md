@@ -2,19 +2,20 @@
 [![English](https://img.shields.io/badge/lang-en-red.svg)](README.md)
 [![Russian](https://img.shields.io/badge/lang-ru-blue.svg)](README.ru.md)
 
-## Overview
-This project is a billing and subscriber management platform designed for Internet Service Providers (ISPs). The goal of the project is to simplify ISP operations, reduce administrative workload, and provide transparent financial and operational analytics.
+## About this project
+This project is a billing and subscriber management platform designed for Internet Service Providers (ISPs). The goal of the project is to simplify ISP operations, reduce administrative workload, and provide transparent financial and operational analytics. Additionally, it includes a dedicated client application that empowers subscribers to easily manage their own accounts and payments.
 
 
 ## Target Users
 This open-source project is designed for Internet Service Providers (ISPs), local network operators, telecom companies, and enterprise network administrators.
 The platform provides a centralized workspace for billing, network infrastructure management, and customer support operations.
+For the end-users (subscribers), it offers a secure self-service portal to track their active services and billing.
 
 ## Problem Statement
 
 Many small and medium Internet Service Providers (ISPs) still rely on fragmented tools, manual accounting processes, spreadsheets, and isolated network management systems. This often leads to increased administrative workload, billing errors, poor service visibility, and difficulties in managing subscribers, payments, and network infrastructure efficiently.
 Existing solutions may be too expensive, overly complex, or poorly adapted for smaller providers and local network operators.
-This project aims to provide a centralized billing and subscriber management platform that simplifies ISP operations, automates routine financial and operational tasks, and improves transparency across billing, subscriber management, and network administration processes.
+This project aims to provide a centralized billing and subscriber management platform that simplifies ISP operations, automates routine financial and operational tasks, and improves transparency across billing, subscriber management, and network administration processes, while simultaneously providing a clear, easy-to-use interface for the subscribers themselves.
 
 ## Features
 * Admin Authorization: Secure admin login and basic access control.
@@ -23,6 +24,7 @@ This project aims to provide a centralized billing and subscriber management pla
 
 * User Profiles: Personal dashboard for viewing basic account details.
 
+* Client Self-Service: Subscribers can easily check their current balance, view invoices, and manage their personal information.
 
 ## Contents
 * *[Project Structure](#project-structure)*
@@ -30,6 +32,7 @@ This project aims to provide a centralized billing and subscriber management pla
 * *[Technology Stack](#technology-stack)*
 * *[Quickstart](#-quickstart)*
 * *[Configuration](#configuration)*
+* *[Authors](#-authors)*
 * *[Questions](#questions)*
 * *[License](#license)*
 
@@ -39,22 +42,44 @@ This project aims to provide a centralized billing and subscriber management pla
 
 ```text
 unit-billing/
-├── backend/
-│   ├── src/
-│   ├── tests/
-│   └── pom.xml
-├── docs/
-│   ├── architecture/
-│   ├── adr/
-│   └── api/
-├── database/
+├── pom.xml                        ← Root pom.xml
+├── apps/                          ← Application of the project
+│   │
+│   ├── admin/                     ← ISP Billing
+│   │   ├── frontend/
+│   │   └── backend/
+│   │
+│   └── client/                    ← ISP Client Application
+│       ├── frontend/
+│       └── backend/
+│
+├── packages/                      ← Shared Parts of Code
+│   ├── shared-core/
+│   └── shared-ui-assets/
+│  
+├── database/                      ← Database
 │   ├── migrations/
 │   └── seed/
-├── docker/
-├── scripts/
+│
+├── docker/                        ← Infrastructure Configs
+│
+├── scripts/                       ← Useful scripts
+│  
+├── docs/
+│   ├── architecture/              ← Architecture Descriptions
+│   ├── adr/                       ← Architecture Decision Records
+│   ├── features/                  ← Features Descriptions
+│   ├── api/                       ← API Descriptions
+│   │   ├── admin-api.md
+│   │   └── client-api.md
+│   └── manuals/                   ← Usage guides
+│       ├── admin-guide.md
+│       └── client-guide.md 
+│
+├── .env.example                   ← .env Example
+├── .gitignore
 ├── docker-compose.yml
-├── .env.example
-└── README.md
+└── README.md               
 ```
 
 ## Architecture Overview
@@ -109,11 +134,15 @@ docker compose up --build
 The application uses Spring Boot configuration files together with environment variables.
 
 
+## 👥 Authors
+
+* **m000gg** — *Core Development* — [GitHub](https://github.com/m000gg)
+* **amatskevych** — *Project Lead / Mentoring* — [GitHub](https://github.com/amatskevych)
 
 
 ## Questions?
 
-Open an Issue in this repo with a short description and steps to reproduce.
+Open an Issue in this repo with a short description and steps to reproduce
 For general questions or networking, see contact links in my overview [profile](https://github.com/m000gg "m000gg profile").
 
 ## License
