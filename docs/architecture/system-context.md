@@ -1,6 +1,6 @@
-# Unit Billing System (ISP Billing Platform)
+# Unit Billing System Context (ISP Billing Platform)
 
-## 🎯 Purpose
+##  Purpose
 
 The **Unit Billing System** is designed to manage billing processes for Internet Service Providers (ISPs).
 
@@ -12,7 +12,7 @@ The system integrates with external payment service providers to process transac
 
 ---
 
-## 🚨 Problem It Solves
+##  Problem It Solves
 
 The system provides a centralized billing solution that:
 
@@ -23,7 +23,7 @@ The system provides a centralized billing solution that:
 
 ---
 
-## 🏢 Target Users
+##  Target Users
 
 This system is created for:
 
@@ -34,9 +34,9 @@ This system is created for:
 
 ---
 
-## 🔌 External Integrations
+##  External Integrations
 
-### 💳 Payment Service Providers
+###  Payment Service Providers
 
 The system integrates with external payment providers to:
 
@@ -46,15 +46,15 @@ The system integrates with external payment providers to:
 
 ---
 
-## ⚙️ Core Responsibilities
+## ️ Core Responsibilities
 
-### 👨‍💼 ISP Billing Platform
+###  ISP Billing Platform
 
 - **User Management**
     - Create, update, delete user accounts
 
 - **Billing Management**
-    - Create announcements
+    - Track balances
     - Track payments
     - Manage billing cycles
 
@@ -65,12 +65,12 @@ The system integrates with external payment providers to:
 
 ---
 
-## 🔄 System Architecture
+##  System Architecture
 
 ```mermaid
 flowchart TD  
-    A[ISP Admin] -->|manage users, billing| B{ISP Billing Platform}
-    C[Client] -->|view invoices, pay| B{ISP Billing Platform}
-    B{ISP Billing Platform} -->|initiate payment| D[Payment Service Providers]
-    D[Payment Service Providers] -->|return result| B{ISP Billing Platform}
+    A[ISP Admin] -->|manage clients, billing| B([ISP Billing Platform])
+    C[Client] -->|view invoices, pay| B([ISP Billing Platform])
+    B([ISP Billing Platform]) -->|initiate payment| D[Payment Service Providers]
+    D[Payment Service Providers] -->|return result| B([ISP Billing Platform])
 ```
