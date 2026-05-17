@@ -30,6 +30,12 @@ The Consequences section details the reasons why the selected option was chosen 
 Other Notes: Options are numbered as in last paragraph,pro & contra, why selected/ why NOT
 
 
+## Advices (Optional)
+Advice, is a simple bulleted list of contributions from
+advice offerers.6 I’ve found that it helps to have the advice in the format [Advice]
+([Advice-giver’s name, role]) with some idea of the date it was offered.
+
+
 
 #### Other templates:
 * Pro/Con Table
