@@ -38,4 +38,4 @@ BR-033  Only admin can manually adjust subscriber balance
 
 BR-034  Only admin can view all transactions across all subscribers
 
-BR-034  Only admin can view all client profiles and their details
+BR-035  Only admin can view all client profiles and their details

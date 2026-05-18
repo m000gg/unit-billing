@@ -37,12 +37,12 @@ attainable, realistic, and time-bound).*
 
 ### Architecture & Integrations
 *Implemented tools* \
-*Seqence diagram*
+*Sequence diagram*
 
 ### Data models
-*Describe data was created and is using fot he feature.*
+*Describe data was created and is using for he feature.*
 
-### API
+### API 
 *New endpoint: POST /api/...*
 ```
 {"token":  "adUIzsAZSD134dahASH..."}

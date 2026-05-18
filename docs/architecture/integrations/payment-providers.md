@@ -29,5 +29,5 @@
 - **Used for:** Payment processing
 - **Integration Method:** SDK
 - **Available Operations:** Payment
-- **Sandbox:** Yes (requires Apple Developer account)
+- **Sandbox:** Yes 
 - **Notes:** Google Only
