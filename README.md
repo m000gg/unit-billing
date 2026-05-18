@@ -1,9 +1,49 @@
-# Billing Application for Internet Providers
-[![English](https://img.shields.io/badge/lang-en-red.svg)](README.md)
-[![Russian](https://img.shields.io/badge/lang-ru-blue.svg)](README.ru.md)
+<div align="center">
+
+  <h1>🌐 Billing Application for Internet Providers</h1>
+  <p><em>Reliable and scalable billing solution for modern ISPs</em></p>
+
+  <p>
+    <a href="https://github.com/m000gg/unit-billing/releases/latest"><img src="https://img.shields.io/github/v/release/m000gg/unit-billing?sort=semver" alt="Latest release"></a>
+    <a href="https://github.com/m000gg/unit-billing/compare/main...develop"><img src="https://img.shields.io/github/commits-since/m000gg/unit-billing/main/develop?label=commits%20since" alt="Commits since"></a>
+    <a href="https://github.com/m000gg/unit-billing/issues"><img src="https://img.shields.io/github/issues/m000gg/unit-billing.svg" alt="Issues"></a>
+    <a href="https://github.com/m000gg/unit-billing/network/members"><img src="https://img.shields.io/github/forks/m000gg/unit-billing.svg" alt="Forks"></a>
+  </p>
+
+</div>
+
+---
+
+## Contents
+* *[About this project](#about-this-project)*
+* *[Use Cases](#use-cases)*
+* *[Target Users](#target-users)*
+* *[Problem Statement](#problem-statement)*
+* *[Features](#features)*
+* *[Project Structure](#project-structure)*
+* *[Architecture Overview](#architecture-overview)*
+* *[Technology Stack](#technology-stack)*
+* *[Getting Started](#-getting-started)*
+* *[Configuration](#configuration)*
+* *[Authors](#-authors)*
+* *[Questions](#questions)*
+* *[License](#license)*
+
+---
 
 ## About this project
 This project is a billing and subscriber management platform designed for Internet Service Providers (ISPs). The goal of the project is to simplify ISP operations, reduce administrative workload, and provide transparent financial and operational analytics. Additionally, it includes a dedicated client application that empowers subscribers to easily manage their own accounts and payments.
+
+---
+
+## Use Cases
+Below are some example use cases for the billing application:
+
+|      Use Case 1      |        Use Case 2         |     Use Case 3       |
+|:--------------------:|:-------------------------:|:--------------------:|
+| Will be added later. | Will be added later.      | Will be added later. |
+
+---
 
 
 ## Target Users
@@ -11,11 +51,15 @@ This open-source project is designed for Internet Service Providers (ISPs), loca
 The platform provides a centralized workspace for billing, network infrastructure management, and customer support operations.
 For the end-users (subscribers), it offers a secure self-service portal to track their active services and billing.
 
+---
+
 ## Problem Statement
 
 Many small and medium Internet Service Providers (ISPs) still rely on fragmented tools, manual accounting processes, spreadsheets, and isolated network management systems. This often leads to increased administrative workload, billing errors, poor service visibility, and difficulties in managing subscribers, payments, and network infrastructure efficiently.
 Existing solutions may be too expensive, overly complex, or poorly adapted for smaller providers and local network operators.
 This project aims to provide a centralized billing and subscriber management platform that simplifies ISP operations, automates routine financial and operational tasks, and improves transparency across billing, subscriber management, and network administration processes, while simultaneously providing a clear, easy-to-use interface for the subscribers themselves.
+
+---
 
 ## Features
 * Admin Authorization: Secure admin login and basic access control.
@@ -26,17 +70,7 @@ This project aims to provide a centralized billing and subscriber management pla
 
 * Client Self-Service: Subscribers can easily check their current balance, view invoices, and manage their personal information.
 
-## Contents
-* *[Project Structure](#project-structure)*
-* *[Architecture Overview](#architecture-overview)*
-* *[Technology Stack](#technology-stack)*
-* *[Quickstart](#-quickstart)*
-* *[Configuration](#configuration)*
-* *[Authors](#-authors)*
-* *[Questions](#questions)*
-* *[License](#license)*
-
-
+---
 
 ## Project Structure
 
@@ -82,8 +116,12 @@ unit-billing/
 └── README.md               
 ```
 
+---
+
 ## Architecture Overview
 The project is currently designed as a modular monolith architecture.
+
+---
 
 ## Technology Stack
 | Category | Technologies |
@@ -97,8 +135,9 @@ The project is currently designed as a modular monolith architecture.
 | Version Control | Git, GitHub |
 | Frontend | HTML, CSS, JS |
 
+---
 
-## ⚡ Quickstart
+## ⚡ Getting Started
 
 ### 1) Clone the repo
 
@@ -129,16 +168,29 @@ Build and start the application:
 docker compose up --build
 ```
 
+### 4) How to Use
+
+Once the application is running, refer to the guides below:
+
+- 📘 [Admin Application Guide](docs/manuals/admin-guide.md) — managing users, billing, and platform settings
+- 📗 [Client Application Guide](docs/manuals/client-guide.md) — end-user portal navigation and account management
+
+---
+
 ## Configuration
 
 The application uses Spring Boot configuration files together with environment variables.
 
+
+---
 
 ## 👥 Authors
 
 * **m000gg** — *Core Development* — [GitHub](https://github.com/m000gg)
 * **amatskevych** — *Project Lead / Mentoring* — [GitHub](https://github.com/amatskevych)
 
+
+---
 
 ## Questions?
 
