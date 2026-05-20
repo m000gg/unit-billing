@@ -1,5 +1,13 @@
 # Unit Billing Client Application Manual
 
+---
+## 📄 Changelog
+
+| Version | Date | Description                | Authors  |
+|---------|------|----------------------------|----------|
+| 1.0 | 2026-05-20 | Initial client manual view | [m000gg](https://github.com/m000gg) |
+
+---
 Welcome to the official user manual! Here you will find everything you need to comfortably use the application and accomplish your tasks.
 
 ---

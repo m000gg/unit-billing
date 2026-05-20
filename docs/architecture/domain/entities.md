@@ -1,5 +1,12 @@
  # Domain Entities
 
+---
+## Changelog
+| Version | Date | Description           | Authors  |
+|---------|------|-----------------------|----------|
+| 1.0 | 2026-05-20 | Initial entities view | [m000gg](https://github.com/m000gg) |
+
+---
 
 ## Subscriber
 Subscriber is a client who has registered and has an active account in the system. 

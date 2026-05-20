@@ -1,6 +1,12 @@
 # Business Rules
 
 ---
+##  Changelog
+| Version | Date | Description            | Authors  |
+|---------|------|------------------------|----------|
+| 1.0 | 2026-05-20 | Initial business rules | [m000gg](https://github.com/m000gg) |
+
+---
 
 ## Subscriber
 

@@ -1,5 +1,12 @@
 # Authentication & Authorization
 
+---
+## Changelog
+| Version | Date | Description               | Authors  |
+|---------|------|---------------------------|----------|
+| 1.0 | 2026-05-20 | Initial auth & authz view | [m000gg](https://github.com/m000gg) |
+---
+
 ## Authentication Flow
 1. User submits credentials via login form at /login
 3. Spring Security validates credentials

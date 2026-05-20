@@ -1,5 +1,10 @@
 # Feature #1 *User Registration*: Admin can registrate new users 
-
+---
+## Changelog
+| Version | Date | Description     | Authors  |
+|---------|------|-----------------|----------|
+| 1.0 | 2026-05-20 | Initial feature | [m000gg](https://github.com/m000gg) |
+---
 
 
 ## 👔Part 1: Product & Business
