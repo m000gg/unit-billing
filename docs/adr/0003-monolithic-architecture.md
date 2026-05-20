@@ -1,7 +1,7 @@
 # ADR003 — Monolithic Architecture
 
 * Status: "Pending"
-* Date: 17-05-2026
+* Date:  2026-05-17
 * Author: [m000gg](https://github.com/m000gg)
 
 ---
