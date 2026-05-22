@@ -2,9 +2,9 @@
 
 ---
 ## Changelog
-| Version | Date       | Description | Authors  |
-|---------|------------|-------------|----------|
-| X.X     | 2026-XX-XX | XXX           | [m000gg](https://github.com/m000gg) |
+| Version   | Date       | Description  | Authors                             |
+|-----------|------------|--------------|-------------------------------------|
+| X.X       | 2026-XX-XX | XXX          | [m000gg](https://github.com/m000gg) |
 ---
 
 
