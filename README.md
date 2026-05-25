@@ -100,15 +100,17 @@ unit-billing/
 ├── scripts/                       ← Useful scripts
 │  
 ├── docs/
-│   ├── architecture/              ← Architecture Descriptions
 │   ├── adr/                       ← Architecture Decision Records
-│   ├── features/                  ← Features Descriptions
-│   ├── api/                       ← API Descriptions
-│   │   ├── admin-api.md
-│   │   └── client-api.md
-│   └── manuals/                   ← Usage guides
-│       ├── admin-guide.md
-│       └── client-guide.md 
+│   ├── api/                       ← API Contracts (inbound)
+│   ├── architecture/
+│   │       ├── c4/                ← System structure (L1 ,L2, L3)
+│   │       ├── domain/            ← Entities, business areas, rules
+│   │       ├── integrations/      ← External services (outbound)
+│   │       └── security/          ← Auth, roles, data protection
+│   ├── features/
+│   │   ├── admin-app/             ← Admin features descriptions
+│   │   └── client-app/            ← Client features descriptions
+│   └── manuals/                   ← Usage guides       
 │
 ├── .env.example                   ← .env Example
 ├── .gitignore
