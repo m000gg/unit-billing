@@ -1,4 +1,4 @@
-# Unit Billing Full Container View (ISP Billing Platform)
+# Unit Billing Full Container View (Billing Platform)
 
 ---
 ##  Changelog
