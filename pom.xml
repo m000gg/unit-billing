@@ -10,5 +10,5 @@
     <packaging>pom</packaging>
 
     <name>unit-billing</name>
-    <description>ISP Billing and Subscriber Management Platform</description>
+    <description>Billing and Subscriber Management Platform</description>
 </project>

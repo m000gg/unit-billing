@@ -1,4 +1,4 @@
-# Feature #1 *User Registration*: Admin can registrate new users 
+# Feature #1 *User Registration*: Admin can register new users
 ---
 ## Changelog
 | Version   | Date       | Description     | Authors                             |
@@ -11,12 +11,11 @@
 
 
 ### Executive Summary
-This feature allows administrators to register new users into the ISP billing system, after a prospect submits an application. To register a new user, the administrator will need to provide necessary information such as full name, email,
-& living address. The system will validate the input data and create a new user account in the database. The password will be generated automatically and shown to the admin. This feature is essential for managing subscribers and ensuring that only authorized users can access the platform.
+This feature allows administrators to register new users into the billing platform, after a prospect submits an application. To register a new user, the administrator will need to provide necessary information such as full name, email,
+& address. The system will validate the input data and create a new user account in the database. The password will be generated automatically and shown to the admin. This feature is essential for managing customers and ensuring that only authorized users can access the platform.
 
 ### Feature objectives
-- Specific: Standardize and streamline the process for administrators to create new subscriber accounts (based on submitted applications) in the ISP billing system, 
-            including automatic secure password generation.
+- Specific: Standardize and streamline the process for administrators to create new customer accounts (based on submitted applications) in the billing platform, including automatic secure password generation.
 - Measurable: The feature will be considered successful if at least 90% of administrators can successfully register new users without errors.
 - Attainable: Feasible as a standard Function built from scratch.
 - Realistic: Speeds up onboarding & improves security.
@@ -48,10 +47,10 @@ flowchart LR
 - **Duplicate User:** Admin enters an Email that already exists in the database ➔ System blocks creation and shows a "Duplicate" error.
 
 ### Functional Requirements
-- The system must provide an admin form with fields: Full name, Email, and Living Address.
+- The system must provide an admin form with fields: Full name, Email, and Address.
 - The system must validate that all fields are populated before submission.
 - The system must validate the Email field for correct formatting (e.g., user@domain.com).
-- The system must verify that the Email are unique in the database.
+- The system must verify that the Email is unique in the database.
 - The system must automatically generate a random password upon successful form submission.
 - The system must display the newly created user's data and the generated password to the admin.
 
