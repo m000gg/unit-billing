@@ -43,7 +43,7 @@ Below are some example use cases for the billing application:
 
 |                 Internet Service Provider                 |                               Enterprise                                |                      Local & Home Use                       |
 |:---------------------------------------------------------:|:-----------------------------------------------------------------------:|:-----------------------------------------------------------:|
-| ![ISP Billing Use Case](docs/assets/readme/isp-usage.png) | ![Enterprise Billing Use Case](docs/assets/readme/enterprise-usage.png) | ![Home Billing Use Case](docs/assets/readme/home-usage.png) |
+| ![ISP Billing Use Case](docs/assets/readme/isp-usage.svg) | ![Enterprise Billing Use Case](docs/assets/readme/enterprise-usage.svg) | ![Home Billing Use Case](docs/assets/readme/home-usage.svg) |
 
 ---
 
