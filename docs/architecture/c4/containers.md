@@ -1,4 +1,4 @@
-# Unit Billing Full Container View (ISP Billing Platform)
+# Unit Billing Full Container View (Billing Platform)
 
 ---
 ##  Changelog
@@ -9,8 +9,7 @@
 
 ---
 ## Overview
-This document provides a detailed container-level overview of the Unit Billing System.The platform is divided into two main applications: Admin and Client,
-that are connected to a shared PostgreSQL database. The platform also integrates with external payment services used for secure payment processing.
+This document provides a detailed container-level overview of the Unit Billing System. The platform is divided into two main applications: Admin and Client, that are connected to a shared PostgreSQL database. The platform also integrates with external payment services used for secure payment processing.
 
 ---
 ## Architecture Style
@@ -18,11 +17,11 @@ The platform follows a modular web application architecture with separate client
 
 ---
 ## Containers
-- **Admin Web Application**: A web-based interface for ISP administrators to manage subscribers, billing operations, announcements, and transactions.
-- **Admin Backend API**: A backend service that handles administrative operations, subscriber management, announcements, and billing logic.
-- **Client Web Application**: A web-based interface for clients to authenticate, view profile information, check balances, view internet status, and make payments.
+- **Admin Web Application**: A web-based interface for administrators to manage customers/subscribers, billing operations, announcements, and transactions.
+- **Admin Backend API**: A backend service that handles administrative operations, customer management, announcements, and billing logic.
+- **Client Web Application**: A web-based interface for clients to authenticate, view profile information, check balances, view active services/subscriptions, and make payments.
 - **Client Backend API**: A backend service that handles authentication, profile management, billing operations, and payment processing.
-- **PostgreSQL Database**: A shared database that stores subscriber information, billing data, payments, and announcements.
+- **PostgreSQL Database**: A shared database that stores user information, billing data, payments, and announcements.
 
 ---
 ## Communication Flow
@@ -43,12 +42,12 @@ The platform follows a modular web application architecture with separate client
 C4Container
     title Unit Billing System - Full Container View
 
-    Person(admin, "ISP Administrator", "Manages subscribers, billing operations, announcements, and transactions.")
-    Person(client, "Client", "Uses the platform to view profile information and make payments.")
+    Person(admin, "Administrator", "Manages customers, billing operations, announcements, and transactions.")
+    Person(client, "Client", "Uses the platform to view profile information, track services, and make payments.")
 
     System_Boundary(admin_system, "Admin Application") {
-        Container(admin_web, "Admin Web Application", "HTML, CSS, JavaScript", "Administrative interface for ISP operators.")
-        Container(admin_api, "Admin Backend API", "Java, Spring Boot", "Handles administrative operations, subscriber management, announcements, and billing logic.")
+        Container(admin_web, "Admin Web Application", "HTML, CSS, JavaScript", "Administrative interface for system operators.")
+        Container(admin_api, "Admin Backend API", "Java, Spring Boot", "Handles administrative operations, customer management, announcements, and billing logic.")
     }
 
     System_Boundary(client_system, "Client Application") {
@@ -56,7 +55,7 @@ C4Container
         Container(client_api, "Client Backend API", "Java, Spring Boot", "Handles authentication, profile management, billing operations, and payment processing.")
     }
 
-    ContainerDb(postgres, "PostgreSQL Database", "PostgreSQL", "Shared storage for subscribers, billing, payments, and announcements.")
+    ContainerDb(postgres, "PostgreSQL Database", "PostgreSQL", "Shared storage for users, billing, payments, and announcements.")
     System_Ext(payment_provider, "Payment Service Providers", "External payment systems.")
 
 

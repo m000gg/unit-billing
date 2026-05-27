@@ -24,9 +24,9 @@ Welcome to the official user manual! Here you will find everything you need to c
 ## 🌟 Introduction
 
 
-Our admin application is designed to help ISP administrators manage their subscribers, billing operations, 
-announcements, and transactions efficiently. It provides a user-friendly interface for 
-handling all administrative tasks related to ISP billing and subscriber management.
+Our admin application is designed to help administrators manage their customers, billing operations,
+announcements, and transactions efficiently. It provides a user-friendly interface for
+handling all administrative tasks related to flexible billing and customer management.
 
 ## 🚀 Getting Started
 
@@ -34,7 +34,7 @@ handling all administrative tasks related to ISP billing and subscriber manageme
 Provide step-by-step instructions on how to start using the software.
 1. Download the latest version from the releases page.
 2. Extract the archive and run the executable file.
-3. On the first launch, complete the basic setup. Setup instructions will are provided in [README.md](../../README.md).
+3. On the first launch, complete the basic setup. Setup instructions are provided in [README.md](../../README.md).
 
 ## 🖥 Interface Overview
 
@@ -43,14 +43,14 @@ Provide step-by-step instructions on how to start using the software.
 ## 📖 Core Features
 
 **Admin Authorization**: Secure admin login and basic access control.
-  - test credentials:
+- test credentials:
     - email: superadmin@gmail.com
     - password: Qwerty1234
 
 **User Registration**: Streamlined sign-up process for new users.
 How to register a new user:
 1. Navigate to the registration page
-2. Fill in the required fields (name, email, password)
+2. Fill in the required fields (name, email, address)
 3. Click **Register**
 4. Copy the auto-generated password and share it with the user
 

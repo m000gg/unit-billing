@@ -25,7 +25,7 @@ Welcome to the official user manual! Here you will find everything you need to c
 ## 🌟 Introduction
 
 
-Our client application is designed to provide ISP subscribers with a convenient way to manage their accounts, view invoices, and make payments. It offers a user-friendly interface for handling all client-side tasks related to ISP billing and account management.
+Our client application is designed to provide customers with a convenient way to manage their accounts, view active services, and make payments. It offers a user-friendly interface for handling all client-side tasks related to billing, subscriptions, and account management.
 
 ## 🚀 Getting Started
 
@@ -33,7 +33,7 @@ Our client application is designed to provide ISP subscribers with a convenient 
 Provide step-by-step instructions on how to start using the software.
 1. Download the latest version from the releases page.
 2. Extract the archive and run the executable file.
-3. On the first launch, complete the basic setup. Setup instructions will are provided in [README.md](../../README.md).
+3. On the first launch, complete the basic setup. Setup instructions are provided in [README.md](../../README.md).
 
 ## 🖥 Interface Overview
 
@@ -43,12 +43,12 @@ Provide step-by-step instructions on how to start using the software.
 
 **Client Authentication**: Secure client login and access to account information.
 - test credentials:
-    - email: user@gmail.com
-    - password: Qwerty1234
+  - email: user@gmail.com
+  - password: Qwerty1234
 
-**Balance Management**: Top up your balance with different payment methods and view your transaction history.
+**Balance Management**: Top up your balance using different payment methods and view your transaction history.
 
-**Service Management**: Order different providers' services and manage them in one place.
+**Service Management**: Browse, order, and manage different services or subscription plans all in one place.
 
 
 > More information will be added later.

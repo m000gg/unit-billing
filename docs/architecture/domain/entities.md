@@ -1,4 +1,4 @@
- # Domain Entities
+# Domain Entities
 
 ---
 ## Changelog
@@ -8,25 +8,25 @@
 
 ---
 
-## Subscriber
-Subscriber is a client who has registered and has an active account in the system. 
-They can perform various actions such as topping up their balance, subscribing to services, and managing their profile.
+## Customer / Subscriber
+A client who has registered and maintains an active account in the system.
+They can perform various actions such as topping up their balance, managing active services/plans, and updating their profile.
 
 Lifecycle: Active -> Blocked
 
 ## Transaction
-Transaction is initiated when a client performs (increases balance) and service charge (decreases balance). 
+A record of financial movement, initiated when a client makes a payment (increases balance) or incurs a system charge for a service (decreases balance).
 It is processed asynchronously, and its status is updated based on the outcome of the operation.
 
 Lifecycle: Pending → Completed | Failed
 
+## Subscription
+An active plan or service agreement assigned to a customer within a billing cycle.
+Automatically renews if the balance is sufficient at the end of the cycle.
 
-## Subscription 
-Active connection between a subscriber and a service within a billing cycle.
-Automatically renews if balance is sufficient at the end of the cycle.
+Lifecycle: Active → Canceled
 
-Lifecycle: Active → Canceled 
+## Admin
+A user with elevated privileges who can manage customers, services, system settings, and transactions, and has access to the Admin Application.
 
-## Admin 
-Admin is a user with elevated privileges who can manage subscribers, services, and transactions and has access to Admin Application.
 Lifecycle: Active -> Blocked

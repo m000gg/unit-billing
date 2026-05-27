@@ -1,7 +1,7 @@
 <div align="center">
 
-  <h1>🌐 Billing Application for Internet Providers</h1>
-  <p><em>Reliable and scalable billing solution for modern ISPs</em></p>
+<h1>🌐 Unit Billing Platform</h1>
+<p><em>Reliable, scalable, and highly customizable billing solution for any business model</em></p>
 
   <p>
     <a href="https://github.com/m000gg/unit-billing/releases/latest"><img src="https://img.shields.io/github/v/release/m000gg/unit-billing?sort=semver" alt="Latest release"></a>
@@ -32,7 +32,9 @@
 ---
 
 ## About this project
-This project is a billing and subscriber management platform designed for Internet Service Providers (ISPs). The goal of the project is to simplify ISP operations, reduce administrative workload, and provide transparent financial and operational analytics. Additionally, it includes a dedicated client application that empowers subscribers to easily manage their own accounts and payments.
+This project is a flexible billing and customer management platform designed to adapt to any business model. 
+The goal of the project is to simplify business operations, reduce administrative workload, and provide transparent financial and operational analytics for various use cases (such as SaaS, utility services, digital subscriptions, and ISPs). 
+Additionally, it includes a dedicated client application that empowers users to easily manage their own accounts, subscriptions, and payments.
 
 ---
 
@@ -47,20 +49,19 @@ Below are some example use cases for the billing application:
 
 
 ## Target Users
-This open-source project is designed for Internet Service Providers (ISPs), local network operators, telecom companies, and enterprise network administrators.
-The platform provides a centralized workspace for billing, network infrastructure management, and customer support operations.
-For the end-users (subscribers), it offers a secure self-service portal to track their active services and billing.
+This open-source project is designed for any business that requires subscription management or invoicing, such as SaaS companies, digital service providers, utility networks, and ISPs.
+The platform provides a centralized workspace for billing automation, service provisioning, and customer support operations.
+For end-users (customers and subscribers), it offers a secure self-service portal to seamlessly track their active services, manage subscriptions, and handle payments.
 
 ---
 
 ## Problem Statement
 
-Many small and medium Internet Service Providers (ISPs) still rely on fragmented tools, manual accounting processes, spreadsheets, and isolated network management systems. This often leads to increased administrative workload, billing errors, poor service visibility, and difficulties in managing subscribers, payments, and network infrastructure efficiently.
-Existing solutions may be too expensive, overly complex, or poorly adapted for smaller providers and local network operators.
-This project aims to provide a centralized billing and subscriber management platform that simplifies ISP operations, automates routine financial and operational tasks, and improves transparency across billing, subscriber management, and network administration processes, while simultaneously providing a clear, easy-to-use interface for the subscribers themselves.
+Many small and medium businesses and service providers still rely on fragmented tools, manual accounting processes, spreadsheets, and isolated service management systems. This often leads to increased administrative workload, billing errors, poor service visibility, and difficulties in managing customers, payments, and service delivery efficiently.
+Existing solutions may be too expensive, overly complex, or poorly adapted for smaller enterprises and growing businesses.
+This project aims to provide a centralized billing and customer management platform that simplifies business operations, automates routine financial and operational tasks, and improves transparency across billing, customer management, and service administration processes, while simultaneously providing a clear, easy-to-use interface for the end-users themselves.
 
 ---
-
 ## Features
 * Admin Authorization: Secure admin login and basic access control.
 
@@ -79,11 +80,11 @@ unit-billing/
 ├── pom.xml                        ← Root pom.xml
 ├── apps/                          ← Application of the project
 │   │
-│   ├── admin/                     ← ISP Billing
+│   ├── admin/                     ← Billing Application
 │   │   ├── frontend/
 │   │   └── backend/
 │   │
-│   └── client/                    ← ISP Client Application
+│   └── client/                    ← Client Application
 │       ├── frontend/
 │       └── backend/
 │
