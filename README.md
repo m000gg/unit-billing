@@ -41,9 +41,9 @@ Additionally, it includes a dedicated client application that empowers users to 
 ## Use Cases
 Below are some example use cases for the billing application:
 
-|      Use Case 1      |        Use Case 2         |     Use Case 3       |
-|:--------------------:|:-------------------------:|:--------------------:|
-| Will be added later. | Will be added later.      | Will be added later. |
+|                 Internet Service Provider                 |                               Enterprise                                |                      Local & Home Use                       |
+|:---------------------------------------------------------:|:-----------------------------------------------------------------------:|:-----------------------------------------------------------:|
+| ![ISP Billing Use Case](docs/assets/readme/isp-usage.svg) | ![Enterprise Billing Use Case](docs/assets/readme/enterprise-usage.svg) | ![Home Billing Use Case](docs/assets/readme/home-usage.svg) |
 
 ---
 
@@ -101,6 +101,9 @@ unit-billing/
 ├── scripts/                       ← Useful scripts
 │  
 ├── docs/
+│   ├── assets/                    ← Diagrams, images, and other media
+│   │   └── readme/
+│   │
 │   ├── adr/                       ← Architecture Decision Records
 │   ├── api/                       ← API Contracts (inbound)
 │   ├── architecture/
