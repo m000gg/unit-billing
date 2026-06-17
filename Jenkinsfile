@@ -9,6 +9,13 @@ pipeline {
 
     stages {
 
+        stage('Install Parent POM') {
+            steps {
+                echo '=== Installing Root POM to Jenkins Cache ==='
+                sh 'mvn clean install -N'
+            }
+        }
+
         stage('Build Shared') {
             steps {
                 dir('packages/shared-core') {
