@@ -1,0 +1,5 @@
+/Users/vladlivandovskyi/unit-billing/apps/client/backend/src/main/java/com/m000gg/client/ClientApplication.java
+/Users/vladlivandovskyi/unit-billing/apps/client/backend/src/main/java/com/m000gg/client/auth/ApplicationUserDetailsService.java
+/Users/vladlivandovskyi/unit-billing/apps/client/backend/src/main/java/com/m000gg/client/auth/AuthController.java
+/Users/vladlivandovskyi/unit-billing/apps/client/backend/src/main/java/com/m000gg/client/common/config/SecurityConfig.java
+/Users/vladlivandovskyi/unit-billing/apps/client/backend/src/main/java/com/m000gg/client/home/HomeController.java

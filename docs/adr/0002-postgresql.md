@@ -1,6 +1,6 @@
 # ADR002 — PostgreSQL Database
 
-* Status: "Pending"
+* Status: "Approved"
 * Date: 2026-05-17
 * Author: [m000gg](https://github.com/m000gg)
 

@@ -1,39 +1,35 @@
 # Unit Billing Full Container View (Billing Platform)
 
 ---
-##  Changelog
-| Version | Date       | Description            | Authors                                |
-|---------|------------|------------------------|----------------------------------------|
-| 1.0     | 2026-05-20 | Initial container view | [m000gg](https://github.com/m000gg)    |
-
+## Changelog
+| Version | Date       | Description                                   | Authors                             |
+|---------|------------|-----------------------------------------------|-------------------------------------|
+| 1.0     | 2026-05-20 | Initial container view                        | [m000gg](https://github.com/m000gg) |
+| 1.1     | 2026-06-07 | Fix architecture: SSR replaces SPA + REST API | [m000gg](https://github.com/m000gg) |
 
 ---
 ## Overview
-This document provides a detailed container-level overview of the Unit Billing System. The platform is divided into two main applications: Admin and Client, that are connected to a shared PostgreSQL database. The platform also integrates with external payment services used for secure payment processing.
+This document provides a container-level overview of the Unit Billing platform. The platform consists of two independent Spring Boot applications (Admin and Client) sharing a single PostgreSQL database. Both applications use server-side rendering via Thymeleaf — there is no separate frontend or REST API between browser and backend.
 
 ---
 ## Architecture Style
-The platform follows a modular web application architecture with separate client and administrative applications.
+Modular SSR web application. Each application is a self-contained Spring Boot service rendering HTML via Thymeleaf.
 
 ---
 ## Containers
-- **Admin Web Application**: A web-based interface for administrators to manage customers/subscribers, billing operations, announcements, and transactions.
-- **Admin Backend API**: A backend service that handles administrative operations, customer management, announcements, and billing logic.
-- **Client Web Application**: A web-based interface for clients to authenticate, view profile information, check balances, view active services/subscriptions, and make payments.
-- **Client Backend API**: A backend service that handles authentication, profile management, billing operations, and payment processing.
-- **PostgreSQL Database**: A shared database that stores user information, billing data, payments, and announcements.
+- **Admin Application**: A Spring Boot application with server-side rendering for administrators. Handles user management, billing operations, and announcements.
+- **Client Application**: A Spring Boot application with server-side rendering for subscribers. Handles profile, balances, subscriptions, and payments.
+- **PostgreSQL Database**: Shared database storing users, billing data, payments, and announcements.
 
 ---
 ## Communication Flow
-- The Admin Web Application communicates with the Admin Backend API over HTTPS using RESTful APIs.
-- The Client Web Application communicates with the Client Backend API over HTTPS using RESTful APIs.
-- Both the Admin Backend API and Client Backend API interact with the PostgreSQL Database using JDBC for data storage and retrieval.
-- The Client Backend API communicates with external Payment Service Providers over HTTPS to process payments.
+- Browser communicates with each application directly over HTTPS — full HTML pages are returned (SSR).
+- Both applications interact with PostgreSQL via JDBC.
+- Client Application communicates with external Payment Service Providers over HTTPS.
 
 ---
-
 ## External Systems
-- **Payment Service Providers**: External systems that handle payment processing for the platform.
+- **Payment Service Providers**: External systems for payment processing.
 
 ---
 ## Container Diagram
@@ -42,29 +38,20 @@ The platform follows a modular web application architecture with separate client
 C4Container
     title Unit Billing System - Full Container View
 
-    Person(admin, "Administrator", "Manages customers, billing operations, announcements, and transactions.")
-    Person(client, "Client", "Uses the platform to view profile information, track services, and make payments.")
+    Person(admin, "Administrator", "Manages customers, billing, and announcements.")
+    Person(client, "Client", "Views profile, subscriptions, and makes payments.")
 
-    System_Boundary(admin_system, "Admin Application") {
-        Container(admin_web, "Admin Web Application", "HTML, CSS, JavaScript", "Administrative interface for system operators.")
-        Container(admin_api, "Admin Backend API", "Java, Spring Boot", "Handles administrative operations, customer management, announcements, and billing logic.")
+    System_Boundary(unit_billing, "Unit Billing Platform") {
+        Container(admin_app, "Admin Application", "Java, Spring Boot, Thymeleaf", "SSR web app for administrators. Handles user management, billing, and announcements.")
+        Container(client_app, "Client Application", "Java, Spring Boot, Thymeleaf", "SSR web app for subscribers. Handles profile, balances, subscriptions, and payments.")
+        ContainerDb(postgres, "PostgreSQL Database", "PostgreSQL", "Shared storage for users, billing, payments, and announcements.")
     }
 
-    System_Boundary(client_system, "Client Application") {
-        Container(client_web, "Client Web Application", "HTML, CSS, JavaScript", "Provides the client interface for authentication, profile management, and payment operations.")
-        Container(client_api, "Client Backend API", "Java, Spring Boot", "Handles authentication, profile management, billing operations, and payment processing.")
-    }
-
-    ContainerDb(postgres, "PostgreSQL Database", "PostgreSQL", "Shared storage for users, billing, payments, and announcements.")
     System_Ext(payment_provider, "Payment Service Providers", "External payment systems.")
 
-
-    Rel(admin, admin_web, "Uses", "HTTPS")
-    Rel(admin_web, admin_api, "Sends requests to", "REST/HTTPS")
-    Rel(admin_api, postgres, "Reads/Writes", "JDBC")
-
-    Rel(client, client_web, "Uses", "HTTPS")
-    Rel(client_web, client_api, "Sends requests to", "REST/HTTPS")
-    Rel(client_api, postgres, "Reads/Writes", "JDBC")
-    Rel(client_api, payment_provider, "Processes payments via", "HTTPS")
+    Rel(admin, admin_app, "Uses", "HTTPS")
+    Rel(client, client_app, "Uses", "HTTPS")
+    Rel(admin_app, postgres, "Reads/Writes", "JDBC")
+    Rel(client_app, postgres, "Reads/Writes", "JDBC")
+    Rel(client_app, payment_provider, "Processes payments via", "HTTPS")
 ```

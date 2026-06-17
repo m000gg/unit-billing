@@ -103,7 +103,7 @@ unit-billing/
 ├── docs/
 │   ├── assets/                    ← Diagrams, images, and other media
 │   │   └── readme/
-│   │
+│   ├── ci-cd/                     ← CI/CD description
 │   ├── adr/                       ← Architecture Decision Records
 │   ├── api/                       ← API Contracts (inbound)
 │   ├── architecture/
