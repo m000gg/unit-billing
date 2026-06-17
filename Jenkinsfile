@@ -157,43 +157,43 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'staging-db-creds', passwordVariable: 'DB_PASS', usernameVariable: 'DB_USER')]) {
                     sshagent(credentials: ['prod-ssh-key']) {
                         sh """
-                    ssh -o StrictHostKeyChecking=no azureuser@98.70.24.6 "
-                        echo '=== Deploy to STAGING from Branch DEVELOP ==='
+                        ssh -o StrictHostKeyChecking=no azureuser@98.70.24.6 "
+                            echo '=== Deploy to STAGING from Branch DEVELOP ==='
 
-                        echo '--- Deploying Admin App (Staging) ---'
-                        docker pull registrycont.azurecr.io/unit-billing-admin:develop-latest
-                        
-                        docker stop admin-app-staging || true
-                        docker rm admin-app-staging || true
-                        
-                        docker run -d --restart unless-stopped \\
-                          --name admin-app-staging \\
-                          -m 512m \\
-                          -p 9080:8080 \\
-                          -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-staging-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                          -e SPRING_DATASOURCE_USERNAME='\${DB_USER}' \\
-                          -e SPRING_DATASOURCE_PASSWORD='\${DB_PASS}' \\
-                          registrycont.azurecr.io/unit-billing-admin:develop-latest
+                            echo '--- Deploying Admin App (Staging) ---'
+                            docker pull registrycont.azurecr.io/unit-billing-admin:develop-latest
+                            
+                            docker stop admin-app-staging || true
+                            docker rm admin-app-staging || true
+                            
+                            docker run -d --restart unless-stopped \\
+                              --name admin-app-staging \\
+                              -m 512m \\
+                              -p 9080:8080 \\
+                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-staging-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
+                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              registrycont.azurecr.io/unit-billing-admin:develop-latest
 
-                        echo '--- Deploying Client App (Staging) ---'
-                        docker pull registrycont.azurecr.io/unit-billing-client:develop-latest
-                        
-                        docker stop client-app-staging || true
-                        docker rm client-app-staging || true
-                        
-                        docker run -d --restart unless-stopped \\
-                          --name client-app-staging \\
-                          -m 512m \\
-                          -p 9081:8081 \\
-                          -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-staging-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                          -e SPRING_DATASOURCE_USERNAME='\${DB_USER}' \\
-                          -e SPRING_DATASOURCE_PASSWORD='\${DB_PASS}' \\
-                          registrycont.azurecr.io/unit-billing-client:develop-latest
-                         
-                        docker image prune -f
-                        echo '=== Staging Deploy successfully ended! ==='
-                    "
-                    """
+                            echo '--- Deploying Client App (Staging) ---'
+                            docker pull registrycont.azurecr.io/unit-billing-client:develop-latest
+                            
+                            docker stop client-app-staging || true
+                            docker rm client-app-staging || true
+                            
+                            docker run -d --restart unless-stopped \\
+                              --name client-app-staging \\
+                              -m 512m \\
+                              -p 9081:8081 \\
+                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-staging-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
+                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              registrycont.azurecr.io/unit-billing-client:develop-latest
+                             
+                            docker image prune -f
+                            echo '=== Staging Deploy successfully ended! ==='
+                        "
+                        """
                     }
                 }
             }
@@ -207,55 +207,55 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'prod-db-creds', passwordVariable: 'DB_PASS', usernameVariable: 'DB_USER')]) {
                     sshagent(credentials: ['prod-ssh-key']) {
                         sh """
-                    ssh -o StrictHostKeyChecking=no azureuser@98.70.24.6 "
-                        echo '=== Deploy to PROD from Branch MAIN ==='
+                        ssh -o StrictHostKeyChecking=no azureuser@98.70.24.6 "
+                            echo '=== Deploy to PROD from Branch MAIN ==='
 
-                        echo '--- Deploying Admin App (Prod) ---'
-                        docker pull registrycont.azurecr.io/unit-billing-admin:main-latest
-                        
-                        docker stop admin-app || true
-                        docker rm admin-app || true
-                        
-                        docker run -d --restart unless-stopped \\
-                          --name admin-app \\
-                          -m 512m \\
-                          -p 8080:8080 \\
-                          -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-prod-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                          -e SPRING_DATASOURCE_USERNAME='\${DB_USER}' \\
-                          -e SPRING_DATASOURCE_PASSWORD='\${DB_PASS}' \\
-                          registrycont.azurecr.io/unit-billing-admin:main-latest
+                            echo '--- Deploying Admin App (Prod) ---'
+                            docker pull registrycont.azurecr.io/unit-billing-admin:main-latest
+                            
+                            docker stop admin-app || true
+                            docker rm admin-app || true
+                            
+                            docker run -d --restart unless-stopped \\
+                              --name admin-app \\
+                              -m 512m \\
+                              -p 8080:8080 \\
+                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-prod-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
+                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              registrycont.azurecr.io/unit-billing-admin:main-latest
 
-                        echo '--- Deploying Client App (Prod) ---'
-                        docker pull registrycont.azurecr.io/unit-billing-client:main-latest
-                        
-                        docker stop client-app || true
-                        docker rm client-app || true
-                        
-                        docker run -d --restart unless-stopped \\
-                          --name client-app \\
-                          -m 512m \\
-                          -p 8081:8081 \\
-                          -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-prod-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                          -e SPRING_DATASOURCE_USERNAME='\${DB_USER}' \\
-                          -e SPRING_DATASOURCE_PASSWORD='\${DB_PASS}' \\
-                          registrycont.azurecr.io/unit-billing-client:main-latest
-                         
-                        docker image prune -f
-                        echo '=== Prod Deploy successfully ended! ==='
-                    "
-                    """
+                            echo '--- Deploying Client App (Prod) ---'
+                            docker pull registrycont.azurecr.io/unit-billing-client:main-latest
+                            
+                            docker stop client-app || true
+                            docker rm client-app || true
+                            
+                            docker run -d --restart unless-stopped \\
+                              --name client-app \\
+                              -m 512m \\
+                              -p 8081:8081 \\
+                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-prod-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
+                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              registrycont.azurecr.io/unit-billing-client:main-latest
+                             
+                            docker image prune -f
+                            echo '=== Prod Deploy successfully ended! ==='
+                        "
+                        """
                     }
                 }
             }
         }
 
-        post {
-            success {
-                echo 'Success!'
-            }
-            failure {
-                echo 'Build failed. Please check the logs for details.'
-            }
+
+    post {
+        success {
+            echo 'Success!'
+        }
+        failure {
+            echo 'Build failed. Please check the logs for details.'
         }
     }
 
