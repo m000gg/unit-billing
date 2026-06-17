@@ -249,12 +249,14 @@ pipeline {
             }
         }
 
-    post {
-        success {
-            echo 'Success!'
-        }
-        failure {
-            echo 'Build failed. Please check the logs for details.'
+        post {
+            success {
+                echo 'Success!'
+            }
+            failure {
+                echo 'Build failed. Please check the logs for details.'
+            }
         }
     }
+
 }
