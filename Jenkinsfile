@@ -177,9 +177,9 @@ pipeline {
                               --name admin-app-staging \\
                               -m 512m \\
                               -p 9080:8080 \\
-                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-staging-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
-                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              -e SPRING_DATASOURCE_URL='jdbc:postgresql://unit-billing-postgres-server.postgres.database.azure.com:5432/staging-db-postgres?sslmode=require' \\
+                              -e SPRING_DATASOURCE_USERNAME='${env.DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${env.DB_PASS}' \\
                               registrycont.azurecr.io/unit-billing-admin:develop-latest
 
                             echo '--- Deploying Client App (Staging) ---'
@@ -192,9 +192,9 @@ pipeline {
                               --name client-app-staging \\
                               -m 512m \\
                               -p 9081:8081 \\
-                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-staging-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
-                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              -e SPRING_DATASOURCE_URL='jdbc:postgresql://unit-billing-postgres-server.postgres.database.azure.com:5432/staging-db-postgres?sslmode=require' \\
+                              -e SPRING_DATASOURCE_USERNAME='${env.DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${env.DB_PASS}' \\
                               registrycont.azurecr.io/unit-billing-client:develop-latest
                              
                             docker image prune -f
@@ -227,9 +227,9 @@ pipeline {
                               --name admin-app \\
                               -m 512m \\
                               -p 8080:8080 \\
-                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-prod-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
-                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              -e SPRING_DATASOURCE_URL='jdbc:postgresql://unit-billing-postgres-server.postgres.database.azure.com:5432/prod-db-postgres?sslmode=require' \\
+                              -e SPRING_DATASOURCE_USERNAME='${env.DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${env.DB_PASS}' \\
                               registrycont.azurecr.io/unit-billing-admin:main-latest
 
                             echo '--- Deploying Client App (Prod) ---'
@@ -242,9 +242,9 @@ pipeline {
                               --name client-app \\
                               -m 512m \\
                               -p 8081:8081 \\
-                              -e SPRING_DATASOURCE_URL='jdbc:sqlserver://unit-billing-server.database.windows.net:1433;database=unit-billing-prod-database;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;' \\
-                              -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \\
-                              -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
+                              -e SPRING_DATASOURCE_URL='jdbc:postgresql://unit-billing-postgres-server.postgres.database.azure.com:5432/prod-db-postgres?sslmode=require' \\
+                              -e SPRING_DATASOURCE_USERNAME='${env.DB_USER}' \\
+                              -e SPRING_DATASOURCE_PASSWORD='${env.DB_PASS}' \\
                               registrycont.azurecr.io/unit-billing-client:main-latest
                              
                             docker image prune -f

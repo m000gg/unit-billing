@@ -40,12 +40,6 @@
                 <artifactId>shared-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>com.microsoft.sqlserver</groupId>
-                <artifactId>mssql-jdbc</artifactId>
-                <scope>runtime</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
