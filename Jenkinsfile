@@ -130,11 +130,6 @@ pipeline {
                         dir('apps/client/backend') {
                             echo "=== Docker Build & Push of Client App (Branch: ${env.BRANCH_NAME}) ==="
 
-                            sh "mkdir -p src/main/resources/templates"
-                            sh "cp -r ../frontend/templates/* src/main/resources/templates/"
-                            sh "mkdir -p src/main/resources/static"
-                            sh "cp -r ../frontend/static/* src/main/resources/static/"
-
                             withCredentials([usernamePassword(credentialsId: env.ACR_CREDS_ID, passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
                                 sh "echo \$ACR_PASS | docker login ${REGISTRY} -u \$ACR_USER --password-stdin"
 

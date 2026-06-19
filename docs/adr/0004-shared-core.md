@@ -1,4 +1,4 @@
-# ADR0006 — Shared Core
+# ADR0004 — Shared Core
 
 * Status: Draft
 * Date: 2026-06-11

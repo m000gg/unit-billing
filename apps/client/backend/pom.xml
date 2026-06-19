@@ -116,12 +116,10 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
-
             <resource>
                 <directory>../frontend/templates</directory>
                 <targetPath>templates</targetPath>
             </resource>
-
             <resource>
                 <directory>../frontend/static</directory>
                 <targetPath>static</targetPath>
