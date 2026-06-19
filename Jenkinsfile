@@ -130,22 +130,20 @@ pipeline {
                         dir('apps/client/backend') {
                             echo "=== Docker Build & Push of Client App (Branch: ${env.BRANCH_NAME}) ==="
 
-                            //take credentials from jenkins
-                            withCredentials([usernamePassword(credentialsId: env.ACR_CREDS_ID, passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
+                            sh "mkdir -p src/main/resources/templates"
+                            sh "cp -r ../frontend/templates/* src/main/resources/templates/"
+                            sh "mkdir -p src/main/resources/static"
+                            sh "cp -r ../frontend/static/* src/main/resources/static/"
 
-                                //login to Azure Container Registry
+                            withCredentials([usernamePassword(credentialsId: env.ACR_CREDS_ID, passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
                                 sh "echo \$ACR_PASS | docker login ${REGISTRY} -u \$ACR_USER --password-stdin"
 
-                                //build image with branch-specific tags
-                                sh "docker build -t ${REGISTRY}/${IMAGE_NAME}-client:${env.BRANCH_NAME}-${BUILD_NUMBER} ."
+                                sh "docker build --no-cache -t ${REGISTRY}/${IMAGE_NAME}-client:${env.BRANCH_NAME}-${BUILD_NUMBER} ."
                                 sh "docker build -t ${REGISTRY}/${IMAGE_NAME}-client:${env.BRANCH_NAME}-latest ."
 
-                                //send to Register
                                 sh "docker push ${REGISTRY}/${IMAGE_NAME}-client:${env.BRANCH_NAME}-${BUILD_NUMBER}"
                                 sh "docker push ${REGISTRY}/${IMAGE_NAME}-client:${env.BRANCH_NAME}-latest"
 
-
-                                //clean up
                                 sh "docker rmi ${REGISTRY}/${IMAGE_NAME}-client:${env.BRANCH_NAME}-${BUILD_NUMBER}"
                                 sh "docker rmi ${REGISTRY}/${IMAGE_NAME}-client:${env.BRANCH_NAME}-latest"
                             }
