@@ -6,21 +6,23 @@
 | 1.0     | 2026-06-07 | Initial feature | [m000gg](https://github.com/m000gg) |
 ---
 
+- Issue #14 ➔ PR #20
 
 ## 👔 Part 1: Product & Business
 
 
 ### Executive Summary
-This feature allows users to authenticate into their respective applications — `admin`
-or `client` — using an email and password. Upon successful login, the system creates
-a server-side session identified by an HTTP-only cookie. Users can explicitly terminate
-their session via logout. Both applications share the same authentication scheme but
-run as fully independent Spring Boot services.
+This feature allows users to authenticate into the application — accessing either
+the admin panel or the client portal, depending on their role — using an email and
+password. Upon successful login, the system creates a server-side session identified
+by an HTTP-only cookie. Users can explicitly terminate their session via logout. The
+admin and client areas share the same authentication scheme and run within a single
+Spring Boot application.
 
 ### Feature Objectives
 - **Specific:** Provide a secure, form-based login and logout flow for both the admin
-  and client applications, enforcing role-based access so that only authorized users
-  can reach protected routes.
+  and client areas of the application, enforcing role-based access so that only
+  authorized users can reach protected routes.
 - **Measurable:** The feature is considered complete when 100% of protected routes
   redirect unauthenticated users to `/login`, and successful login redirects to the
   dashboard.
@@ -28,7 +30,7 @@ run as fully independent Spring Boot services.
   custom auth infrastructure required.
 - **Realistic:** Eliminates unauthorized access and provides a clear entry/exit point
   for every user session.
-- **Time-bound:** 2 days for implementation and testing across both applications.
+- **Time-bound:** 2 days for implementation and testing.
 
 ### Feature Scope
 **In-scope:** Login form (`/login`), form submission processing (`/login/process`),
@@ -92,40 +94,41 @@ flowchart LR
 *Implemented tools:* Java / Spring Boot, Spring Security (form login, session
 management, BCrypt), Thymeleaf (SSR), PostgreSQL.
 
-Both `admin` and `client` are independent applications, each with its own
-`SecurityFilterChain` and `UserDetailsService` querying the shared database.
+The admin panel (`web/admin`) and client portal (`web/client`) are part of the same
+Spring Boot application, sharing a `UserDetailsService` querying the database.
+Role-based access rules determine which routes each authenticated user can reach.
 
 *Sequence diagram:*
 ```mermaid
 sequenceDiagram
-    participant Browser
-    participant Spring Security Filter
-    participant UserDetailsService
-    participant Database
+  participant Browser
+  participant Spring Security Filter
+  participant UserDetailsService
+  participant Database
 
-    Browser->>Spring Security Filter: GET /dashboard (no session)
-    Spring Security Filter-->>Browser: 302 Redirect → /login
+  Browser->>Spring Security Filter: GET /dashboard (no session)
+  Spring Security Filter-->>Browser: 302 Redirect → /login
 
-    Browser->>Spring Security Filter: GET /login
-    Spring Security Filter-->>Browser: Return HTML (Thymeleaf login form)
+  Browser->>Spring Security Filter: GET /login
+  Spring Security Filter-->>Browser: Return HTML (Thymeleaf login form)
 
-    Browser->>Spring Security Filter: POST /login/process (email, password)
-    Spring Security Filter->>UserDetailsService: loadUserByUsername(email)
-    UserDetailsService->>Database: SELECT user WHERE email = ?
-    Database-->>UserDetailsService: Return user (hashed password + role)
-    UserDetailsService-->>Spring Security Filter: Return UserDetails
-    Spring Security Filter->>Spring Security Filter: BCrypt.matches(raw, hashed)
+  Browser->>Spring Security Filter: POST /login/process (email, password)
+  Spring Security Filter->>UserDetailsService: loadUserByUsername(email)
+  UserDetailsService->>Database: SELECT user WHERE email = ?
+  Database-->>UserDetailsService: Return user (hashed password + role)
+  UserDetailsService-->>Spring Security Filter: Return UserDetails
+  Spring Security Filter->>Spring Security Filter: BCrypt.matches(raw, hashed)
 
-    alt Valid credentials
-        Spring Security Filter->>Spring Security Filter: Create HttpSession + SecurityContext
-        Spring Security Filter-->>Browser: 302 Redirect → / (Set-Cookie: JSESSIONID)
-    else Invalid credentials
-        Spring Security Filter-->>Browser: 302 Redirect → /login?error
-    end
+  alt Valid credentials
+    Spring Security Filter->>Spring Security Filter: Create HttpSession + SecurityContext
+    Spring Security Filter-->>Browser: 302 Redirect → / (Set-Cookie: JSESSIONID)
+  else Invalid credentials
+    Spring Security Filter-->>Browser: 302 Redirect → /login?error
+  end
 
-    Browser->>Spring Security Filter: POST /logout
-    Spring Security Filter->>Spring Security Filter: Invalidate session
-    Spring Security Filter-->>Browser: 302 Redirect → /login?logout
+  Browser->>Spring Security Filter: POST /logout
+  Spring Security Filter->>Spring Security Filter: Invalidate session
+  Spring Security Filter-->>Browser: 302 Redirect → /login?logout
 ```
 
 ### Open Questions

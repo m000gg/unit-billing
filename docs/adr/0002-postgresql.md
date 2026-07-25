@@ -6,6 +6,15 @@
 
 ---
 
+## Changelog
+| Version | Date       | Description     | Authors                             |
+|---------|------------|-----------------|-------------------------------------|
+| 1.0     | 2026-06-07 | Initial feature | [m000gg](https://github.com/m000gg) |
+
+---
+
+- Issue #14 ➔ PR #20
+
 ## Decision
 PostgreSQL is selected as the database for the project.
 

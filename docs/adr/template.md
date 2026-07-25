@@ -6,6 +6,14 @@
 
 ---
 
+## Changelog
+| Version   | Date       | Description | Authors                             |
+|-----------|------------|-------------|-------------------------------------|
+| 1.0       | YYYY-MM-DD | Descript    | [m000gg](https://github.com/m000gg) |
+---
+
+- Issue #... ➔ PR #...
+
 ## Decision
 The decision taken described in a few sentences, frequently bolded or italicized so it stands out. (It tells you which option was
 selected during the decision taking but nothing more: doesn’t include: neither the problem it solves,

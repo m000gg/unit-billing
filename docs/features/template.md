@@ -7,6 +7,7 @@
 | X.X       | 2026-XX-XX | XXX          | [m000gg](https://github.com/m000gg) |
 ---
 
+- Issue #...➔ PR #...
 
 ## 👔Part 1: Product & Business
 
