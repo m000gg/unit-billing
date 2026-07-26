@@ -1,9 +1,0 @@
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/BillingApplication.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/identity/ApplicationUserDetailsService.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/identity/SecurityConfig.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/ledger/EntryType.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/ledger/LedgerEntry.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/subscribers/ApplicationUser.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/subscribers/ApplicationUserRepository.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/web/client/AuthController.java
-/Users/vladlivandovskyi/unit-billing/src/main/java/com.m000gg.billing/web/client/HomeController.java
