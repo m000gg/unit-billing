@@ -1,17 +1,16 @@
 # ADR0003 — Flyway
 
-* Status: Approved
 * Date: 2026-07-25
 * Author: [m000gg](https://github.com/m000gg)
 
 ---
 
 ## Changelog
-| Version | Date       | Description     | Authors                             |
-|---------|------------|-----------------|-------------------------------------|
-| 1.0     | 2026-07-25 | Initial feature | [m000gg](https://github.com/m000gg) |
----
+| Version   | Date       | Description      | Status     | Authors                             |
+|-----------|------------|------------------|------------|-------------------------------------|
+| 1.0       | 2026-07-25 | Initial feature  | Approved   | [m000gg](https://github.com/m000gg) |
 
+---
 - Issue #14 ➔ PR #20
 
 ## Decision

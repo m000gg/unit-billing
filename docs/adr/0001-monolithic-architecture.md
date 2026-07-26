@@ -1,16 +1,15 @@
 # ADR001 — Monolithic Architecture
 
-* Status: "Approved"
 * Date: 2026-07-25
 * Author: [m000gg](https://github.com/m000gg)
 
 ---
 
 ## Changelog
-| Version   | Date       | Description                                                                                       | Authors                             |
-|-----------|------------|---------------------------------------------------------------------------------------------------|-------------------------------------|
-| 1.0       | 2026-06-07 | Initial feature                                                                                   | [m000gg](https://github.com/m000gg) |
-| 1.1       | 2026-07-25 | Updated to reflect single-application structure (admin panel + client portal merged into one app) | [m000gg](https://github.com/m000gg) |
+| Version   | Date       | Description                                                                                       | Status   | Authors                             |
+|-----------|------------|---------------------------------------------------------------------------------------------------|----------|-------------------------------------|
+| 1.0       | 2026-06-07 | Initial feature                                                                                   | Approved | [m000gg](https://github.com/m000gg) |
+| 1.1       | 2026-07-25 | Updated to reflect single-application structure (admin panel + client portal merged into one app) | Approved | [m000gg](https://github.com/m000gg) |
 
 ---
 

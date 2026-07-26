@@ -1,15 +1,15 @@
 # ADRXXXX — Description
 
-* Status: Accepted
 * Date: 2020-03-25
 * Author: [m000gg](https://github.com/m000gg)
 
 ---
 
 ## Changelog
-| Version   | Date       | Description | Authors                             |
-|-----------|------------|-------------|-------------------------------------|
-| 1.0       | YYYY-MM-DD | Descript    | [m000gg](https://github.com/m000gg) |
+| Version     | Date       | Description   | Status   | Authors                             |
+|-------------|------------|---------------|----------|-------------------------------------|
+| 1.0         | YYYY-MM-DD | Descript      | Accepted | [m000gg](https://github.com/m000gg) |
+
 ---
 
 - Issue #... ➔ PR #...

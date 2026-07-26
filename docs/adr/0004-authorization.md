@@ -1,16 +1,16 @@
 # ADR0004 — Authorization
 
-* Status: Approved
 * Date: 2026-06-07
 * Author: [m000gg](https://github.com/m000gg)
 
 ---
 
 ## Changelog
-| Version   | Date       | Description                                                           | Authors                             |
-|-----------|------------|-----------------------------------------------------------------------|-------------------------------------|
-| 1.0       | 2026-06-07 | Initial feature                                                       | [m000gg](https://github.com/m000gg) |
-| 1.1       | 2026-07-25 | Updated to reflect single-application structure (merged admin/client) | [m000gg](https://github.com/m000gg) |
+| Version   | Date       | Description                                                           | Status    | Authors                             |
+|-----------|------------|-----------------------------------------------------------------------|-----------|-------------------------------------|
+| 1.0       | 2026-06-07 | Initial feature                                                       | Approved  | [m000gg](https://github.com/m000gg) |
+| 1.1       | 2026-07-25 | Updated to reflect single-application structure (merged admin/client) | Approved  | [m000gg](https://github.com/m000gg) |
+
 ---
 
 - Issue #14 ➔ PR #20

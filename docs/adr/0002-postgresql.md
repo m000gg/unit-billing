@@ -1,15 +1,14 @@
 # ADR002 — PostgreSQL Database
 
-* Status: "Approved"
 * Date: 2026-05-17
 * Author: [m000gg](https://github.com/m000gg)
 
 ---
 
 ## Changelog
-| Version | Date       | Description     | Authors                             |
-|---------|------------|-----------------|-------------------------------------|
-| 1.0     | 2026-06-07 | Initial feature | [m000gg](https://github.com/m000gg) |
+| Version  | Date       | Description      | Status    | Authors                             |
+|----------|------------|------------------|-----------|-------------------------------------|
+| 1.0      | 2026-06-07 | Initial feature  | Approved  | [m000gg](https://github.com/m000gg) |
 
 ---
 
