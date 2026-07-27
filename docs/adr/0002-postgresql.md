@@ -1,10 +1,5 @@
 # ADR002 — PostgreSQL Database
 
-* Date: 2026-05-17
-* Author: [m000gg](https://github.com/m000gg)
-
----
-
 ## Changelog
 | Version  | Date       | Description      | Status    | Authors                             |
 |----------|------------|------------------|-----------|-------------------------------------|

@@ -1,10 +1,5 @@
 # ADR0003 — Flyway
 
-* Date: 2026-07-25
-* Author: [m000gg](https://github.com/m000gg)
-
----
-
 ## Changelog
 | Version   | Date       | Description      | Status     | Authors                             |
 |-----------|------------|------------------|------------|-------------------------------------|

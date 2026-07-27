@@ -1,10 +1,5 @@
 # ADRXXXX — Description
 
-* Date: 2020-03-25
-* Author: [m000gg](https://github.com/m000gg)
-
----
-
 ## Changelog
 | Version     | Date       | Description   | Status   | Authors                             |
 |-------------|------------|---------------|----------|-------------------------------------|
