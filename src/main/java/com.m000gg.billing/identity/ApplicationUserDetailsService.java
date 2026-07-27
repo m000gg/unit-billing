@@ -23,10 +23,13 @@ public class ApplicationUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
 
+        boolean deleted = Boolean.TRUE.equals(appUser.getDeleted());
+
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(appUser.getEmail())
                 .password(appUser.getPassword())
+                .disabled(deleted)
                 .roles("USER")
                 .build();
     }

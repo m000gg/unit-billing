@@ -7,14 +7,15 @@ import jakarta.validation.constraints.Email;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "application_users")
 public class ApplicationUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue
+    private UUID id;
 
     @Column(name = "first_name")
     private String firstName;
@@ -54,11 +55,11 @@ public class ApplicationUser {
     private Boolean isDeleted = false;
 
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
