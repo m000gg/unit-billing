@@ -16,8 +16,21 @@ public class ApplicationUserDetailsService implements UserDetailsService {
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
 
+    @Autowired
+    private AdminRepository adminRepository;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
+        Admin admin = adminRepository.findByEmail(email);
+        if (admin != null) {
+            return org.springframework.security.core.userdetails.User
+                    .withUsername(admin.getEmail())
+                    .password(admin.getPassword())
+                    .roles("ADMIN")
+                    .build();
+        }
+
         ApplicationUser appUser = applicationUserRepository.findByEmail(email).orElse(null);
         if (appUser == null) {
             throw new UsernameNotFoundException("User not found with email: " + email);

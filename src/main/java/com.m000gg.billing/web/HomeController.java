@@ -1,4 +1,4 @@
-package com.m000gg.billing.web.client;
+package com.m000gg.billing.web;
 
 
 import org.springframework.stereotype.Controller;
@@ -8,7 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class HomeController {
 
     @GetMapping({"/client/"})
-    public String index() {
+    public String indexClient() {
         return "client/index";
+    }
+
+    @GetMapping({"/admin/"})
+    public String indexAdmin() {
+        return "admin/index";
     }
 }
