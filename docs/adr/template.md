@@ -1,10 +1,13 @@
 # ADRXXXX — Description
 
-* Status: Accepted
-* Date: 2020-03-25
-* Author: [m000gg](https://github.com/m000gg)
+## Changelog
+| Version     | Date       | Description   | Status   | Authors                             |
+|-------------|------------|---------------|----------|-------------------------------------|
+| 1.0         | YYYY-MM-DD | Descript      | Accepted | [m000gg](https://github.com/m000gg) |
 
 ---
+
+- Issue #... ➔ PR #...
 
 ## Decision
 The decision taken described in a few sentences, frequently bolded or italicized so it stands out. (It tells you which option was

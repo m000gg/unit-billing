@@ -23,6 +23,7 @@
 * *[Project Structure](#project-structure)*
 * *[Architecture Overview](#architecture-overview)*
 * *[Technology Stack](#technology-stack)*
+* *[Development Principles](#development-principles)*
 * *[Getting Started](#-getting-started)*
 * *[Configuration](#configuration)*
 * *[Authors](#-authors)*
@@ -77,49 +78,46 @@ This project aims to provide a centralized billing and customer management platf
 
 ```text
 unit-billing/
-├── pom.xml                        ← Root pom.xml
-├── apps/                          ← Application of the project
-│   │
-│   ├── admin/                     ← Billing Application
-│   │   ├── frontend/
-│   │   └── backend/
-│   │
-│   └── client/                    ← Client Application
-│       ├── frontend/
-│       └── backend/
-│
-├── packages/                      ← Shared Parts of Code
-│   ├── shared-core/
-│   └── shared-ui-assets/
-│  
-├── database/                      ← Database
-│   ├── migrations/
-│   └── seed/
-│
-├── docker/                        ← Infrastructure Configs
-│
-├── scripts/                       ← Useful scripts
-│  
-├── docs/
-│   ├── assets/                    ← Diagrams, images, and other media
-│   │   └── readme/
-│   │
-│   ├── adr/                       ← Architecture Decision Records
-│   ├── api/                       ← API Contracts (inbound)
-│   ├── architecture/
-│   │       ├── c4/                ← System structure (L1 ,L2, L3)
-│   │       ├── domain/            ← Entities, business areas, rules
-│   │       ├── integrations/      ← External services (outbound)
-│   │       └── security/          ← Auth, roles, data protection
-│   ├── features/
-│   │   ├── admin-app/             ← Admin features descriptions
-│   │   └── client-app/            ← Client features descriptions
-│   └── manuals/                   ← Usage guides       
-│
-├── .env.example                   ← .env Example
-├── .gitignore
-├── docker-compose.yml
-└── README.md               
+├─ docs/
+│  ├─ adr/                                  ← architectural decision records (why important decisions were made)
+│  │  └─ 0001-flyway.md                    
+│  ├─ features/                             ← notable completed feature descriptions
+│  │  ├─ authorization.md                   
+│  │  └─ payments.md  
+│  ├─ manuals/                              ← admin and client application guides   
+│  ├─ assets/                               ← images, diagrams, and other media used in documentation
+│  ├─ domain.md                             ← terminology and critical billing rules
+│  └─ openapi.yaml                          ← HTTP contract for external API
+├─ scripts/
+│  ├─ setup-env.sh                          ← environment setup (install PostgreSQL & JDK & Maven & Jenkins, setup PostgreSQL, create services via systemd)
+│  └─ deploy.sh                             ← deployment to staging/prod (Maven, SCP, restart services via systemctl)
+├─ src/
+│  ├─ main/
+│  │  ├─ java/com/example/billing/
+│  │  │  ├─ identity/                       ← auth, roles, users
+│  │  │  ├─ subscribers/                    ← subscribers
+│  │  │  ├─ catalog/                        ← services and pricing plans
+│  │  │  ├─ subscriptions/                  ← subscriptions
+│  │  │  ├─ ledger/                         ← transactions, payments, balance calculation
+│  │  │  ├─ web/
+│  │  │  │  ├─ admin/                       ← admin endpoints/pages
+│  │  │  │  └─ client/                      ← client portal endpoints/pages
+│  │  │  └─ BillingApplication.java
+│  │  └─ resources/
+│  │     ├─ db/migration/                   ← database migration scripts
+│  │     ├─ templates/                      ← Thymeleaf templates (SSR)
+│  │     │  ├─ admin/                       ← HTML templates for admin panel
+│  │     │  └─ client/                      ← HTML templates for client portal
+│  │     ├─ static/                         ← static assets (CSS/JS/images)
+│  │     │  ├─ admin/                       ← static assets for admin panel
+│  │     │  └─ client/                      ← static assets for client portal
+│  │     ├─ application.yml                 ← common properties for all environments
+│  │     ├─ application-staging.yml         ← non-secret staging overrides
+│  │     └─ application-prod.yml            ← non-secret production overrides
+│  └─ test/                                 ← unit and integration tests
+├─ Jenkinsfile                              ← CI/CD pipeline definition
+├─ pom.xml                                  ← Maven build configuration and dependencies
+└─ README.md                                ← project description and instructions            
 ```
 
 ---
@@ -142,6 +140,17 @@ The project is currently designed as a modular monolith architecture.
 | Frontend | HTML, CSS, JS |
 
 ---
+## Development Principles
+
+| Practice          | Implementation                                                                                                   |
+|-------------------|------------------------------------------------------------------------------------------------------------------|
+| **TDD**           | Critical business scenarios are secured by automated tests.                                                      |
+| **DDD-lite**      | Code structure follows business modules and a ubiquitous domain language.                                        |
+| **Documentation** | Issues/PRs track work history; `docs/adr/` stores architectural decisions; `docs/features/` tracks key features. |
+| **Database**      | Schema changes are executed via **Flyway** migrations; Hibernate is restricted to `ddl-auto=validate`.           |
+
+
+---
 
 ## ⚡ Getting Started
 
@@ -159,8 +168,6 @@ Before starting the project, make sure the following tools are installed:
 
 - Java 21+
 - Maven 3.9+
-- Docker
-- Docker Compose
 - PostgreSQL 16+
 
 Docker is recommended for local development and database deployment.
@@ -168,10 +175,11 @@ Docker is recommended for local development and database deployment.
 
 ### 3)  Installation
 
-Build and start the application:
+To install required dependencies (Java, PostgreSQL, Maven) and set up systemd services on your server, use the provided initialization script:
 
 ```bash
-docker compose up --build
+chmod +x scripts/setup-env.sh
+./scripts/setup-env.sh
 ```
 
 ### 4) How to Use
