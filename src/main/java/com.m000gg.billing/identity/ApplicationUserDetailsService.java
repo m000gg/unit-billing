@@ -22,7 +22,7 @@ public class ApplicationUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        Admin admin = adminRepository.findByEmail(email);
+        Admin admin = adminRepository.findByEmail(email).orElse(null);
         if (admin != null) {
             return org.springframework.security.core.userdetails.User
                     .withUsername(admin.getEmail())

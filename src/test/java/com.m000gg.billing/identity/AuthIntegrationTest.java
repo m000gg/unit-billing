@@ -37,8 +37,8 @@ public class AuthIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    public void login_success() throws Exception {
-        mockMvc.perform(post("/login/process")
+    public void user_login_success() throws Exception {
+        mockMvc.perform(post("/login")
                         .param("username", "john.doe@example.com")
                         .param("password", "password123")
                         .with(csrf()))
@@ -47,12 +47,34 @@ public class AuthIntegrationTest {
     }
 
     @Test
-    public void login_failed() throws Exception {
-        mockMvc.perform(post("/login/process")
+    public void user_login_failed() throws Exception {
+        mockMvc.perform(post("/login")
                         .param("username", "john.doe@example.com")
                         .param("password", "12345")
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/client/login?error"));
+                .andExpect(redirectedUrl("/login?error"));
     }
+
+    @Test
+    public void admin_login_success() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("username", "admin@billing.com")
+                        .param("password", "password123")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/"));
+    }
+
+    @Test
+    public void admin_login_failed() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("username", "admin@billing.com")
+                        .param("password", "12345")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login?error"));
+    }
+
+
 }
