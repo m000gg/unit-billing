@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -17,24 +18,35 @@ public class SecurityConfig {
     @Autowired
     private ApplicationUserDetailsService userDetailsService;
 
+    @Autowired
+    private AuthenticationSuccessHandler authenticationSuccessHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/client/login", "/login/process", "/css/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/login", "/css/**", "/swagger-ui/**", "/v3/api-docs/**", "/forgot-password").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/client/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
 
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> response.sendRedirect("/login"))
+                )
+                .sessionManagement(session -> session
+                        .invalidSessionUrl("/login")
+                )
+
                 .formLogin(form -> form
-                        .loginPage("/client/login")
-                        .loginProcessingUrl("/login/process")
-                        .defaultSuccessUrl("/client/", true)
+                        .loginPage("/login")
+                        .successHandler(authenticationSuccessHandler)
                         .permitAll()
                 )
 
                 .logout( logout -> logout
-                        .logoutUrl("/client/logout")
-                        .logoutSuccessUrl("/client/login")
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
                         .permitAll()
 
                 )

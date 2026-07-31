@@ -9,9 +9,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AuthController {
 
-    @GetMapping({"/client/login"})
+    @GetMapping({"/login"})
     public String login(Model model, Authentication authentication) {
 
-        return "client/auth/login";
+        return "login";
+    }
+
+    @GetMapping("/forgot-password")
+    public String showContactNoAuth(){
+
+        return "forgotpass";
     }
 }

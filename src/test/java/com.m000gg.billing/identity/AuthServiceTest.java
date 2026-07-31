@@ -23,6 +23,9 @@ public class AuthServiceTest {
     @Mock
     private ApplicationUserRepository applicationUserRepository;
 
+    @Mock
+    private AdminRepository adminRepository;
+
 
     @InjectMocks
     private ApplicationUserDetailsService applicationUserDetailsService;
@@ -45,6 +48,27 @@ public class AuthServiceTest {
     public void userDetails_failed_shouldThrowException() {
 
         when(applicationUserRepository.findByEmail("aaa@test.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> applicationUserDetailsService.loadUserByUsername("aaa@test.com"))
+                .isInstanceOf(UsernameNotFoundException.class);
+    }
+
+
+    @Test
+    public void adminDetails_successful() {
+        Admin admin = new Admin();
+        admin.setEmail("admin@test.com");
+        admin.setPassword("encodedPassword");
+
+        when(adminRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+
+        UserDetails result = applicationUserDetailsService.loadUserByUsername("admin@test.com");
+        assertThat(result.getUsername()).isEqualTo("admin@test.com");
+    }
+
+    @Test
+    public void adminDetails_failed_shouldThrowException() {
+        when(adminRepository.findByEmail("aaa@test.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> applicationUserDetailsService.loadUserByUsername("aaa@test.com"))
                 .isInstanceOf(UsernameNotFoundException.class);
