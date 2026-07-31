@@ -68,4 +68,4 @@ resolved by `AuthenticationAccessHandler`.
 | Pro                                   | Con                                 |
 |---------------------------------------|-------------------------------------|
 | Centralized identity, SSO across apps | Significant infrastructure overhead |
-| Justified for 3+ services             | Overkill for a single-app MVP       |vices / external users | External dependency, complex setup for MVP |
+| Justified for 3+ services             | Overkill for a single-app MVP       |

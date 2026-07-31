@@ -24,6 +24,8 @@ public class AuthenticationAccessHandler implements AuthenticationSuccessHandler
             response.sendRedirect("/admin/");
         } else if (roles.contains("ROLE_USER")) {
             response.sendRedirect("/client/");
+        } else {
+            response.sendRedirect("/login?error");
         }
     }
 }

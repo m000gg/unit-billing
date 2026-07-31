@@ -77,4 +77,19 @@ public class AuthIntegrationTest {
     }
 
 
+    @Test
+    public void unauthenticated_access_to_admin_redirects_to_login() throws Exception {
+        mockMvc.perform(get("/admin/"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    @Test
+    public void unauthenticated_access_to_client_redirects_to_login() throws Exception {
+        mockMvc.perform(get("/client/"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+
 }

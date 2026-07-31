@@ -31,6 +31,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> response.sendRedirect("/login"))
+                )
+                .sessionManagement(session -> session
+                        .invalidSessionUrl("/login")
+                )
+
                 .formLogin(form -> form
                         .loginPage("/login")
                         .successHandler(authenticationSuccessHandler)
