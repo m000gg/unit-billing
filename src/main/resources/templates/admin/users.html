@@ -19,6 +19,14 @@
         <h1>Users</h1>
     </div>
 
+    <div class="search-bar">
+        <form method="get" th:action="@{/admin/users/}">
+            <input type="text" name="search" placeholder="Search by name or email"
+                   th:value="${search}">
+            <button type="submit" class="btn-save">Search</button>
+        </form>
+    </div>
+
     <div class="table-card">
         <table class="user-table" id="userTable">
             <thead>
@@ -34,7 +42,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="user : ${usersList}">
+            <tr th:each="user : ${usersPage.content}">
                 <td>
                     <span class="id-cell" th:attr="data-full=${user.id}" th:text="${#strings.substring(user.id, 0, 8) + '…'}"></span>
                 </td>
@@ -49,6 +57,19 @@
             </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="pagination" th:if="${usersPage.totalPages > 1}">
+        <a th:if="${usersPage.hasPrevious()}"
+           th:href="@{/admin/users/(page=${usersPage.number - 1}, search=${search})}">← Prev</a>
+
+        <a th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+           th:href="@{/admin/users/(page=${i}, search=${search})}"
+           th:classappend="${i == usersPage.number} ? 'active-page'"
+           th:text="${i + 1}"></a>
+
+        <a th:if="${usersPage.hasNext()}"
+           th:href="@{/admin/users/(page=${usersPage.number + 1}, search=${search})}">Next →</a>
     </div>
 
 </div>

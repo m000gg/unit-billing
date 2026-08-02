@@ -4,6 +4,8 @@ package com.m000gg.billing.subscribers;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -55,8 +57,8 @@ public class ApplicationUserRegistrationService {
         return generatedPassword;
     }
 
-    public List<ApplicationUser> findAllUsers(){
-        return applicationUserRepository.findAll();
+    public Page<ApplicationUser> search(String search, Pageable pageable){
+        return applicationUserRepository.search(search, pageable);
     }
 
 }
