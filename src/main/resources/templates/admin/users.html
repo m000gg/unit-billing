@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin/index.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/users.css}">
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: aside}"></div>
+
+<div class="main-content">
+
+    <div class="page-header">
+        <p class="eyebrow">User Management</p>
+        <h1>Users</h1>
+    </div>
+
+    <div class="table-card">
+        <table class="user-table" id="userTable">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Phone number</th>
+                <th>Email</th>
+                <th>Full Address</th>
+                <th>Balance</th>
+                <th>View profile</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${usersList}">
+                <td>
+                    <span class="id-cell" th:attr="data-full=${user.id}" th:text="${#strings.substring(user.id, 0, 8) + '…'}"></span>
+                </td>
+                <td th:text="${user.firstName}"></td>
+                <td th:text="${user.lastName}"></td>
+                <td th:text="${user.phone}"></td>
+                <td th:text="${user.email}"></td>
+                <td th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', Apt. ' + user.apartment : '') + ', ' + user.postalCode}"></td>
+                <td th:text="${user.balance + ' $'}"></td>
+
+                <td><a class="table-link" th:href="@{/profile/{id}(id=${user.id})}">Go to profile</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    document.querySelectorAll('.id-cell').forEach(function (cell) {
+        const shortText = cell.textContent;
+        const fullText = cell.getAttribute('data-full');
+        let expanded = false;
+
+        cell.addEventListener('click', function () {
+            expanded = !expanded;
+            cell.textContent = expanded ? fullText : shortText;
+            cell.classList.toggle('id-cell-expanded', expanded);
+        });
+    });
+
+    document.querySelectorAll('.user-table tbody tr').forEach(function (row, i) {
+        row.style.animationDelay = (i * 30) + 'ms';
+        row.classList.add('row-fade-in');
+    });
+</script>
+
+</body>
+</html>

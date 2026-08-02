@@ -3,9 +3,11 @@ package com.m000gg.billing.subscribers;
 
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,9 +46,17 @@ public class ApplicationUserRegistrationService {
         newApplicationUser.setBalance(BigDecimal.ZERO);
         newApplicationUser.setPassword(passwordEncoder.encode(generatedPassword));
 
-        applicationUserRepository.save(newApplicationUser);
+        try {
+            applicationUserRepository.save(newApplicationUser);
+        } catch (DataIntegrityViolationException ex) {
+            throw new EmailAlreadyExistsException("User with this email already exists: " + email);
+        }
 
         return generatedPassword;
+    }
+
+    public List<ApplicationUser> findAllUsers(){
+        return applicationUserRepository.findAll();
     }
 
 }

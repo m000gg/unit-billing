@@ -1,30 +1,67 @@
 package com.m000gg.billing.web.admin;
 
-
+import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRegisterDto;
 import com.m000gg.billing.subscribers.ApplicationUserRegistrationService;
+import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/users")
 public class ApplicationUserAdminController {
 
+    private static final Logger log = LoggerFactory.getLogger(ApplicationUserAdminController.class);
+
     @Autowired
     private ApplicationUserRegistrationService applicationUserRegistrationService;
 
     @GetMapping("/")
-    public String showAllApplicationUsers(){
+    public String showAllApplicationUsers(Model model){
+        List<ApplicationUser> users = applicationUserRegistrationService.findAllUsers();
+        model.addAttribute("usersList", users);
         return "admin/users";
     }
 
 
     @GetMapping("/registration")
-    public String registerNewApplicationUser(Model model){
+    public String showRegistrationForm(Model model){
         model.addAttribute("registerDto", new ApplicationUserRegisterDto());
+        return "admin/user-registration";
+    }
+
+    @PostMapping("/registration")
+    public String registerNewUser(Model model, @Valid @ModelAttribute("registerDto") ApplicationUserRegisterDto applicationUserRegisterDto, BindingResult result) {
+
+        if (result.hasErrors()) {
+            return "admin/user-registration";
+        }
+
+        try {
+
+            String password = applicationUserRegistrationService.createNewApplicationUser(applicationUserRegisterDto);
+
+            model.addAttribute("generatedPassword", password);
+            model.addAttribute("success", true);
+            model.addAttribute("registerDto", new ApplicationUserRegisterDto());
+        } catch (EmailAlreadyExistsException ex) {
+            model.addAttribute("error", ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Failed to register new application user", ex);
+            model.addAttribute("error", "Unexpected error occurred, please try again");
+        }
+
         return "admin/user-registration";
     }
 }

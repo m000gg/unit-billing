@@ -1,0 +1,142 @@
+:root {
+    --bg: #f3f4f8;
+    --surface: #ffffff;
+    --accent: #5b6cf9;
+    --accent-2: #8b5cf6;
+    --accent-soft: #eef0ff;
+    --text-primary: #14161f;
+    --text-secondary: #767b8c;
+    --border: #e7e8ee;
+    --radius: 18px;
+    --shadow-sm: 0 1px 2px rgba(16, 18, 24, 0.05);
+}
+
+.main-content {
+    padding: 48px 56px;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    max-width: none; /* растягиваем на весь экран */
+}
+
+.table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    width: 100%;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+/* ---------- ID cell ---------- */
+
+.id-cell {
+    display: inline-flex;
+    align-items: center;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    background: #f4f5fa;
+    border: 1px solid var(--border);
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.id-cell:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(91, 108, 249, 0.35);
+}
+
+.id-cell-expanded {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(91, 108, 249, 0.35);
+    font-weight: 600;
+}
+
+/* ---------- Row entrance animation ---------- */
+
+.row-fade-in {
+    opacity: 0;
+    transform: translateY(6px);
+    animation: rowFadeIn 0.35s ease forwards;
+}
+
+@keyframes rowFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-header {
+    margin-bottom: 28px;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 8px;
+}
+
+.page-header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.user-table thead th {
+    text-align: left;
+    padding: 14px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    background: #fafafd;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+}
+
+.user-table tbody td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.user-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.user-table tbody tr:hover {
+    background: var(--accent-soft);
+}
+
+.table-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.table-link:hover {
+    text-decoration: underline;
+}
