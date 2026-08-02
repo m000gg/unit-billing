@@ -47,6 +47,12 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.passay</groupId>
+            <artifactId>passay</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+
         <!-- ===================== DATABASE ===================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
