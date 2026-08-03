@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit User Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin/index.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/user-edit.css}">
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: aside}"></div>
+
+<div class="main-content">
+
+    <div class="page-header">
+        <p class="eyebrow">User Management</p>
+        <h1>Edit User Profile</h1>
+        <p class="page-subtitle">
+            Modify account details for <span class="highlight" th:text="${user.email}"></span>
+        </p>
+    </div>
+
+    <div class="reg-form-container">
+        <form th:action="@{/admin/users/profile/update/{id}(id=${userId})}" th:object="${user}" method="post">
+
+            <div class="form-section">
+                <h4 class="section-title">Personal details</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First name</label>
+                        <input type="text" th:field="*{firstName}">
+                    </div>
+                    <div class="form-group">
+                        <label>Last name</label>
+                        <input type="text" th:field="*{lastName}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email address</label>
+                        <input type="email" th:field="*{email}">
+                        <span class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone number</label>
+                        <input type="text" th:field="*{phone}" placeholder="+XXXXXXXXXXXX" maxlength="13">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4 class="section-title">Address</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" th:field="*{country}">
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" th:field="*{city}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Region</label>
+                        <input type="text" th:field="*{region}">
+                    </div>
+                    <div class="form-group">
+                        <label>Street</label>
+                        <input type="text" th:field="*{street}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>House number</label>
+                        <input type="text" th:field="*{houseNumber}">
+                    </div>
+                    <div class="form-group">
+                        <label>Apartment</label>
+                        <input type="text" th:field="*{apartment}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Postal code</label>
+                        <input type="text" th:field="*{postalCode}">
+                    </div>
+                    <div class="form-group"></div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Save changes</button>
+                <a th:href="@{/admin/users/profile/{id}(id=${userId})}" class="btn-reset">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -3,7 +3,7 @@ package com.m000gg.billing.subscribers;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 
-public class ApplicationUserRegisterDto {
+public class ApplicationUserEditDto {
     @NotEmpty
     private String firstName;
 
@@ -68,5 +68,5 @@ public class ApplicationUserRegisterDto {
 
     public String getPostalCode() { return postalCode; }
     public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
-}
 
+}

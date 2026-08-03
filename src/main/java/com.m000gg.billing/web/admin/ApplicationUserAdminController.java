@@ -1,9 +1,11 @@
 package com.m000gg.billing.web.admin;
 
 import com.m000gg.billing.subscribers.ApplicationUser;
+import com.m000gg.billing.subscribers.ApplicationUserEditDto;
 import com.m000gg.billing.subscribers.ApplicationUserRegisterDto;
-import com.m000gg.billing.subscribers.ApplicationUserRegistrationService;
+import com.m000gg.billing.subscribers.ApplicationUserManagementService;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
+import com.m000gg.billing.subscribers.exception.EmailAlreadyTakenException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/admin/users")
@@ -26,7 +28,7 @@ public class ApplicationUserAdminController {
     private static final Logger log = LoggerFactory.getLogger(ApplicationUserAdminController.class);
 
     @Autowired
-    private ApplicationUserRegistrationService applicationUserRegistrationService;
+    private ApplicationUserManagementService applicationUserRegistrationService;
 
     @GetMapping("/")
     public String usersList(
@@ -72,5 +74,39 @@ public class ApplicationUserAdminController {
         }
 
         return "admin/user-registration";
+    }
+
+    @GetMapping("/profile/{id}")
+    public String getUserProfile(@PathVariable UUID id, Model model) {
+        ApplicationUser user = applicationUserRegistrationService.findApplicationUserById(id);
+
+        model.addAttribute("user", user);
+
+        return "admin/user-profile";
+    }
+
+    @GetMapping("/profile/update/{id}")
+    public String showEditForm(@PathVariable UUID id, Model model) {
+        ApplicationUserEditDto userDto = applicationUserRegistrationService.findApplicationUserDtoById(id);
+
+        model.addAttribute("user", userDto);
+        model.addAttribute("userId", id);
+        return "admin/edit-user";
+    }
+
+    @PostMapping("/profile/update/{id}")
+    public String editUser(@PathVariable UUID id, @Valid @ModelAttribute("user") ApplicationUserEditDto applicationUserEditDto, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "admin/edit-user";
+        }
+        try {
+            applicationUserRegistrationService.editApplicationUserProfile(id, applicationUserEditDto);
+        } catch (EmailAlreadyTakenException e) {
+            bindingResult.rejectValue("email", "email.taken", e.getMessage());
+            model.addAttribute("userId", id);
+            return "admin/edit-user";
+        }
+
+        return "redirect:/admin/users/profile/" + id;
     }
 }

@@ -1,0 +1,37 @@
+package com.m000gg.billing.subscribers;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class ApplicationUserMapper {
+
+    public void updateEntityFromDto(ApplicationUser entity, ApplicationUserEditDto dto) {
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
+        entity.setEmail(dto.getEmail());
+        entity.setPhone(dto.getPhone());
+        entity.setCountry(dto.getCountry());
+        entity.setCity(dto.getCity());
+        entity.setRegion(dto.getRegion());
+        entity.setStreet(dto.getStreet());
+        entity.setHouseNumber(dto.getHouseNumber());
+        entity.setApartment(dto.getApartment());
+        entity.setPostalCode(dto.getPostalCode());
+    }
+
+    public ApplicationUserEditDto toDto(ApplicationUser entity) {
+        ApplicationUserEditDto dto = new ApplicationUserEditDto();
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
+        dto.setEmail(entity.getEmail());
+        dto.setPhone(entity.getPhone());
+        dto.setCountry(entity.getCountry());
+        dto.setCity(entity.getCity());
+        dto.setRegion(entity.getRegion());
+        dto.setStreet(entity.getStreet());
+        dto.setHouseNumber(entity.getHouseNumber());
+        dto.setApartment(entity.getApartment());
+        dto.setPostalCode(entity.getPostalCode());
+        return dto;
+    }
+}

@@ -53,7 +53,7 @@
                 <td th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', Apt. ' + user.apartment : '') + ', ' + user.postalCode}"></td>
                 <td th:text="${user.balance + ' $'}"></td>
 
-                <td><a class="table-link" th:href="@{/profile/{id}(id=${user.id})}">Go to profile</a></td>
+                <td><a class="table-link" th:href="@{/admin/users/profile/{id}(id=${user.id})}">Go to profile</a></td>
             </tr>
             </tbody>
         </table>
