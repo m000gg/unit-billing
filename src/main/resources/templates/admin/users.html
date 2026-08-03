@@ -42,11 +42,15 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="user : ${usersPage.content}">
+            <tr th:each="user : ${usersPage.content}"
+                th:classappend="${user.deleted} ? 'row-deleted'">
                 <td>
                     <span class="id-cell" th:attr="data-full=${user.id}" th:text="${#strings.substring(user.id, 0, 8) + '…'}"></span>
                 </td>
-                <td th:text="${user.firstName}"></td>
+                <td>
+                    <span th:text="${user.firstName}"></span>
+                    <span th:if="${user.deleted}" class="deleted-badge">Deleted</span>
+                </td>
                 <td th:text="${user.lastName}"></td>
                 <td th:text="${user.phone}"></td>
                 <td th:text="${user.email}"></td>

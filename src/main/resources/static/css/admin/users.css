@@ -259,3 +259,36 @@
     color: #fff;
     box-shadow: 0 4px 12px rgba(91, 108, 249, 0.3);
 }
+
+/* ---------- Deleted user row ---------- */
+
+.row-deleted {
+    background: #fdf7f7;
+    opacity: 0.65;
+}
+
+.row-deleted:hover {
+    background: #fcecec !important;
+}
+
+.row-deleted td {
+    color: var(--text-secondary);
+}
+
+.row-deleted .table-link {
+    color: #b91c1c;
+}
+
+.deleted-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #b91c1c;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}

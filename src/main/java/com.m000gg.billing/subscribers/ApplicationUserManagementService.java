@@ -3,6 +3,7 @@ package com.m000gg.billing.subscribers;
 
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyTakenException;
+import com.m000gg.billing.subscribers.exception.UserAlreadyDeletedException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,6 +29,7 @@ public class ApplicationUserManagementService {
     @Autowired
     private CustomPasswordGenerator customPasswordGenerator;
 
+    @Transactional
     public String createNewApplicationUser(ApplicationUserRegisterDto applicationUserRegisterDto) {
 
         ApplicationUser newApplicationUser = new ApplicationUser();
@@ -36,21 +38,9 @@ public class ApplicationUserManagementService {
         if (applicationUserRepository.existsByEmail(email)){
             throw new EmailAlreadyExistsException("User with this email already exists: " + email );
         }
-
         String generatedPassword = customPasswordGenerator.generatePassayPassword();
-        newApplicationUser.setFirstName(applicationUserRegisterDto.getFirstName());
-        newApplicationUser.setLastName(applicationUserRegisterDto.getLastName());
-        newApplicationUser.setEmail(email);
-        newApplicationUser.setPhone(applicationUserRegisterDto.getPhone());
-        newApplicationUser.setCountry(applicationUserRegisterDto.getCountry());
-        newApplicationUser.setCity(applicationUserRegisterDto.getCity());
-        newApplicationUser.setRegion(applicationUserRegisterDto.getRegion());
-        newApplicationUser.setStreet(applicationUserRegisterDto.getStreet());
-        newApplicationUser.setHouseNumber(applicationUserRegisterDto.getHouseNumber());
-        newApplicationUser.setApartment(applicationUserRegisterDto.getApartment());
-        newApplicationUser.setPostalCode(applicationUserRegisterDto.getPostalCode());
-        newApplicationUser.setBalance(BigDecimal.ZERO);
-        newApplicationUser.setPassword(passwordEncoder.encode(generatedPassword));
+        String encodedPassword = passwordEncoder.encode(generatedPassword);
+        applicationUserMapper.registerUserFromDto(newApplicationUser, applicationUserRegisterDto, encodedPassword);
 
         try {
             applicationUserRepository.save(newApplicationUser);
@@ -86,6 +76,16 @@ public class ApplicationUserManagementService {
         applicationUserMapper.updateEntityFromDto(user, dataToChange);
 
         applicationUserRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteApplicationUserProfile(UUID id){
+        ApplicationUser applicationUser = findApplicationUserById(id);
+        if (!applicationUser.getDeleted()){
+            applicationUser.setDeleted(true);
+            applicationUserRepository.save(applicationUser);
+        } else {
+            throw new UserAlreadyDeletedException("This user with id: " + id + " is already deleted.");}
     }
 
 }

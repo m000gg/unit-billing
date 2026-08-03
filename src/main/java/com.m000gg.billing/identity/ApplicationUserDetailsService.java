@@ -22,7 +22,7 @@ public class ApplicationUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        //пофиксить тавтологию
+
         Admin admin = adminRepository.findByEmail(email).orElse(null);
         if (admin != null) {
             return org.springframework.security.core.userdetails.User
@@ -38,7 +38,6 @@ public class ApplicationUserDetailsService implements UserDetailsService {
         }
 
         boolean deleted = Boolean.TRUE.equals(appUser.getDeleted());
-
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(appUser.getEmail())

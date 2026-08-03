@@ -20,6 +20,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <passay.version>1.6.4</passay.version>
     </properties>
 
     <dependencies>
@@ -50,7 +51,7 @@
         <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
-            <version>1.6.4</version>
+            <version>${passay.version}</version>
         </dependency>
 
         <!-- ===================== DATABASE ===================== -->

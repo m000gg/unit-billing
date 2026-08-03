@@ -14,10 +14,34 @@
 
 <div class="main-content">
 
-  <div class="page-header">
-    <p class="eyebrow">User Management</p>
-    <h1>User Information</h1>
-    <p class="page-subtitle">Detailed view of the selected user account</p>
+  <div th:if="${errorMessage}" class="error-banner" th:text="${errorMessage}"></div>
+
+  <a th:href="@{/admin/users/}" class="back-link">
+    <span class="back-arrow">←</span>
+    Back to users list
+  </a>
+
+  <div class="profile-hero" th:classappend="${user.deleted} ? 'profile-hero-deleted'">
+    <div class="hero-avatar" th:text="${#strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1)}">VA</div>
+    <div class="hero-info">
+      <p class="eyebrow">User Management</p>
+      <h1>
+        <span th:text="${user.firstName + ' ' + user.lastName}">User Information</span>
+        <span th:if="${user.deleted}" class="hero-deleted-badge">
+                    <span class="hero-deleted-dot"></span>Deleted
+                </span>
+      </h1>
+      <p class="page-subtitle" th:text="${user.email}">user@mail.com</p>
+    </div>
+    <div class="hero-balance">
+      <span class="hero-balance-label">Balance</span>
+      <span class="hero-balance-value">$<span th:text="${user.balance}"></span></span>
+    </div>
+  </div>
+
+  <div th:if="${user.deleted}" class="deleted-notice">
+    <span class="deleted-notice-icon">!</span>
+    This account has been deleted. Editing is disabled and the account cannot be deleted again.
   </div>
 
   <div class="profile-card">
@@ -63,9 +87,12 @@
     </div>
 
     <div class="profile-actions">
-      <a th:href="@{/admin/users/profile/update/{id}(id=${user.id})}" class="btn-save">Edit profile</a>
+      <a th:if="${!user.deleted}"
+         th:href="@{/admin/users/profile/update/{id}(id=${user.id})}" class="btn-save">Edit profile</a>
+      <span th:if="${user.deleted}" class="btn-save btn-disabled">Edit profile</span>
 
-      <form th:action="@{/admin/profile/delete/{id}(id=${user.id})}" method="post"
+      <form th:if="${!user.deleted}"
+            th:action="@{/admin/users/profile/delete/{id}(id=${user.id})}" method="post"
             onsubmit="return confirm('Delete this user account? This action cannot be undone.')">
         <button type="submit" class="btn-danger">Delete account</button>
       </form>

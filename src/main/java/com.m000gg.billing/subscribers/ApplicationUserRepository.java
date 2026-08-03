@@ -16,7 +16,6 @@ public interface ApplicationUserRepository extends JpaRepository<ApplicationUser
     Optional<ApplicationUser> findByEmail(String email);
     Boolean existsByEmail(String email);
 
-
     @Query("""
         SELECT u FROM ApplicationUser u
         WHERE (:search IS NULL OR :search = ''

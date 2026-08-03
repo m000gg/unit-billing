@@ -6,6 +6,7 @@ import com.m000gg.billing.subscribers.ApplicationUserRegisterDto;
 import com.m000gg.billing.subscribers.ApplicationUserManagementService;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyTakenException;
+import com.m000gg.billing.subscribers.exception.UserAlreadyDeletedException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.UUID;
 
@@ -36,15 +38,12 @@ public class ApplicationUserAdminController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             Model model) {
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("lastName").ascending());
         Page<ApplicationUser> usersPage =  applicationUserRegistrationService.search(search, pageable);
-
         model.addAttribute("usersPage", usersPage);
         model.addAttribute("search", search);
         return "admin/users";
     }
-
 
     @GetMapping("/registration")
     public String showRegistrationForm(Model model){
@@ -54,15 +53,11 @@ public class ApplicationUserAdminController {
 
     @PostMapping("/registration")
     public String registerNewUser(Model model, @Valid @ModelAttribute("registerDto") ApplicationUserRegisterDto applicationUserRegisterDto, BindingResult result) {
-
         if (result.hasErrors()) {
             return "admin/user-registration";
         }
-
         try {
-
             String password = applicationUserRegistrationService.createNewApplicationUser(applicationUserRegisterDto);
-
             model.addAttribute("generatedPassword", password);
             model.addAttribute("success", true);
             model.addAttribute("registerDto", new ApplicationUserRegisterDto());
@@ -72,23 +67,19 @@ public class ApplicationUserAdminController {
             log.error("Failed to register new application user", ex);
             model.addAttribute("error", "Unexpected error occurred, please try again");
         }
-
         return "admin/user-registration";
     }
 
     @GetMapping("/profile/{id}")
     public String getUserProfile(@PathVariable UUID id, Model model) {
         ApplicationUser user = applicationUserRegistrationService.findApplicationUserById(id);
-
         model.addAttribute("user", user);
-
         return "admin/user-profile";
     }
 
     @GetMapping("/profile/update/{id}")
     public String showEditForm(@PathVariable UUID id, Model model) {
         ApplicationUserEditDto userDto = applicationUserRegistrationService.findApplicationUserDtoById(id);
-
         model.addAttribute("user", userDto);
         model.addAttribute("userId", id);
         return "admin/edit-user";
@@ -106,7 +97,17 @@ public class ApplicationUserAdminController {
             model.addAttribute("userId", id);
             return "admin/edit-user";
         }
-
         return "redirect:/admin/users/profile/" + id;
+    }
+
+    @PostMapping("/profile/delete/{id}")
+    public String deleteUser(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        try {
+            applicationUserRegistrationService.deleteApplicationUserProfile(id);
+        } catch (UserAlreadyDeletedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/users/profile/" + id;
+        }
+        return "redirect:/admin/users/";
     }
 }
