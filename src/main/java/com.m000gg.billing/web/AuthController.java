@@ -1,4 +1,4 @@
-package com.m000gg.billing.web.client;
+package com.m000gg.billing.web;
 
 
 import org.springframework.security.core.Authentication;
@@ -11,13 +11,11 @@ public class AuthController {
 
     @GetMapping({"/login"})
     public String login(Model model, Authentication authentication) {
-
         return "login";
     }
 
     @GetMapping("/forgot-password")
     public String showContactNoAuth(){
-
         return "forgotpass";
     }
 }

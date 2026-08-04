@@ -1,0 +1,294 @@
+:root {
+    --bg: #f3f4f8;
+    --surface: #ffffff;
+    --accent: #5b6cf9;
+    --accent-2: #8b5cf6;
+    --accent-soft: #eef0ff;
+    --text-primary: #14161f;
+    --text-secondary: #767b8c;
+    --border: #e7e8ee;
+    --radius: 18px;
+    --shadow-sm: 0 1px 2px rgba(16, 18, 24, 0.05);
+}
+
+.main-content {
+    padding: 48px 56px;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    max-width: none; /* растягиваем на весь экран */
+}
+
+.table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    width: 100%;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+/* ---------- ID cell ---------- */
+
+.id-cell {
+    display: inline-flex;
+    align-items: center;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    background: #f4f5fa;
+    border: 1px solid var(--border);
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.id-cell:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(91, 108, 249, 0.35);
+}
+
+.id-cell-expanded {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(91, 108, 249, 0.35);
+    font-weight: 600;
+}
+
+/* ---------- Row entrance animation ---------- */
+
+.row-fade-in {
+    opacity: 0;
+    transform: translateY(6px);
+    animation: rowFadeIn 0.35s ease forwards;
+}
+
+@keyframes rowFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-header {
+    margin-bottom: 28px;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 8px;
+}
+
+.page-header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.user-table thead th {
+    text-align: left;
+    padding: 14px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    background: #fafafd;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+}
+
+.user-table tbody td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.user-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.user-table tbody tr:hover {
+    background: var(--accent-soft);
+}
+
+.table-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.table-link:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Search bar ---------- */
+
+.search-bar {
+    margin-bottom: 24px;
+}
+
+.search-bar form {
+    display: flex;
+    gap: 12px;
+    max-width: 480px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 11px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.search-bar input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(91, 108, 249, 0.12);
+}
+
+.search-bar .btn-save {
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(91, 108, 249, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-bar .btn-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(91, 108, 249, 0.38);
+}
+
+/* ---------- Status badge ---------- */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.status-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.status-active {
+    background: #f0fdf6;
+    color: #14663d;
+}
+
+.status-active::before {
+    background: #22c55e;
+}
+
+.status-inactive {
+    background: #f4f4f6;
+    color: #6b7080;
+}
+
+.status-inactive::before {
+    background: #9ca0b0;
+}
+
+/* ---------- Pagination ---------- */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 24px;
+    font-size: 14px;
+}
+
+.pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pagination a:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.pagination a.active-page {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(91, 108, 249, 0.3);
+}
+
+/* ---------- Deleted user row ---------- */
+
+.row-deleted {
+    background: #fdf7f7;
+    opacity: 0.65;
+}
+
+.row-deleted:hover {
+    background: #fcecec !important;
+}
+
+.row-deleted td {
+    color: var(--text-secondary);
+}
+
+.row-deleted .table-link {
+    color: #b91c1c;
+}
+
+.deleted-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #b91c1c;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}

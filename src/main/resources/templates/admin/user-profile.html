@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/admin/index.css}">
+  <link rel="stylesheet" th:href="@{/css/admin/user-profile.css}">
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: aside}"></div>
+
+<div class="main-content">
+
+  <div th:if="${errorMessage}" class="error-banner" th:text="${errorMessage}"></div>
+
+  <a th:href="@{/admin/users/}" class="back-link">
+    <span class="back-arrow">←</span>
+    Back to users list
+  </a>
+
+  <div class="profile-hero" th:classappend="${user.deleted} ? 'profile-hero-deleted'">
+    <div class="hero-avatar" th:text="${#strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1)}">VA</div>
+    <div class="hero-info">
+      <p class="eyebrow">User Management</p>
+      <h1>
+        <span th:text="${user.firstName + ' ' + user.lastName}">User Information</span>
+        <span th:if="${user.deleted}" class="hero-deleted-badge">
+                    <span class="hero-deleted-dot"></span>Deleted
+                </span>
+      </h1>
+      <p class="page-subtitle" th:text="${user.email}">user@mail.com</p>
+    </div>
+    <div class="hero-balance">
+      <span class="hero-balance-label">Balance</span>
+      <span class="hero-balance-value">$<span th:text="${user.balance}"></span></span>
+    </div>
+  </div>
+
+  <div th:if="${user.deleted}" class="deleted-notice">
+    <span class="deleted-notice-icon">!</span>
+    This account has been deleted. Editing is disabled and the account cannot be deleted again.
+  </div>
+
+  <div class="profile-card">
+
+    <div class="form-section">
+      <h4 class="section-title">Personal details</h4>
+      <div class="form-row">
+        <div class="data-group">
+          <label>First name</label>
+          <div class="data-value" th:text="${user.firstName}"></div>
+        </div>
+        <div class="data-group">
+          <label>Last name</label>
+          <div class="data-value" th:text="${user.lastName}"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="data-group">
+          <label>Email address</label>
+          <div class="data-value" th:text="${user.email}"></div>
+        </div>
+        <div class="data-group">
+          <label>Phone number</label>
+          <div class="data-value" th:text="${user.phone}"></div>
+        </div>
+      </div>
+
+      <div class="data-group data-group-full">
+        <label>Address</label>
+        <div class="data-value"
+             th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', Apt. ' + user.apartment : '') + ', ' + user.postalCode}">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h4 class="section-title">Finance</h4>
+      <div class="data-group">
+        <label>Current balance</label>
+        <div class="data-value balance-value">$<span th:text="${user.balance}"></span></div>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <a th:if="${!user.deleted}"
+         th:href="@{/admin/users/profile/update/{id}(id=${user.id})}" class="btn-save">Edit profile</a>
+      <span th:if="${user.deleted}" class="btn-save btn-disabled">Edit profile</span>
+
+      <form th:if="${!user.deleted}"
+            th:action="@{/admin/users/profile/delete/{id}(id=${user.id})}" method="post"
+            onsubmit="return confirm('Delete this user account? This action cannot be undone.')">
+        <button type="submit" class="btn-danger">Delete account</button>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

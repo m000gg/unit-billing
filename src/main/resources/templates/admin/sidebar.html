@@ -2,20 +2,28 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div th:fragment="aside" class="sidebar">
-    <a href="/admin/">
-        <h2>Unit Billing Admin panel</h2>
-    </a>
+<aside th:fragment="aside" class="sidebar">
+    <div class="sidebar-glow"></div>
 
-    <ul>
-    </ul>
+    <div class="sidebar-brand">
+        <h2>Unit<span> Billing</span></h2>
+    </div>
 
-    <form method="post" action="/logout">
+    <nav>
+        <ul>
+            <li><a href="/admin/"><span class="nav-icon">◦</span>Dashboard</a></li>
+            <li><a href="/admin/users/registration"><span class="nav-icon">◦</span>User Registration</a></li>
+            <li><a href="/admin/users/"><span class="nav-icon">◦</span>Users List</a></li>
+        </ul>
+    </nav>
+
+    <form th:action="@{/logout}" method="post" class="logout-form">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <button type="submit" class="logout-btn"></button>
+        <button type="submit" class="logout-btn">
+            <span>Logout</span>
+        </button>
     </form>
-
-</div>
+</aside>
 
 
 </body>

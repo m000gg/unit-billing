@@ -1,9 +1,10 @@
 # Feature #1 *User Registration*: Admin can register new users
 ---
 ## Changelog
-| Version   | Date       | Description     | Authors                             |
-|-----------|------------|-----------------|-------------------------------------|
-| 1.0       | 2026-05-20 | Initial feature | [m000gg](https://github.com/m000gg) |
+| Version   | Date       | Description                                                                                                           | Authors                             |
+|-----------|------------|-----------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| 1.0       | 2026-05-20 | Initial feature                                                                                                       | [m000gg](https://github.com/m000gg) |
+| 1.1       | 2026-08-02 | Updated docs to match implementation: routes, form fields, sequence diagram (service layer), duplicate-email handling | [m000gg](https://github.com/m000gg) |
 ---
 
 
@@ -28,16 +29,16 @@ Out-of-scope explicitly excludes user login flows, automated email notifications
 ### User flow
 ```mermaid
 flowchart LR
-    Start((Start)) --> OpenForm[Open 'Create User' form]
-    OpenForm --> FillData[Input Full name, Email, Living Address]
-    FillData --> Submit(Click 'Register')
+    Start((Start)) --> OpenForm[Open 'Register User' form at /admin/users/registration]
+    OpenForm --> FillData[Input personal details & address]
+    FillData --> Submit(Click 'Register User')
     Submit --> Validate{System Validation}
-    
-    Validate -- Invalid Input --> ShowError[Display Error Message]
+
+    Validate -- Invalid Input --> ShowError[Display field-level validation errors]
     ShowError -.-> FillData
-    
+
     Validate -- Valid Input --> Generate[Save User & Auto-generate Password]
-    Generate --> ShowPassword[Show Success Modal with Generated Password]
+    Generate --> ShowPassword[Show success alert with generated password on same page]
     ShowPassword --> End((Finish))
 ```
 
@@ -47,12 +48,13 @@ flowchart LR
 - **Duplicate User:** Admin enters an Email that already exists in the database ➔ System blocks creation and shows a "Duplicate" error.
 
 ### Functional Requirements
-- The system must provide an admin form with fields: Full name, Email, and Address.
-- The system must validate that all fields are populated before submission.
+- The system must provide an admin form with fields: First name, Last name, Email, Phone number, Country, City, Region, Street, House number, Apartment, Postal code.
+- The system must validate that all required fields are populated before submission (Region and Apartment are optional).
 - The system must validate the Email field for correct formatting (e.g., user@domain.com).
-- The system must verify that the Email is unique in the database.
+- The system must verify that the Email is unique in the database, including protection against concurrent duplicate submissions (unique DB constraint).
 - The system must automatically generate a random password upon successful form submission.
 - The system must display the newly created user's data and the generated password to the admin.
+- The system must display field-level validation errors next to the corresponding form fields.
 
 ### Non-Functional Requirements
 - **Security:** The auto-generated password must be at least 8 characters long, containing a mix of letters and numbers.
@@ -64,26 +66,29 @@ flowchart LR
 ## 🛠Part 2: Technical Realisation
 
 ### Architecture & Integrations
-*Implemented tools:* Java / Spring Boot, Thymeleaf (Server-Side Rendering), Spring Security (for password hashing), Database (e.g., PostgreSQL/MySQL).
+*Implemented tools:* Java / Spring Boot, Thymeleaf (Server-Side Rendering), Spring Security (for password hashing), PostgreSQL (with `UNIQUE` constraint on `email` to guard against race conditions on duplicate registration).
 
-*Sequence diagram:*
+### Sequence diagram
 ```mermaid
 sequenceDiagram
     participant Admin (Browser)
-    participant Spring Controller
+    participant Controller as ApplicationUserAdminController
+    participant Service as ApplicationUserRegistrationService
     participant Database
 
-    Admin (Browser)->>Spring Controller: GET /admin/users/new
-    Spring Controller-->>Admin (Browser): Return HTML (Thymeleaf Create Form)
-    
-    Admin (Browser)->>Spring Controller: POST /admin/users/new (Form Data)
-    Spring Controller->>Spring Controller: Validate input & Form binding
-    Spring Controller->>Database: Check for duplicate Email/Username
-    Database-->>Spring Controller: Return clear
-    Spring Controller->>Spring Controller: Generate random password & hash it
-    Spring Controller->>Database: INSERT new user (with hashed password)
-    Database-->>Spring Controller: Return created user ID
-    Spring Controller-->>Admin (Browser): Return HTML (Success view with generated password)
+    Admin (Browser)->>Controller: GET /admin/users/registration
+    Controller-->>Admin (Browser): Return HTML (Thymeleaf Registration Form)
+
+    Admin (Browser)->>Controller: POST /admin/users/registration (Form Data)
+    Controller->>Controller: Validate DTO (@Valid, BindingResult)
+    Controller->>Service: createNewApplicationUser(dto)
+    Service->>Database: existsByEmail(email)
+    Database-->>Service: Return exists/not exists
+    Service->>Service: Generate random password & hash it
+    Service->>Database: save(newApplicationUser)
+    Database-->>Service: Return created user or unique constraint violation
+    Service-->>Controller: Return generated password / throw EmailAlreadyExistsException
+    Controller-->>Admin (Browser): Return HTML (success alert with password, or error alert)
 ```
 
 

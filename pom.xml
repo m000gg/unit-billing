@@ -20,6 +20,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <passay.version>1.6.4</passay.version>
     </properties>
 
     <dependencies>
@@ -45,6 +46,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.passay</groupId>
+            <artifactId>passay</artifactId>
+            <version>${passay.version}</version>
         </dependency>
 
         <!-- ===================== DATABASE ===================== -->
