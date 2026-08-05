@@ -28,7 +28,7 @@
 
         <div class="topbar__account">
             <a class="profile-btn" href="/client/profile">
-                <span class="profile-btn__avatar" th:text="${#strings.substring(userProfileViewModel.firstName, 0, 1)}">V</span>
+                <span class="profile-btn__avatar" th:text="${#strings.isEmpty(userViewModel.firstName) ? '—' : #strings.substring(userViewModel.firstName, 0, 1)}">V</span>
                 <span class="profile-btn__text">
                     <span class="profile-btn__name" th:text="|${userProfileViewModel.firstName} ${userProfileViewModel.lastName}|"></span>
                     <span class="profile-btn__id" th:text="${userProfileViewModel.email}"></span>

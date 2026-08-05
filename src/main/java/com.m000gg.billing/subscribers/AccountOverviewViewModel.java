@@ -1,8 +1,5 @@
 package com.m000gg.billing.subscribers;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import java.math.BigDecimal;
 import java.util.Date;
 

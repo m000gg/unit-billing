@@ -1,4 +1,5 @@
 INSERT INTO application_users (
+    id,
     first_name,
     last_name,
     email,
@@ -15,6 +16,7 @@ INSERT INTO application_users (
     is_deleted
 ) VALUES
       (
+          '550e8400-e29b-41d4-a716-446655440001',
           'John',
           'Doe',
           'john.doe@example.com',
@@ -31,6 +33,7 @@ INSERT INTO application_users (
           FALSE
       ),
       (
+          '550e8400-e29b-41d4-a716-446655440002',
           'Alice',
           'Smith',
           'alice.smith@example.com',
@@ -47,6 +50,7 @@ INSERT INTO application_users (
           FALSE
       ),
       (
+          '550e8400-e29b-41d4-a716-446655440003',
           'Michael',
           'Johnson',
           'michael.johnson@example.com',
