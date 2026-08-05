@@ -51,4 +51,21 @@ public class ApplicationUserMapper {
         newApplicationUser.setBalance(BigDecimal.ZERO);
         newApplicationUser.setPassword(encodedPassword);
     }
+
+    public AccountOverviewViewModel accountViewModelFromUser(ApplicationUser currentUser, AccountOverviewViewModel accountOverviewViewModel){
+        accountOverviewViewModel.setBalance(currentUser.getBalance());
+        accountOverviewViewModel.setFirstName(currentUser.getFirstName());
+        accountOverviewViewModel.setLastName(currentUser.getLastName());
+        accountOverviewViewModel.setEmail(currentUser.getEmail());
+        accountOverviewViewModel.setCity(currentUser.getCity());
+        accountOverviewViewModel.setCountry(currentUser.getCountry());
+        accountOverviewViewModel.setRegion(currentUser.getRegion());
+        accountOverviewViewModel.setStreet(currentUser.getStreet());
+        accountOverviewViewModel.setCreatedAt(currentUser.getCreatedAt());
+        accountOverviewViewModel.setHouseNumber(currentUser.getHouseNumber());
+        accountOverviewViewModel.setApartment(currentUser.getApartment());
+        accountOverviewViewModel.setPostalCode(currentUser.getPostalCode());
+        accountOverviewViewModel.setPhone(currentUser.getPhone());
+        return accountOverviewViewModel;
+    }
 }

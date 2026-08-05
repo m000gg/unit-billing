@@ -1,0 +1,136 @@
+/* ---------- Profile sections ---------- */
+
+.profile-section {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+}
+
+.profile-section__title {
+    margin: 0 0 24px;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    margin-bottom: 24px;
+}
+
+.info-grid:last-child {
+    margin-bottom: 0;
+}
+
+.info-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0;
+}
+
+.info-value {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.balance-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-strong);
+}
+
+/* ---------- Profile actions ---------- */
+
+.profile-actions {
+    display: flex;
+    gap: 16px;
+    padding: 0;
+}
+
+.action-link {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-strong);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    display: inline-block;
+}
+
+.action-link:hover {
+    border-color: var(--accent-strong);
+    background: var(--accent-soft);
+}
+
+.action-link--danger {
+    color: var(--danger);
+    border-color: var(--line);
+}
+
+.action-link--danger:hover {
+    border-color: var(--danger);
+    background: rgba(179, 38, 30, 0.08);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 860px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-section {
+        padding: 20px 16px;
+    }
+
+    .profile-section__title {
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+
+    .info-grid {
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .action-link {
+        width: 100%;
+        text-align: center;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .action-link {
+        transition: none !important;
+    }
+}
