@@ -19,7 +19,7 @@ CREATE TABLE application_users (
 
 
 CREATE TABLE ledger_entries (
-                                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                id UUID PRIMARY KEY,
                                 subscriber_id UUID NOT NULL,
                                 amount NUMERIC(19, 4) NOT NULL,
                                 type VARCHAR(50) NOT NULL,
