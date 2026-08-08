@@ -1,6 +1,7 @@
 package com.m000gg.billing.web.admin;
 
 import com.m000gg.billing.ledger.BillRequestDto;
+import com.m000gg.billing.ledger.CorrectionRequestDto;
 import com.m000gg.billing.ledger.LedgerService;
 import com.m000gg.billing.ledger.TopUpRequestDto;
 import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
@@ -72,7 +73,7 @@ public class LedgerEntryAdminController {
         }
 
         try {
-            ledgerService.issueBill(billRequestDto,id);
+            ledgerService.issueBill(billRequestDto,user);
         } catch (InsufficientBalanceException ex) {
             bindingResult.rejectValue("amount", "insufficient.balance",
                     "Amount exceeds available balance ($" + user.getBalance() + ")");
@@ -81,5 +82,40 @@ public class LedgerEntryAdminController {
         }
         return "redirect:/admin/users/profile/" + id;
 
+    }
+
+    @GetMapping("/admin/users/{id}/refund")
+    public String showRefundForm(){
+        return "admin/refund";
+    }
+
+    @GetMapping("/admin/users/{id}/correction")
+    public String showCorrectionForm(@PathVariable UUID id,Model model){
+        CorrectionRequestDto correctionRequestDto = new CorrectionRequestDto();
+        model.addAttribute("user", applicationUserManagementService.findApplicationUserById(id));
+        model.addAttribute("correctionRequest", correctionRequestDto);
+        return "admin/correction";
+    }
+
+    @PostMapping("/admin/users/{id}/correction")
+    public String applyCorrectionForUser(@PathVariable UUID id,
+                                         @Valid @ModelAttribute("correctionRequest") CorrectionRequestDto correctionRequestDto,
+                                         BindingResult bindingResult,
+                                         Model model){
+        ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("user", user);
+            return "admin/correction";
+        }
+
+        try {
+            ledgerService.applyCorrection(correctionRequestDto,user);
+        } catch (InsufficientBalanceException ex) {
+            bindingResult.rejectValue("amount", "insufficient.balance",
+                    "Amount exceeds available balance ($" + user.getBalance() + ")");
+            model.addAttribute("user", user);
+            return "admin/correction";
+        }
+        return "redirect:/admin/users/profile/" + id;
     }
 }

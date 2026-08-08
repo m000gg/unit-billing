@@ -34,14 +34,29 @@ public class LedgerService {
     }
 
     @Transactional
-    public void issueBill(@Valid BillRequestDto billRequestDto, UUID id) {
-        ApplicationUser user = applicationUserRepository.findById(id)
-                .orElseThrow(() -> new ApplicationUserNotFoundException(id));
+    public void issueBill(@Valid BillRequestDto billRequestDto, ApplicationUser user) {
         if (billRequestDto.getAmount().compareTo(user.getBalance()) > 0) {
-            throw new InsufficientBalanceException(id, billRequestDto.getAmount(), user.getBalance());
+            throw new InsufficientBalanceException(user.getId(), billRequestDto.getAmount(), user.getBalance());
         }
-        LedgerEntry entry = ledgerMapper.createLedgerEntryFromBillRequestDto(billRequestDto, id);
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromBillRequestDto(billRequestDto, user.getId());
         user.setBalance(user.getBalance().subtract(billRequestDto.getAmount()));
+        ledgerEntryRepository.save(entry);
+        applicationUserRepository.save(user);
+    }
+
+    @Transactional
+    public void applyCorrection(CorrectionRequestDto correctionRequestDto, ApplicationUser user){
+        CorrectionDirection correctionDirection = correctionRequestDto.getDirection();
+        if (correctionRequestDto.getAmount().compareTo(user.getBalance()) > 0 && correctionDirection == CorrectionDirection.DECREASE) {
+            throw new InsufficientBalanceException(user.getId(), correctionRequestDto.getAmount(), user.getBalance());
+        }
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromCorrectionRequestDto(correctionRequestDto, user.getId());
+        if (correctionDirection == CorrectionDirection.DECREASE){
+            user.setBalance(user.getBalance().subtract(correctionRequestDto.getAmount()));
+        } else {
+            user.setBalance(user.getBalance().add(correctionRequestDto.getAmount()));
+        }
+
         ledgerEntryRepository.save(entry);
         applicationUserRepository.save(user);
     }

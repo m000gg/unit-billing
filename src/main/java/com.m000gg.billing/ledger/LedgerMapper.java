@@ -27,4 +27,21 @@ public class LedgerMapper {
 
         return ledgerEntry;
     }
+
+    public LedgerEntry createLedgerEntryFromCorrectionRequestDto(CorrectionRequestDto correctionRequestDto, UUID SubscriberId){
+        LedgerEntry ledgerEntry = new  LedgerEntry();
+        ledgerEntry.setAmount(correctionRequestDto.getAmount());
+        ledgerEntry.setDescription(correctionRequestDto.getDescription());
+        ledgerEntry.setCreatedAt(Instant.now());
+        ledgerEntry.setSubscriberId(SubscriberId);
+
+        if (correctionRequestDto.getDirection() == CorrectionDirection.INCREASE){
+            ledgerEntry.setType(EntryType.CORRECTION_INCREASE);
+        } else{
+            ledgerEntry.setType(EntryType.CORRECTION_DECREASE);
+        }
+
+
+        return ledgerEntry;
+    }
 }

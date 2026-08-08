@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Correction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin/index.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/correction.css}">
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: aside}"></div>
+
+<div class="main-content">
+
+    <div th:if="${errorMessage}" class="error-banner" th:text="${errorMessage}"></div>
+
+    <a th:href="@{/admin/users/profile/{id}(id=${user?.id} ?: 0)}" class="back-link">
+        <span class="back-arrow">←</span>
+        Back to profile
+    </a>
+
+    <div class="profile-hero">
+        <div class="hero-avatar" th:text="${user != null ? #strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1) : 'VA'}">VA</div>
+        <div class="hero-info">
+            <p class="eyebrow">Manual Correction</p>
+            <h1 th:text="${user != null ? user.firstName + ' ' + user.lastName : 'Vladyslav Livandovskyi'}">User Name</h1>
+            <p class="page-subtitle" th:text="${user != null ? user.email : 'user@example.com'}">user@example.com</p>
+        </div>
+        <div class="hero-balance">
+            <span class="hero-balance-label">Current balance</span>
+            <span class="hero-balance-value">$<span th:text="${user != null ? user.balance : '0.00'}">0.00</span></span>
+        </div>
+    </div>
+
+    <div class="profile-card">
+
+        <form th:action="@{/admin/users/{id}/correction(id=${user?.id} ?: 0)}" th:object="${correctionRequest}"
+              method="post" id="correctionForm" onsubmit="return confirmCorrection(event)">
+
+            <div class="form-section">
+                <h4 class="section-title">Direction</h4>
+
+                <div class="direction-toggle" th:classappend="${#fields.hasErrors('direction')} ? 'input-error'">
+                    <input type="radio" id="dirPlus" name="direction" value="INCREASE" class="direction-radio"
+                           th:field="*{direction}" checked>
+                    <label for="dirPlus" class="direction-option direction-plus">
+                        <span class="direction-symbol">+</span>
+                        <span class="direction-label">Increase balance</span>
+                    </label>
+
+                    <input type="radio" id="dirMinus" name="direction" value="DECREASE" class="direction-radio"
+                           th:field="*{direction}">
+                    <label for="dirMinus" class="direction-option direction-minus">
+                        <span class="direction-symbol">−</span>
+                        <span class="direction-label">Decrease balance</span>
+                    </label>
+                </div>
+                <span class="field-error" th:if="${#fields.hasErrors('direction')}" th:errors="*{direction}">Select a direction</span>
+            </div>
+
+            <div class="form-section">
+                <h4 class="section-title">Correction details</h4>
+
+                <div class="form-row">
+                    <div class="data-group">
+                        <label for="amount">Amount</label>
+                        <input type="number" id="amount" th:field="*{amount}" class="data-input"
+                               th:classappend="${#fields.hasErrors('amount')} ? 'input-error'"
+                               step="0.0001" min="0.0001" placeholder="0.00">
+                        <span class="field-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Amount must be greater than zero</span>
+                    </div>
+
+                    <div class="data-group">
+                        <label>Entry type</label>
+                        <div id="entryTypeBadge" class="entry-type-badge entry-type-correction-plus">
+                            <span id="entryTypeText">Correction (+)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-group data-group-full">
+                    <label for="description">Reason for correction</label>
+                    <input type="text" id="description" th:field="*{description}" class="data-input"
+                           th:classappend="${#fields.hasErrors('description')} ? 'input-error'"
+                           placeholder="e.g. Fixing duplicate top-up entered on 3 Aug">
+                    <span class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Reason is required</span>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button type="submit" class="btn-save btn-correction-submit">Apply correction</button>
+                <a th:href="@{/admin/users/profile/{id}(id=${user?.id} ?: 0)}" class="btn-outline">Cancel</a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+    function updateEntryTypeBadge() {
+        const isIncrease = document.getElementById('dirPlus').checked;
+        const badge = document.getElementById('entryTypeBadge');
+        const text = document.getElementById('entryTypeText');
+        badge.classList.toggle('entry-type-correction-plus', isIncrease);
+        badge.classList.toggle('entry-type-correction-minus', !isIncrease);
+        text.textContent = isIncrease ? 'Correction (+)' : 'Correction (−)';
+    }
+
+    document.getElementById('dirPlus').addEventListener('change', updateEntryTypeBadge);
+    document.getElementById('dirMinus').addEventListener('change', updateEntryTypeBadge);
+    updateEntryTypeBadge();
+
+    function confirmCorrection(e) {
+        const amountInput = document.getElementById('amount');
+        const amount = amountInput.value;
+        const isIncrease = document.getElementById('dirPlus').checked;
+        if (!amount || Number(amount) <= 0) {
+            return true;
+        }
+        const verb = isIncrease ? 'Increase' : 'Decrease';
+        const ok = confirm(verb + ' this client\'s balance by $' + Number(amount).toFixed(2) + '?');
+        if (!ok) e.preventDefault();
+        return ok;
+    }
+</script>
+
+</body>
+</html>

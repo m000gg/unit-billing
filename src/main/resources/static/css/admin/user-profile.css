@@ -600,3 +600,50 @@
         flex-direction: column;
     }
 }
+
+
+/* ---------- Refund variant (blue) ---------- */
+
+.btn-refund {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.btn-refund::before {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent 70%);
+}
+
+.btn-refund:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 10px 22px rgba(59, 130, 246, 0.18);
+}
+
+.btn-refund .btn-ledger-icon {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(59, 130, 246, 0.35);
+}
+
+/* ---------- Correction variant (violet, matches accent) ---------- */
+
+.btn-correction {
+    background: var(--accent-soft);
+    border-color: rgba(91, 108, 249, 0.25);
+    color: var(--accent);
+}
+
+.btn-correction::before {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), transparent 70%);
+}
+
+.btn-correction:hover {
+    border-color: var(--accent);
+    box-shadow: 0 10px 22px rgba(91, 108, 249, 0.18);
+}
+
+.btn-correction .btn-ledger-icon {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(91, 108, 249, 0.35);
+}
