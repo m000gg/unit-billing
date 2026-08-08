@@ -14,7 +14,8 @@ CREATE TABLE application_users (
                                    apartment VARCHAR(255),
                                    postal_code VARCHAR(255),
                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                   is_deleted BOOLEAN DEFAULT FALSE
+                                   is_deleted BOOLEAN DEFAULT FALSE,
+                                   version BIGINT NOT NULL DEFAULT 0
 );
 
 

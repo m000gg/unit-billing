@@ -16,6 +16,9 @@ public class ApplicationUser {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Version
+    private Long version;
+
     @Column(name = "first_name")
     private String firstName;
 

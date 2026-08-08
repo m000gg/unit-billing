@@ -84,6 +84,23 @@
         <label>Current balance</label>
         <div class="data-value balance-value">$<span th:text="${user.balance}"></span></div>
       </div>
+
+      <div class="ledger-actions" th:if="${!user.deleted}">
+        <a th:href="@{/admin/users/{id}/topup(id=${user.id})}" class="btn-ledger btn-topup">
+          <span class="btn-ledger-icon">↑</span>
+          <span class="btn-ledger-text">
+            <span class="btn-ledger-title">Top Up</span>
+            <span class="btn-ledger-subtitle">Add credit to balance</span>
+          </span>
+        </a>
+        <a th:href="@{/admin/users/{id}/bill(id=${user.id})}" class="btn-ledger btn-bill">
+          <span class="btn-ledger-icon">↓</span>
+          <span class="btn-ledger-text">
+            <span class="btn-ledger-title">Bill</span>
+            <span class="btn-ledger-subtitle">Charge for a service</span>
+          </span>
+        </a>
+      </div>
     </div>
 
     <div class="profile-actions">

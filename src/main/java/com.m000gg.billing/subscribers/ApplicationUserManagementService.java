@@ -1,6 +1,7 @@
 package com.m000gg.billing.subscribers;
 
 
+import com.m000gg.billing.ledger.exception.ApplicationUserNotFoundException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyTakenException;
 import com.m000gg.billing.subscribers.exception.UserAlreadyDeletedException;
@@ -61,7 +62,7 @@ public class ApplicationUserManagementService {
 
     public ApplicationUser findApplicationUserById(UUID id){
         return applicationUserRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
+                .orElseThrow(() -> new ApplicationUserNotFoundException(id));
     }
 
     public ApplicationUserEditDto findApplicationUserDtoById(UUID id){
