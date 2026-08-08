@@ -50,7 +50,7 @@
                         <option value="" disabled selected>Select a charge to refund</option>
                         <option th:each="charge : ${availableCharges}"
                                 th:value="${charge.id}"
-                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy')} + ' — $' + ${charge.amount} + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')"
+                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — $' + charge.amount + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
                                 th:data-amount="${charge.amount}">
                             12 Mar 2026 — $49.99 — Hardware cost
                         </option>

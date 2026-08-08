@@ -16,6 +16,8 @@ public class LedgerEntry {
     @Column(nullable = false)
     private UUID subscriberId;
 
+    @Column(name = "original_entry_id")
+    private UUID originalEntryId;
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
@@ -28,6 +30,13 @@ public class LedgerEntry {
     private Instant createdAt;
 
     private String description;
+
+    public UUID getOriginalEntryId() {
+        return originalEntryId;
+    }
+    public void setOriginalEntryId(UUID originalEntryId) {
+        this.originalEntryId = originalEntryId;
+    }
 
     public UUID getId() {
         return id;

@@ -44,4 +44,16 @@ public class LedgerMapper {
 
         return ledgerEntry;
     }
+
+    public LedgerEntry createLedgerEntryFromRefundRequestDto(RefundRequestDto refundRequestDto, UUID SubscriberId){
+        LedgerEntry ledgerEntry = new  LedgerEntry();
+        ledgerEntry.setAmount(refundRequestDto.getAmount());
+        ledgerEntry.setType(EntryType.REFUND);
+        ledgerEntry.setCreatedAt(Instant.now());
+        ledgerEntry.setSubscriberId(SubscriberId);
+        ledgerEntry.setOriginalEntryId(refundRequestDto.getOriginalEntryId());
+        ledgerEntry.setDescription(refundRequestDto.getDescription());
+        return ledgerEntry;
+
+    }
 }

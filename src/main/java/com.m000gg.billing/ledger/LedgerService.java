@@ -1,14 +1,15 @@
 package com.m000gg.billing.ledger;
 
-import com.m000gg.billing.ledger.exception.ApplicationUserNotFoundException;
 import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
+import com.m000gg.billing.ledger.exception.InvalidRefundTargetException;
+import com.m000gg.billing.ledger.exception.RefundExceedsOriginalChargeException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,10 +25,8 @@ public class LedgerService {
     private ApplicationUserRepository applicationUserRepository;
 
     @Transactional
-    public void applyTopUp(TopUpRequestDto topUpRequestDto, UUID id){
-        ApplicationUser user = applicationUserRepository.findById(id)
-                .orElseThrow(() -> new ApplicationUserNotFoundException(id));
-        LedgerEntry entry = ledgerMapper.createLedgerEntryFromTopUpRequestDto(topUpRequestDto, id);
+    public void applyTopUp(TopUpRequestDto topUpRequestDto, ApplicationUser user){
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromTopUpRequestDto(topUpRequestDto, user.getId());
         user.setBalance(user.getBalance().add(topUpRequestDto.getAmount()));
         ledgerEntryRepository.save(entry);
         applicationUserRepository.save(user);
@@ -59,5 +58,32 @@ public class LedgerService {
 
         ledgerEntryRepository.save(entry);
         applicationUserRepository.save(user);
+    }
+
+    public List<LedgerEntry> findRefundableCharges(UUID userId){
+        return ledgerEntryRepository.findRefundableCharges(userId);
+    }
+
+    @Transactional
+    public void applyRefund(RefundRequestDto refundRequestDto, ApplicationUser user){
+        LedgerEntry originalChargeLedger = ledgerEntryRepository.findById(refundRequestDto.getOriginalEntryId())
+                .orElseThrow(() -> new InvalidRefundTargetException(refundRequestDto.getOriginalEntryId()));
+        boolean alreadyRefunded = ledgerEntryRepository.existsByOriginalEntryIdAndType(
+                originalChargeLedger.getId(), EntryType.REFUND);
+        if (originalChargeLedger.getType() != EntryType.CHARGE
+                || !originalChargeLedger.getSubscriberId().equals(user.getId()) || alreadyRefunded) {
+            throw new InvalidRefundTargetException(refundRequestDto.getOriginalEntryId());
+        }
+        if (refundRequestDto.getAmount().compareTo(originalChargeLedger.getAmount()) > 0){
+            throw new RefundExceedsOriginalChargeException(originalChargeLedger.getId(),refundRequestDto.getAmount(),originalChargeLedger.getAmount());
+
+        }
+
+
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromRefundRequestDto(refundRequestDto, user.getId());
+        user.setBalance(user.getBalance().add(refundRequestDto.getAmount()));
+        ledgerEntryRepository.save(entry);
+        applicationUserRepository.save(user);
+
     }
 }
