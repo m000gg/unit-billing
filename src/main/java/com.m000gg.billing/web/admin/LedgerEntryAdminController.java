@@ -3,6 +3,7 @@ package com.m000gg.billing.web.admin;
 import com.m000gg.billing.ledger.BillRequestDto;
 import com.m000gg.billing.ledger.LedgerService;
 import com.m000gg.billing.ledger.TopUpRequestDto;
+import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserManagementService;
 import jakarta.validation.Valid;
@@ -70,7 +71,14 @@ public class LedgerEntryAdminController {
             return "admin/bill";
         }
 
-        ledgerService.issueBill(billRequestDto, id);
+        try {
+            ledgerService.issueBill(billRequestDto,id);
+        } catch (InsufficientBalanceException ex) {
+            bindingResult.rejectValue("amount", "insufficient.balance",
+                    "Amount exceeds available balance ($" + user.getBalance() + ")");
+            model.addAttribute("user", user);
+            return "admin/bill";
+        }
         return "redirect:/admin/users/profile/" + id;
 
     }

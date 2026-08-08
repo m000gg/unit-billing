@@ -1,6 +1,7 @@
 package com.m000gg.billing.ledger;
 
 import com.m000gg.billing.ledger.exception.ApplicationUserNotFoundException;
+import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import jakarta.transaction.Transactional;
@@ -36,6 +37,9 @@ public class LedgerService {
     public void issueBill(@Valid BillRequestDto billRequestDto, UUID id) {
         ApplicationUser user = applicationUserRepository.findById(id)
                 .orElseThrow(() -> new ApplicationUserNotFoundException(id));
+        if (billRequestDto.getAmount().compareTo(user.getBalance()) > 0) {
+            throw new InsufficientBalanceException(id, billRequestDto.getAmount(), user.getBalance());
+        }
         LedgerEntry entry = ledgerMapper.createLedgerEntryFromBillRequestDto(billRequestDto, id);
         user.setBalance(user.getBalance().subtract(billRequestDto.getAmount()));
         ledgerEntryRepository.save(entry);
