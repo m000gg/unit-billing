@@ -79,7 +79,6 @@ public class LedgerService {
 
         }
 
-
         LedgerEntry entry = ledgerMapper.createLedgerEntryFromRefundRequestDto(refundRequestDto, user.getId());
         user.setBalance(user.getBalance().add(refundRequestDto.getAmount()));
         ledgerEntryRepository.save(entry);

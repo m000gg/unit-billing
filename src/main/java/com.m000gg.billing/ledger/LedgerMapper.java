@@ -41,7 +41,6 @@ public class LedgerMapper {
             ledgerEntry.setType(EntryType.CORRECTION_DECREASE);
         }
 
-
         return ledgerEntry;
     }
 
