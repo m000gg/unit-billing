@@ -1,15 +1,13 @@
 package com.m000gg.billing.ledger;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
 public class CorrectionRequestDto {
     @NotNull
     @Positive
+    @Digits(integer = 15, fraction = 4, message = "Amount must have at most 15 integer and 4 fractional digits")
     private BigDecimal amount;
 
     @NotNull(message = "Select a direction")

@@ -1,5 +1,4 @@
 package com.m000gg.billing.web.admin;
-
 import com.m000gg.billing.ledger.BillRequestDto;
 import com.m000gg.billing.ledger.LedgerService;
 import com.m000gg.billing.ledger.RefundRequestDto;
@@ -12,6 +11,7 @@ import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserManagementService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -50,7 +50,15 @@ public class LedgerEntryAdminController {
             model.addAttribute("user", user);
             return "admin/topup";
         }
-        ledgerService.applyTopUp(topUpRequestDto, user);
+
+        try {
+            ledgerService.applyTopUp(topUpRequestDto, user);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            model.addAttribute("user", user);
+            return "admin/topup";
+        }
+
         return "redirect:/admin/users/profile/" + id;
     }
 
@@ -64,9 +72,9 @@ public class LedgerEntryAdminController {
 
     @PostMapping("/{id}/bill")
     public String issueBillForUser(@PathVariable UUID id,
-                             @Valid @ModelAttribute("billRequest") BillRequestDto billRequestDto,
-                             BindingResult bindingResult,
-                             Model model){
+                                   @Valid @ModelAttribute("billRequest") BillRequestDto billRequestDto,
+                                   BindingResult bindingResult,
+                                   Model model){
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
@@ -80,9 +88,13 @@ public class LedgerEntryAdminController {
                     "Amount exceeds available balance ($" + user.getBalance() + ")");
             model.addAttribute("user", user);
             return "admin/bill";
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            model.addAttribute("user", user);
+            return "admin/bill";
         }
-        return "redirect:/admin/users/profile/" + id;
 
+        return "redirect:/admin/users/profile/" + id;
     }
 
     @GetMapping("/{id}/refund")
@@ -118,7 +130,13 @@ public class LedgerEntryAdminController {
             model.addAttribute("user", user);
             model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
             return "admin/refund";
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            model.addAttribute("user", user);
+            model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
+            return "admin/refund";
         }
+
         return "redirect:/admin/users/profile/" + id;
     }
 
@@ -127,7 +145,6 @@ public class LedgerEntryAdminController {
         CorrectionRequestDto correctionRequestDto = new CorrectionRequestDto();
         model.addAttribute("user", applicationUserManagementService.findApplicationUserById(id));
         model.addAttribute("correctionRequest", correctionRequestDto);
-        model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
         return "admin/correction";
     }
 
@@ -149,7 +166,12 @@ public class LedgerEntryAdminController {
                     "Amount exceeds available balance ($" + user.getBalance() + ")");
             model.addAttribute("user", user);
             return "admin/correction";
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            model.addAttribute("user", user);
+            return "admin/correction";
         }
+
         return "redirect:/admin/users/profile/" + id;
     }
 }

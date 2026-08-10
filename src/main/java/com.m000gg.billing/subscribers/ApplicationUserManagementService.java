@@ -1,7 +1,7 @@
 package com.m000gg.billing.subscribers;
 
 
-import com.m000gg.billing.ledger.exception.ApplicationUserNotFoundException;
+import com.m000gg.billing.subscribers.exception.ApplicationUserNotFoundException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyTakenException;
 import com.m000gg.billing.subscribers.exception.UserAlreadyDeletedException;
@@ -15,7 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.math.BigDecimal;
+
 import java.util.Optional;
 import java.util.UUID;
 

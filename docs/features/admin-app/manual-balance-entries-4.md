@@ -104,7 +104,7 @@ flowchart TD
 ### Non-Functional Requirements
 - Balance and ledger-entry writes happen inside a single database transaction per action — never partially applied. \
 - Concurrent balance updates on the same subscriber are protected against lost updates (optimistic locking). \
-- Amount precision is fixed and consistent across all four actions (see ADR0009). \
+- Amount precision is fixed and consistent across all four actions (see ADR0005). \
 - Validation errors never surface as a raw 500 — always an inline, field-level message.
 
 ## 🛠Part 2: Technical Realisation

@@ -1,4 +1,4 @@
-package com.m000gg.billing.ledger.exception;
+package com.m000gg.billing.subscribers.exception;
 
 import java.util.UUID;
 

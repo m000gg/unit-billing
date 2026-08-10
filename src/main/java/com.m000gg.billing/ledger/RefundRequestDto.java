@@ -1,5 +1,6 @@
 package com.m000gg.billing.ledger;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -12,6 +13,7 @@ public class RefundRequestDto {
 
     @Positive
     @NotNull
+    @Digits(integer = 15, fraction = 4, message = "Amount must have at most 15 integer and 4 fractional digits")
     private BigDecimal amount;
 
     private String description;

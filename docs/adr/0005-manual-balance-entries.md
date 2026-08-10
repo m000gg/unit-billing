@@ -1,10 +1,10 @@
 # ADR0005 — Manual Ledger Entries (Top-up, Bill, Refund, Correction)
-
 ## Changelog
 | Version    | Date        | Description                                                                                                                                                                              | Status    | Authors                             |
 |------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|-------------------------------------|
 | 1.0        | 2026-08-07  | Initial decision: top-up & bill, positive-only amount with sign derived from `EntryType`                                                                                                 | Accepted  | [m000gg](https://github.com/m000gg) |
 | 2.0        | 2026-08-08  | Extended to refund & correction; split `CORRECTION` into `CORRECTION_INCREASE`/`CORRECTION_DECREASE`; added `original_entry_id` linkage for refunds and `version` for optimistic locking | Accepted  | [m000gg](https://github.com/m000gg) |
+| 2.1        | 2026-08-10  | Removed `category` requirement for bills to simplify initial implementation                                                                                                              | Accepted  | [m000gg](https://github.com/m000gg) |
 
 ---
 
@@ -29,8 +29,7 @@ The admin panel needs four manual actions on a subscriber's ledger, all
 introduced under the same issue:
 
 - **Top-up** — admin credits a balance (e.g. cash received outside the system).
-- **Bill** — admin debits a balance for a rendered service, tagged with a
-  deduction category.
+- **Bill** — admin debits a balance for a rendered service.
 - **Refund** — admin returns money for a specific prior bill.
 - **Correction** — admin adjusts a balance in either direction to fix an
   error; the only action where a single `type` alone cannot express direction.
