@@ -8,7 +8,7 @@
 
 ---
 
-- Issue #19 ➔ PR #24
+- Issue #19 ➔ PR #25
 
 ## Decision
 
