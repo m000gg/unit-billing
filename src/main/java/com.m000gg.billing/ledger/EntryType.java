@@ -4,5 +4,6 @@ public enum EntryType {
     PAYMENT,
     CHARGE,
     REFUND,
-    CORRECTION
+    CORRECTION_INCREASE,
+    CORRECTION_DECREASE
 }

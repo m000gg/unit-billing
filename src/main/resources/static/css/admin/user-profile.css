@@ -476,3 +476,174 @@
     pointer-events: none;
     box-shadow: none;
 }
+
+.ledger-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.btn-ledger {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 14px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-ledger::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.btn-ledger:hover {
+    transform: translateY(-2px);
+}
+
+.btn-ledger:hover::before {
+    opacity: 1;
+}
+
+.btn-ledger-icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-ledger-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-ledger-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.1px;
+}
+
+.btn-ledger-subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.75;
+}
+
+/* ---------- Top Up variant (credit / green) ---------- */
+
+.btn-topup {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+}
+
+.btn-topup::before {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), transparent 70%);
+}
+
+.btn-topup:hover {
+    border-color: #22c55e;
+    box-shadow: 0 10px 22px rgba(34, 197, 94, 0.18);
+}
+
+.btn-topup .btn-ledger-icon {
+    background: linear-gradient(135deg, #22c55e, #15803d);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(34, 197, 94, 0.35);
+}
+
+/* ---------- Bill variant (debit / amber) ---------- */
+
+.btn-bill {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #b45309;
+}
+
+.btn-bill::before {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), transparent 70%);
+}
+
+.btn-bill:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 10px 22px rgba(245, 158, 11, 0.18);
+}
+
+.btn-bill .btn-ledger-icon {
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(245, 158, 11, 0.35);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+    .ledger-actions {
+        flex-direction: column;
+    }
+}
+
+
+/* ---------- Refund variant (blue) ---------- */
+
+.btn-refund {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.btn-refund::before {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent 70%);
+}
+
+.btn-refund:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 10px 22px rgba(59, 130, 246, 0.18);
+}
+
+.btn-refund .btn-ledger-icon {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(59, 130, 246, 0.35);
+}
+
+/* ---------- Correction variant (violet, matches accent) ---------- */
+
+.btn-correction {
+    background: var(--accent-soft);
+    border-color: rgba(91, 108, 249, 0.25);
+    color: var(--accent);
+}
+
+.btn-correction::before {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), transparent 70%);
+}
+
+.btn-correction:hover {
+    border-color: var(--accent);
+    box-shadow: 0 10px 22px rgba(91, 108, 249, 0.18);
+}
+
+.btn-correction .btn-ledger-icon {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(91, 108, 249, 0.35);
+}

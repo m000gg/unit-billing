@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Refund Client</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin/index.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/refund.css}">
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: aside}"></div>
+
+<div class="main-content">
+
+    <div th:if="${errorMessage}" class="error-banner" th:text="${errorMessage}"></div>
+
+    <a th:href="@{/admin/users/profile/{id}(id=${user?.id} ?: 0)}" class="back-link">
+        <span class="back-arrow">←</span>
+        Back to profile
+    </a>
+
+    <div class="profile-hero">
+        <div class="hero-avatar" th:text="${user != null ? #strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1) : 'VA'}">VA</div>
+        <div class="hero-info">
+            <p class="eyebrow">Refund Client</p>
+            <h1 th:text="${user != null ? user.firstName + ' ' + user.lastName : 'Vladyslav Livandovskyi'}">User Name</h1>
+            <p class="page-subtitle" th:text="${user != null ? user.email : 'user@example.com'}">user@example.com</p>
+        </div>
+        <div class="hero-balance">
+            <span class="hero-balance-label">Current balance</span>
+            <span class="hero-balance-value">$<span th:text="${user != null ? user.balance : '0.00'}">0.00</span></span>
+        </div>
+    </div>
+
+    <div class="profile-card">
+
+        <form th:action="@{/admin/users/{id}/refund(id=${user?.id} ?: 0)}" th:object="${refundRequest}"
+              method="post" id="refundForm" onsubmit="return confirmRefund(event)">
+
+            <div class="form-section">
+                <h4 class="section-title">Original charge</h4>
+
+                <div class="data-group data-group-full">
+                    <label for="originalEntryId">Bill to refund</label>
+                    <select id="originalEntryId" th:field="*{originalEntryId}" class="data-input"
+                            th:classappend="${#fields.hasErrors('originalEntryId')} ? 'input-error'"
+                            onchange="prefillAmount(this)">
+                        <option value="" disabled selected>Select a charge to refund</option>
+                        <option th:each="charge : ${availableCharges}"
+                                th:value="${charge.id}"
+                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — $' + charge.amount + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
+                                th:data-amount="${charge.amount}">
+                            12 Mar 2026 — $49.99 — Hardware cost
+                        </option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('originalEntryId')}" th:errors="*{originalEntryId}">Select a charge to refund</span>
+                    <span class="field-error" th:if="${availableCharges == null or availableCharges.isEmpty()}">
+                        This client has no charges eligible for refund.
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4 class="section-title">Refund details</h4>
+
+                <div class="form-row">
+                    <div class="data-group">
+                        <label for="amount">Amount</label>
+                        <input type="number" id="amount" th:field="*{amount}" class="data-input"
+                               th:classappend="${#fields.hasErrors('amount')} ? 'input-error'"
+                               step="0.0001" min="0.0001" placeholder="0.00">
+                        <span class="field-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Amount must be greater than zero</span>
+                    </div>
+
+                    <div class="data-group">
+                        <label>Entry type</label>
+                        <div class="entry-type-badge entry-type-refund">Refund (credit)</div>
+                    </div>
+                </div>
+
+                <div class="data-group data-group-full">
+                    <label for="description">Reference note <span class="label-optional">(optional)</span></label>
+                    <input type="text" id="description" th:field="*{description}" class="data-input"
+                           placeholder="e.g. Duplicate charge, refunded per client request">
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button type="submit" class="btn-save btn-refund-submit">Apply refund</button>
+                <a th:href="@{/admin/users/profile/{id}(id=${user?.id} ?: 0)}" class="btn-outline">Cancel</a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+    function prefillAmount(selectEl) {
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        const originalAmount = selectedOption.getAttribute('data-amount');
+        if (originalAmount) {
+            document.getElementById('amount').value = originalAmount;
+        }
+    }
+
+    function confirmRefund(e) {
+        const amountInput = document.getElementById('amount');
+        const originalEntrySelect = document.getElementById('originalEntryId');
+        const amount = amountInput.value;
+        if (!amount || Number(amount) <= 0 || !originalEntrySelect.value) {
+            return true;
+        }
+        const ok = confirm('Refund $' + Number(amount).toFixed(2) + ' to this client\'s balance?');
+        if (!ok) e.preventDefault();
+        return ok;
+    }
+</script>
+
+</body>
+</html>

@@ -14,15 +14,17 @@ CREATE TABLE application_users (
                                    apartment VARCHAR(255),
                                    postal_code VARCHAR(255),
                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                   is_deleted BOOLEAN DEFAULT FALSE
+                                   is_deleted BOOLEAN DEFAULT FALSE,
+                                   version BIGINT NOT NULL DEFAULT 0
 );
 
 
 CREATE TABLE ledger_entries (
                                 id UUID PRIMARY KEY,
-                                subscriber_id UUID NOT NULL,
+                                subscriber_id UUID NOT NULL REFERENCES application_users(id),
                                 amount NUMERIC(19, 4) NOT NULL,
                                 type VARCHAR(50) NOT NULL,
                                 created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-                                description TEXT
+                                description TEXT,
+                                original_entry_id UUID REFERENCES ledger_entries(id)
 );

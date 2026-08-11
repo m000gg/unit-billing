@@ -1,0 +1,58 @@
+package com.m000gg.billing.ledger;
+
+import org.springframework.stereotype.Component;
+import java.time.Instant;
+import java.util.UUID;
+
+@Component
+public class LedgerMapper {
+    public LedgerEntry createLedgerEntryFromTopUpRequestDto(TopUpRequestDto topUpRequestDto, UUID SubscriberId){
+        LedgerEntry ledgerEntry = new  LedgerEntry();
+        ledgerEntry.setAmount(topUpRequestDto.getAmount());
+        ledgerEntry.setType(EntryType.PAYMENT);
+        ledgerEntry.setCreatedAt(Instant.now());
+        ledgerEntry.setDescription(topUpRequestDto.getDescription());
+        ledgerEntry.setSubscriberId(SubscriberId);
+
+        return ledgerEntry;
+    }
+
+    public LedgerEntry createLedgerEntryFromBillRequestDto(BillRequestDto billRequestDto, UUID SubscriberId){
+        LedgerEntry ledgerEntry = new  LedgerEntry();
+        ledgerEntry.setAmount(billRequestDto.getAmount());
+        ledgerEntry.setType(EntryType.CHARGE);
+        ledgerEntry.setCreatedAt(Instant.now());
+        ledgerEntry.setDescription(billRequestDto.getDescription());
+        ledgerEntry.setSubscriberId(SubscriberId);
+
+        return ledgerEntry;
+    }
+
+    public LedgerEntry createLedgerEntryFromCorrectionRequestDto(CorrectionRequestDto correctionRequestDto, UUID SubscriberId){
+        LedgerEntry ledgerEntry = new  LedgerEntry();
+        ledgerEntry.setAmount(correctionRequestDto.getAmount());
+        ledgerEntry.setDescription(correctionRequestDto.getDescription());
+        ledgerEntry.setCreatedAt(Instant.now());
+        ledgerEntry.setSubscriberId(SubscriberId);
+
+        if (correctionRequestDto.getDirection() == CorrectionDirection.INCREASE){
+            ledgerEntry.setType(EntryType.CORRECTION_INCREASE);
+        } else{
+            ledgerEntry.setType(EntryType.CORRECTION_DECREASE);
+        }
+
+        return ledgerEntry;
+    }
+
+    public LedgerEntry createLedgerEntryFromRefundRequestDto(RefundRequestDto refundRequestDto, UUID SubscriberId){
+        LedgerEntry ledgerEntry = new  LedgerEntry();
+        ledgerEntry.setAmount(refundRequestDto.getAmount());
+        ledgerEntry.setType(EntryType.REFUND);
+        ledgerEntry.setCreatedAt(Instant.now());
+        ledgerEntry.setSubscriberId(SubscriberId);
+        ledgerEntry.setOriginalEntryId(refundRequestDto.getOriginalEntryId());
+        ledgerEntry.setDescription(refundRequestDto.getDescription());
+        return ledgerEntry;
+
+    }
+}
