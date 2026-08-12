@@ -150,7 +150,7 @@ sequenceDiagram
 
 ### Data models
 All four actions write to the existing `ledger_entries` table via the shared
-`LedgerEntry` entity. See **ADR0009** for the full rationale; summary below.
+`LedgerEntry` entity. See **ADR0005** for the full rationale; summary below.
 
 | Column               | Type                 | Notes                                                         |
 |----------------------|----------------------|----------------------------------------------------------------|
