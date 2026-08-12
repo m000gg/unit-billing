@@ -89,4 +89,10 @@ public class LedgerMapper {
                 .map(this::createLedgerEntryAdminViewModelFromLedgerEntry)
                 .toList();
     }
+
+    public LedgerEntryAdminViewModel createLedgerEntryAdminViewModelFromLedgerEntry(LedgerEntry ledgerEntry, boolean refundable) {
+        LedgerEntryAdminViewModel viewModel = createLedgerEntryAdminViewModelFromLedgerEntry(ledgerEntry);
+        viewModel.setRefundable(refundable);
+        return viewModel;
+    }
 }

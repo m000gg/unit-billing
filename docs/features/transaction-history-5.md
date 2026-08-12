@@ -87,9 +87,9 @@ sequenceDiagram
 ```
 
 ### Data models
-**`LedgerEntryViewModel`** (client-facing, read-only) — `amount`, `type`, `createdAt`, `description`. No `id`, `subscriberId`, or `originalEntryId`.
+**`LedgerEntryUserViewModel`** (client-facing, read-only) — `amount`, `type`, `createdAt`, `description`. No `id`, `subscriberId`, or `originalEntryId`.
 
-**`LedgerEntryAdminViewModel`** (admin-facing, read-only) — all `LedgerEntryViewModel` fields plus `id`, `subscriberId`, `originalEntryId`.
+**`LedgerEntryAdminViewModel`** (admin-facing, read-only) — all `LedgerEntryUserViewModel` fields plus `id`, `subscriberId`, `originalEntryId`.
 
 *(`LedgerEntry` itself is not owned by this feature — it's created and mutated by the existing balance-adjustment feature.)*
 

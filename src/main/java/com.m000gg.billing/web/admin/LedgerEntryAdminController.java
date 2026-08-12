@@ -98,8 +98,11 @@ public class LedgerEntryAdminController {
     }
 
     @GetMapping("/{id}/refund")
-    public String showRefundForm(@PathVariable UUID id,Model model){
+    public String showRefundForm(@PathVariable UUID id,@RequestParam(required = false) UUID originalEntryId,Model model){
         RefundRequestDto refundRequestDto = new RefundRequestDto();
+        if (originalEntryId != null) {
+            refundRequestDto.setOriginalEntryId(originalEntryId);
+        }
         model.addAttribute("user", applicationUserManagementService.findApplicationUserById(id));
         model.addAttribute("refundRequest", refundRequestDto);
         model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));

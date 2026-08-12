@@ -28,7 +28,8 @@
 
         <div class="topbar__account">
             <a class="profile-btn" href="/client/profile">
-                <span class="profile-btn__avatar" th:text="${userViewModel != null and !#strings.isEmpty(userViewModel.firstName) ? #strings.substring(userViewModel.firstName, 0, 1) : '—'}">V</span>
+
+                <span class="profile-btn__avatar" th:text="${userProfileViewModel != null and !#strings.isEmpty(userProfileViewModel.firstName) ? #strings.substring(userProfileViewModel.firstName, 0, 1) : '—'}">V</span>
                 <span class="profile-btn__text">
                     <span class="profile-btn__name" th:text="|${userProfileViewModel.firstName} ${userProfileViewModel.lastName}|"></span>
                     <span class="profile-btn__id" th:text="${userProfileViewModel.email}"></span>
@@ -169,8 +170,8 @@
                           th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
                 </td>
                 <td class="ledger-amount-col"
-                    th:classappend="${entry.amount.signum() < 0} ? ' ledger-amount-negative' : ' ledger-amount-positive'"
-                    th:text="${(entry.amount.signum() >= 0 ? '+' : '') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+                    th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
+                    th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
                     -$9.99
                 </td>
             </tr>

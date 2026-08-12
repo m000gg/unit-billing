@@ -6,7 +6,14 @@ public class LedgerEntryAdminViewModel extends LedgerEntryUserViewModel {
     private UUID subscriberId;
     private UUID originalEntryId;
     private UUID id;
+    private boolean refundable;
 
+    public boolean isRefundable() {
+        return refundable;
+    }
+    public void setRefundable(boolean refundable) {
+        this.refundable = refundable;
+    }
     public UUID getId() {
         return id;
     }

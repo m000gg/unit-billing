@@ -7,7 +7,7 @@
 
 ---
 
-- Issue #... ➔ PR #...
+- Issue #16 ➔ PR #27
 
 ## Decision
 

@@ -28,3 +28,6 @@ CREATE TABLE ledger_entries (
                                 description TEXT,
                                 original_entry_id UUID REFERENCES ledger_entries(id)
 );
+
+CREATE INDEX idx_ledger_entries_subscriber_id_created_at
+    ON ledger_entries (subscriber_id, created_at DESC);

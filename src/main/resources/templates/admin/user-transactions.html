@@ -31,7 +31,7 @@
   </div>
 
   <div class="search-bar">
-    <form method="get" th:action="@{/admin/users/{id}/transactions(id=${user.id})}">
+    <form method="get" th:action="@{/admin/users/profile/{id}/ledger(id=${user.id})}">
       <input type="text" name="search" placeholder="Search by description"
              th:value="${search}">
       <button type="submit" class="btn-save">Search</button>
@@ -64,8 +64,8 @@
                           th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
         </td>
         <td class="ledger-amount-col"
-            th:classappend="${entry.amount.signum() < 0} ? ' ledger-amount-negative' : ' ledger-amount-positive'"
-            th:text="${(entry.amount.signum() >= 0 ? '+' : '') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+            th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
+            th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
           -$9.99
         </td>
         <td>
@@ -75,7 +75,7 @@
           <span th:if="${entry.originalEntryId == null}" class="ledger-ref-empty">—</span>
         </td>
         <td>
-          <a th:if="${entry.type.name() == 'CHARGE'}"
+          <a th:if="${entry.refundable}"
              th:href="@{/admin/users/{id}/refund(id=${user.id},originalEntryId=${entry.id})}"
              class="table-link table-link-refund">Refund</a>
         </td>

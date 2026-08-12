@@ -134,15 +134,16 @@
           <td th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy HH:mm')}">Aug 10, 2026 14:32</td>
           <td th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription charge</td>
           <td>
-            <span class="ledger-type-badge"
-                  th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
-                  th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+        <span class="ledger-type-badge"
+              th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
+              th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
           </td>
           <td class="ledger-amount-col"
-              th:classappend="${entry.amount.signum() < 0} ? ' ledger-amount-negative' : ' ledger-amount-positive'"
-              th:text="${(entry.amount.signum() >= 0 ? '+' : '') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+              th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
+              th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
             -$9.99
           </td>
+
         </tr>
         </tbody>
       </table>

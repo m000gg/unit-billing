@@ -103,8 +103,8 @@
                 </span>
                 <span class="ledger-row__date" th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy')}">Aug 1, 2026</span>
                 <span class="ledger-row__amount"
-                      th:classappend="${entry.amount.signum() >= 0} ? ' ledger-row__amount--credit' : ''"
-                      th:text="${(entry.amount.signum() >= 0 ? '+' : '') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+                      th:classappend="${entry.type.name() != 'CHARGE' and entry.type.name() != 'CORRECTION_DECREASE' ? ' ledger-row__amount--credit' : ''}"
+                      th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
                     $29.00
                 </span>
             </li>
