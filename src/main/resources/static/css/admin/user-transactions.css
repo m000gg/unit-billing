@@ -1,0 +1,125 @@
+/* ---------- Page subtitle (user context under title) ---------- */
+
+.page-subtitle {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.page-subtitle-dot {
+    margin: 0 8px;
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+/* ---------- Ledger table specifics ---------- */
+
+.ledger-date {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.ledger-amount-col {
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ledger-amount-positive {
+    color: #16a34a;
+}
+
+.ledger-amount-negative {
+    color: #b91c1c;
+}
+
+.ledger-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.ledger-type-charge {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+}
+
+.ledger-type-payment {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+}
+
+.ledger-type-refund {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.ledger-type-correction_increase {
+    background: rgba(234, 179, 8, 0.15);
+    color: #a16207;
+}
+
+.ledger-type-correction_decrease {
+    background: rgba(249, 115, 22, 0.15);
+    color: #c2410c;
+}
+
+.ledger-ref-empty {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.ledger-empty-row {
+    text-align: center;
+    padding: 32px 12px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+}
+
+/* ---------- Refund action link ---------- */
+
+.table-link-refund {
+    color: #1d4ed8;
+}
+
+.table-link-refund:hover {
+    text-decoration: underline;
+}
+/* ---------- Back link ---------- */
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    padding: 7px 14px 7px 10px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.back-link:hover {
+    background: var(--accent-soft);
+    border-color: rgba(91, 108, 249, 0.3);
+    color: var(--accent);
+}
+
+.back-arrow {
+    display: inline-flex;
+    transition: transform 0.18s ease;
+}
+
+.back-link:hover .back-arrow {
+    transform: translateX(-3px);
+}

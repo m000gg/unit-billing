@@ -103,4 +103,15 @@ public class LedgerService {
         Page<LedgerEntry> page = ledgerEntryRepository.search(subscriberId, search, pageable);
         return page.map(ledgerMapper::createLedgerEntryUserViewModelFromLedgerEntry);
     }
+
+    public List<LedgerEntryAdminViewModel> getUserLastFiveLedgerEntriesForAdmin(ApplicationUser user) {
+        UUID userId = user.getId();
+        List<LedgerEntry> ledgerEntries = ledgerEntryRepository.findTop5BySubscriberIdOrderByCreatedAtDesc(userId);
+        return ledgerMapper.createLedgerEntryAdminViewModelsFromLedgerEntries(ledgerEntries);
+    }
+
+    public Page<LedgerEntryAdminViewModel> searchForAdmin(UUID subscriberId, String search, Pageable pageable) {
+        Page<LedgerEntry> page = ledgerEntryRepository.search(subscriberId, search, pageable);
+        return page.map(ledgerMapper::createLedgerEntryAdminViewModelFromLedgerEntry);
+    }
 }

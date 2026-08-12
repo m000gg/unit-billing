@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>User Transactions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/admin/index.css}">
+  <link rel="stylesheet" th:href="@{/css/admin/users.css}">
+  <link rel="stylesheet" th:href="@{/css/admin/user-transactions.css}">
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: aside}"></div>
+
+<div class="main-content">
+
+  <a th:href="@{/admin/users/profile/{id}(id=${user.id})}" class="back-link">
+    <span class="back-arrow">←</span>
+    Back to profile
+  </a>
+
+  <div class="page-header">
+    <p class="eyebrow">User Management</p>
+    <h1>Transactions</h1>
+    <p class="page-subtitle">
+      <span th:text="${user.firstName + ' ' + user.lastName}">Jane Doe</span>
+      <span class="page-subtitle-dot">·</span>
+      <span th:text="${user.email}">jane@mail.com</span>
+    </p>
+  </div>
+
+  <div class="search-bar">
+    <form method="get" th:action="@{/admin/users/{id}/transactions(id=${user.id})}">
+      <input type="text" name="search" placeholder="Search by description"
+             th:value="${search}">
+      <button type="submit" class="btn-save">Search</button>
+    </form>
+  </div>
+
+  <div class="table-card">
+    <table class="user-table ledger-table" id="ledgerTable">
+      <thead>
+      <tr>
+        <th>Id</th>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Type</th>
+        <th class="ledger-amount-col">Amount</th>
+        <th>Reference</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="entry : ${ledgerEntriesPage.content}">
+        <td>
+          <span class="id-cell" th:attr="data-full=${entry.id}" th:text="${#strings.substring(entry.id, 0, 8) + '…'}"></span>
+        </td>
+        <td class="ledger-date" th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy HH:mm')}">Aug 10, 2026 14:32</td>
+        <td th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription charge</td>
+        <td>
+                    <span class="ledger-type-badge"
+                          th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
+                          th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+        </td>
+        <td class="ledger-amount-col"
+            th:classappend="${entry.amount.signum() < 0} ? ' ledger-amount-negative' : ' ledger-amount-positive'"
+            th:text="${(entry.amount.signum() >= 0 ? '+' : '') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+          -$9.99
+        </td>
+        <td>
+                    <span th:if="${entry.originalEntryId != null}"
+                          class="id-cell" th:attr="data-full=${entry.originalEntryId}"
+                          th:text="${#strings.substring(entry.originalEntryId, 0, 8) + '…'}"></span>
+          <span th:if="${entry.originalEntryId == null}" class="ledger-ref-empty">—</span>
+        </td>
+        <td>
+          <a th:if="${entry.type.name() == 'CHARGE'}"
+             th:href="@{/admin/users/{id}/refund(id=${user.id},originalEntryId=${entry.id})}"
+             class="table-link table-link-refund">Refund</a>
+        </td>
+      </tr>
+      <tr th:if="${ledgerEntriesPage.empty}">
+        <td colspan="7" class="ledger-empty-row">No transactions found.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" th:if="${ledgerEntriesPage.totalPages > 1}">
+    <a th:if="${ledgerEntriesPage.hasPrevious()}"
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number - 1}, search=${search})}">← Prev</a>
+
+    <a th:each="i : ${#numbers.sequence(0, ledgerEntriesPage.totalPages - 1)}"
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${i}, search=${search})}"
+       th:classappend="${i == ledgerEntriesPage.number} ? 'active-page'"
+       th:text="${i + 1}"></a>
+
+    <a th:if="${ledgerEntriesPage.hasNext()}"
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number + 1}, search=${search})}">Next →</a>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.id-cell').forEach(function (cell) {
+    const shortText = cell.textContent;
+    const fullText = cell.getAttribute('data-full');
+    let expanded = false;
+
+    cell.addEventListener('click', function () {
+      expanded = !expanded;
+      cell.textContent = expanded ? fullText : shortText;
+      cell.classList.toggle('id-cell-expanded', expanded);
+    });
+  });
+
+  document.querySelectorAll('.ledger-table tbody tr').forEach(function (row, i) {
+    row.style.animationDelay = (i * 30) + 'ms';
+    row.classList.add('row-fade-in');
+  });
+</script>
+
+</body>
+</html>
