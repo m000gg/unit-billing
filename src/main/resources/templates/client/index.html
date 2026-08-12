@@ -90,21 +90,27 @@
     <section class="ledger">
         <div class="ledger__header">
             <h2 class="ledger__title">Recent activity</h2>
-            <a class="ledger__link" href="#">View all</a>
+            <a class="ledger__link" href="/client/profile">View all</a>
         </div>
 
-        <!--
-        Later: iterate real transactions here, e.g.
-        <ul class="ledger__list" th:if="${!transactions.isEmpty()}">
-            <li class="ledger-row" th:each="tx : ${transactions}">
-                <span class="ledger-row__desc" th:text="${tx.description}">Monthly subscription</span>
-                <span class="ledger-row__date" th:text="${tx.date}">Aug 1, 2026</span>
-                <span class="ledger-row__amount" th:text="${tx.amount}">$29.00</span>
+        <ul class="ledger__list" th:if="${!#lists.isEmpty(ledgerEntryUserViewModelList)}">
+            <li class="ledger-row" th:each="entry : ${ledgerEntryUserViewModelList}">
+                <span class="ledger-row__desc">
+                    <span th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription</span>
+                    <span class="ledger-row__type-badge"
+                          th:classappend="${'ledger-row__type-badge--' + #strings.toLowerCase(entry.type.name())}"
+                          th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+                </span>
+                <span class="ledger-row__date" th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy')}">Aug 1, 2026</span>
+                <span class="ledger-row__amount"
+                      th:classappend="${entry.amount.signum() >= 0} ? ' ledger-row__amount--credit' : ''"
+                      th:text="${(entry.amount.signum() >= 0 ? '+' : '') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+                    $29.00
+                </span>
             </li>
         </ul>
-        -->
 
-        <div class="ledger__empty">No transactions yet.</div>
+        <div class="ledger__empty" th:if="${#lists.isEmpty(ledgerEntryUserViewModelList)}">No transactions yet.</div>
     </section>
 
 </main>

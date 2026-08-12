@@ -28,7 +28,7 @@
 
         <div class="topbar__account">
             <a class="profile-btn" href="/client/profile">
-                <span class="profile-btn__avatar" th:text="${#strings.isEmpty(userViewModel.firstName) ? '—' : #strings.substring(userViewModel.firstName, 0, 1)}">V</span>
+                <span class="profile-btn__avatar" th:text="${userViewModel != null and !#strings.isEmpty(userViewModel.firstName) ? #strings.substring(userViewModel.firstName, 0, 1) : '—'}">V</span>
                 <span class="profile-btn__text">
                     <span class="profile-btn__name" th:text="|${userProfileViewModel.firstName} ${userProfileViewModel.lastName}|"></span>
                     <span class="profile-btn__id" th:text="${userProfileViewModel.email}"></span>
@@ -137,6 +137,62 @@
                 <label class="info-label">Current balance</label>
                 <p class="info-value balance-value" th:text="${'$' + #numbers.formatDecimal(userProfileViewModel.balance, 1, 2)}">$0.00</p>
             </div>
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <h2 class="profile-section__title">Ledger</h2>
+
+        <form class="ledger-search" method="get" th:action="@{/client/profile}">
+            <input type="text" name="search" placeholder="Search by description..."
+                   th:value="${search}" class="ledger-search__input" />
+            <input type="hidden" name="size" th:value="${ledgerEntriesPage.size}" />
+            <button type="submit" class="ledger-search__btn">Search</button>
+        </form>
+
+        <table class="ledger-table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th class="ledger-amount-col">Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${ledgerEntriesPage.content}">
+                <td th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy HH:mm')}">Aug 10, 2026 14:32</td>
+                <td th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription charge</td>
+                <td>
+                    <span class="ledger-type-badge"
+                          th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
+                          th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+                </td>
+                <td class="ledger-amount-col"
+                    th:classappend="${entry.amount.signum() < 0} ? ' ledger-amount-negative' : ' ledger-amount-positive'"
+                    th:text="${(entry.amount.signum() >= 0 ? '+' : '') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+                    -$9.99
+                </td>
+            </tr>
+            <tr th:if="${ledgerEntriesPage.empty}">
+                <td colspan="4" style="text-align:center; color: var(--ink-faint);">No transactions found.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="ledger-pagination" th:if="${ledgerEntriesPage.totalPages > 1}">
+            <a th:if="${ledgerEntriesPage.hasPrevious()}"
+               th:href="@{/client/profile(page=${ledgerEntriesPage.number - 1}, size=${ledgerEntriesPage.size}, search=${search})}"
+               class="ledger-pagination__link">← Previous</a>
+            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasPrevious()}">← Previous</span>
+
+            <span class="ledger-pagination__status"
+                  th:text="|Page ${ledgerEntriesPage.number + 1} of ${ledgerEntriesPage.totalPages}|">Page 1 of 3</span>
+
+            <a th:if="${ledgerEntriesPage.hasNext()}"
+               th:href="@{/client/profile(page=${ledgerEntriesPage.number + 1}, size=${ledgerEntriesPage.size}, search=${search})}"
+               class="ledger-pagination__link">Next →</a>
+            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasNext()}">Next →</span>
         </div>
     </section>
 

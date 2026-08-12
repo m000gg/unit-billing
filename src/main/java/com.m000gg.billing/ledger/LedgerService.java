@@ -8,6 +8,8 @@ import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -84,5 +86,21 @@ public class LedgerService {
         ledgerEntryRepository.save(entry);
         applicationUserRepository.save(user);
 
+    }
+
+    public List<LedgerEntryUserViewModel> getUserLedgerEntryInformation(ApplicationUser applicationUser) {
+        UUID userId = applicationUser.getId();
+        List<LedgerEntry> ledgerEntries = ledgerEntryRepository.findBySubscriberIdOrderByCreatedAtDesc(userId);
+        return ledgerMapper.createLedgerEntryViewModelsFromLedgerEntries(ledgerEntries);
+    }
+    public List<LedgerEntryUserViewModel> getUserLastFiveLedgerEntries(ApplicationUser applicationUser) {
+        UUID userId = applicationUser.getId();
+        List<LedgerEntry> ledgerEntries = ledgerEntryRepository.findTop5BySubscriberIdOrderByCreatedAtDesc(userId);
+        return ledgerMapper.createLedgerEntryViewModelsFromLedgerEntries(ledgerEntries);
+    }
+
+    public Page<LedgerEntryUserViewModel> search(UUID subscriberId, String search, Pageable pageable) {
+        Page<LedgerEntry> page = ledgerEntryRepository.search(subscriberId, search, pageable);
+        return page.map(ledgerMapper::createLedgerEntryUserViewModelFromLedgerEntry);
     }
 }

@@ -134,3 +134,166 @@
         transition: none !important;
     }
 }
+
+/* ---------- Ledger table ---------- */
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.ledger-table thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--line);
+}
+
+.ledger-table tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+}
+
+.ledger-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.ledger-table tbody tr:hover td {
+    background: rgba(0, 0, 0, 0.015);
+}
+
+.ledger-amount-col {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.ledger-amount-positive {
+    color: #1a7f4b;
+}
+
+.ledger-amount-negative {
+    color: var(--danger);
+}
+
+.ledger-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ledger-type-charge {
+    background: rgba(179, 38, 30, 0.08);
+    color: var(--danger);
+}
+
+.ledger-type-payment {
+    background: rgba(26, 127, 75, 0.1);
+    color: #1a7f4b;
+}
+
+.ledger-type-refund {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+}
+
+.ledger-type-correction_increase {
+    background: rgba(180, 130, 20, 0.12);
+    color: #a16207;
+}
+
+.ledger-type-correction_decrease {
+    background: rgba(194, 96, 20, 0.12);
+    color: #c2410c;
+}
+
+/* ---------- Ledger search ---------- */
+
+.ledger-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.ledger-search__input {
+    flex: 1;
+    max-width: 320px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--surface);
+}
+
+.ledger-search__input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.ledger-search__btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent-strong);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.ledger-search__btn:hover {
+    border-color: var(--accent-strong);
+    background: var(--accent-soft);
+}
+
+/* ---------- Ledger pagination ---------- */
+
+.ledger-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+}
+
+.ledger-pagination__link {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent-strong);
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.ledger-pagination__link:hover {
+    background: var(--accent-soft);
+}
+
+.ledger-pagination__link--disabled {
+    color: var(--ink-faint);
+    cursor: default;
+    pointer-events: none;
+}
+
+.ledger-pagination__status {
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+}
