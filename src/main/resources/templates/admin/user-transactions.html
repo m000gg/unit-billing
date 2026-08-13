@@ -30,13 +30,35 @@
     </p>
   </div>
 
-  <div class="search-bar">
-    <form method="get" th:action="@{/admin/users/profile/{id}/ledger(id=${user.id})}">
-      <input type="text" name="search" placeholder="Search by description"
+  <form method="get" th:action="@{/admin/users/profile/{id}/ledger(id=${user.id})}" class="ledger-filter-bar">
+    <div class="ledger-filter-field ledger-filter-field--grow">
+      <label for="filter-search">Description</label>
+      <input type="text" id="filter-search" name="search" placeholder="Search by description"
              th:value="${search}">
-      <button type="submit" class="btn-save">Search</button>
-    </form>
-  </div>
+    </div>
+
+    <div class="ledger-filter-field">
+      <label for="filter-type">Type</label>
+      <select id="filter-type" name="type">
+        <option value="">All types</option>
+        <option value="PAYMENT" th:selected="${type != null and type.name() == 'PAYMENT'}">Payment</option>
+        <option value="CHARGE" th:selected="${type != null and type.name() == 'CHARGE'}">Charge</option>
+        <option value="REFUND" th:selected="${type != null and type.name() == 'REFUND'}">Refund</option>
+        <option value="CORRECTION_INCREASE" th:selected="${type != null and type.name() == 'CORRECTION_INCREASE'}">Correction increase</option>
+        <option value="CORRECTION_DECREASE" th:selected="${type != null and type.name() == 'CORRECTION_DECREASE'}">Correction decrease</option>
+      </select>
+    </div>
+
+    <div class="ledger-filter-field">
+      <label for="filter-date">Date</label>
+      <input type="date" id="filter-date" name="date" th:value="${date}">
+    </div>
+
+    <div class="ledger-filter-actions">
+      <button type="submit" class="ledger-filter-submit">Apply filters</button>
+      <a th:href="@{/admin/users/profile/{id}/ledger(id=${user.id})}" class="ledger-filter-clear-btn">Clear</a>
+    </div>
+  </form>
 
   <div class="table-card">
     <table class="user-table ledger-table" id="ledgerTable">
@@ -98,15 +120,15 @@
 
   <div class="pagination" th:if="${ledgerEntriesPage.totalPages > 1}">
     <a th:if="${ledgerEntriesPage.hasPrevious()}"
-       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number - 1}, search=${search})}">← Prev</a>
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number - 1}, search=${search}, type=${type}, date=${date})}">← Prev</a>
 
     <a th:each="i : ${#numbers.sequence(0, ledgerEntriesPage.totalPages - 1)}"
-       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${i}, search=${search})}"
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${i}, search=${search}, type=${type}, date=${date})}"
        th:classappend="${i == ledgerEntriesPage.number} ? 'active-page'"
        th:text="${i + 1}"></a>
 
     <a th:if="${ledgerEntriesPage.hasNext()}"
-       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number + 1}, search=${search})}">Next →</a>
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number + 1}, search=${search}, type=${type}, date=${date})}">Next →</a>
   </div>
 
 </div>

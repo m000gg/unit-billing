@@ -26,7 +26,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 @SpringBootTest
 @AutoConfigureMockMvc

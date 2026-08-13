@@ -1,5 +1,6 @@
 package com.m000gg.billing.web.admin;
 
+import com.m000gg.billing.ledger.EntryType;
 import com.m000gg.billing.ledger.LedgerEntryAdminViewModel;
 import com.m000gg.billing.ledger.LedgerService;
 import com.m000gg.billing.subscribers.ApplicationUser;
@@ -17,12 +18,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -124,13 +129,23 @@ public class ApplicationUserAdminController {
                                       @RequestParam(defaultValue = "0") int page,
                                       @RequestParam(defaultValue = "10") int size,
                                       @RequestParam(required = false) String search,
+                                      @RequestParam(required = false) EntryType type,
+                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                       Model model) {
         ApplicationUser user = applicationUserRegistrationService.findApplicationUserById(id);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<LedgerEntryAdminViewModel> ledgerEntriesPage = ledgerService.searchForAdmin(user.getId(), search, pageable);
+
+        Instant dateFrom = date != null ? date.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+        Instant dateTo = date != null ? date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().minusNanos(1) : null;
+
+        Page<LedgerEntryAdminViewModel> ledgerEntriesPage = ledgerService.searchForAdmin(user.getId(), search, type, dateFrom, dateTo, pageable);
+
         model.addAttribute("user", user);
         model.addAttribute("ledgerEntriesPage", ledgerEntriesPage);
         model.addAttribute("search", search);
+        model.addAttribute("type", type);
+        model.addAttribute("date", date);
+
         return "admin/user-transactions";
     }
 }

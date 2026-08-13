@@ -123,3 +123,143 @@
 .back-link:hover .back-arrow {
     transform: translateX(-3px);
 }
+/* ---------- Ledger filter bar ---------- */
+
+.ledger-filter-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 20px;
+}
+
+.ledger-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.ledger-filter-field--grow {
+    flex: 1;
+    min-width: 220px;
+}
+
+.ledger-filter-field label {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+
+.ledger-filter-field input,
+.ledger-filter-field select {
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: #fbfbfd;
+    min-width: 170px;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.ledger-filter-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235B606B' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 34px;
+    cursor: pointer;
+}
+
+.ledger-filter-field input:focus,
+.ledger-filter-field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background-color: #fff;
+}
+
+.ledger-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 40px;
+}
+
+.ledger-filter-submit {
+    height: 40px;
+    padding: 0 22px;
+    border: none;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(91, 108, 249, 0.28);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ledger-filter-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(91, 108, 249, 0.35);
+}
+
+.ledger-filter-submit:active {
+    transform: translateY(0);
+}
+
+.ledger-filter-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.ledger-filter-clear-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.ledger-filter-clear:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+@media (max-width: 860px) {
+    .ledger-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ledger-filter-field input,
+    .ledger-filter-field select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .ledger-filter-actions {
+        justify-content: flex-end;
+    }
+}

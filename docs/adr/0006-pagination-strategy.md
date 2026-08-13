@@ -1,17 +1,18 @@
 # ADR0006 — Pagination Strategy for Transaction Lists
 
 ## Changelog
-| Version   | Date        | Description                                   | Status    | Authors                             |
-|-----------|-------------|-----------------------------------------------|-----------|-------------------------------------|
-| 1.0       | 2026-08-10  | Offset-based pagination for transaction lists | Accepted  | [m000gg](https://github.com/m000gg) |
+| Version   | Date       | Description                                                         | Status    | Authors                             |
+|-----------|------------|---------------------------------------------------------------------|-----------|-------------------------------------|
+| 1.0       | 2026-08-10 | Offset-based pagination for transaction lists                       | Accepted  | [m000gg](https://github.com/m000gg) |
+| 1.1       | 2026-08-13 | Documented supporting index and combined pagination/filtering query | Accepted  | [m000gg](https://github.com/m000gg) |
 
 ---
 
-- Issue #16 ➔ PR #27
+- Issue #16 ➔ PR #26
 
 ## Decision
 
-**Transaction lists in `web/admin` and `web/client` use Spring Data's offset-based pagination (`Pageable`/`PageRequest`), rendered as classic numbered pages, with a default page size of 10, sorted by transaction date descending (newest first).**
+**Transaction lists in `web/admin` and `web/client` use Spring Data's offset-based pagination (`Pageable`/`PageRequest`), rendered as classic numbered pages, with a default page size of 10, sorted by transaction date descending (newest first). The same query also applies optional filters (description search, transaction type, calendar date) in addition to pagination, and is backed by a composite index on `(subscriber_id, created_at DESC)`.**
 
 ## Context
 
@@ -20,14 +21,18 @@ Both the admin dashboard (viewing any subscriber's transactions) and the client 
 - Always be sorted newest-first.
 - Be paginated so a single request doesn't load the full transaction history.
 - Reuse the same pagination mechanism across both admin and client controllers, since they share the same `ledger` service layer and Thymeleaf SSR rendering model (no REST API between apps).
+- Support optional filtering (description, transaction type, calendar date) within the same paginated query, so filters and pagination don't diverge into separate query paths.
 
 The codebase already has an established pattern for this exact problem in `ApplicationUser` search (`/` endpoint), using `@RequestParam` for `page`/`size`/`search`, building a `PageRequest.of(page, size, Sort.by(...))`, and passing the resulting `Page<T>` to the Thymeleaf model. Reusing this pattern keeps the transaction list consistent with the rest of the admin UI and avoids introducing a second pagination convention into the codebase.
+
+Because `subscriber_id` filtering and `created_at` ordering happen on every single request against this table — regardless of which optional filters are also applied — the table has a composite index `(subscriber_id, created_at DESC)`. Without it, every paginated request (including the `COUNT` query `Page<T>` requires) would force a full sequential scan of the entire `ledger_entries` table, with cost growing with total system-wide transaction volume rather than with one subscriber's history.
 
 ### Decision Criteria
 - Consistency with existing `Pageable`-based patterns already in use (`ApplicationUser` search).
 - Simplicity of implementation given SSR + Thymeleaf (no client-side state management, no JS pagination library).
 - Acceptable performance at expected transaction volumes per subscriber (not web-scale feeds).
 - Straightforward to secure per-subscriber (admin: subscriber id from path/param; client: subscriber id from session) without leaking pagination state across access boundaries.
+- Ability to layer optional filters (description, type, date) onto the same query without introducing a separate query path or pagination convention.
 
 ## Options
 
@@ -43,11 +48,12 @@ Load the first page server-side, then use JS (`IntersectionObserver` or a "Load 
 ## Consequences
 
 ### Option 1 (SELECTED): Offset-based pagination via `Pageable`
-| Pro                                                                                  | Con                                                                            |
-|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
-| Matches the existing `ApplicationUser` search pattern already in the codebase        | `OFFSET` cost grows with table size — DB still scans and discards skipped rows |
-| Minimal code — `Page<T>`/`Pageable` integrate directly with Spring Data repositories | Pages can shift if rows are inserted between requests                          |
-| Native Spring Boot / Spring Data integration, no custom query logic                  |                                                                                |
+| Pro                                                                                                      | Con                                                                                                      |
+|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| Matches the existing `ApplicationUser` search pattern already in the codebase                            | `OFFSET` cost grows with table size — DB still scans and discards skipped rows                           |
+| Minimal code — `Page<T>`/`Pageable` integrate directly with Spring Data repositories                     | Pages can shift if rows are inserted between requests                                                    |
+| Native Spring Boot / Spring Data integration, no custom query logic                                      | Requires a supporting composite index to keep `OFFSET`/`COUNT` cost bounded per subscriber (see Context) |
+| Optional filters (description, type, date) compose naturally into the same `@Query` alongside pagination |                                                                                                          |
 
 ### Option 2: Keyset (cursor) pagination
 | Pro                                                   | Con                                                                       |

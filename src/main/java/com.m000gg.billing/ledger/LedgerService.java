@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -102,8 +104,8 @@ public class LedgerService {
         return ledgerMapper.createLedgerEntryViewModelsFromLedgerEntries(ledgerEntries);
     }
 
-    public Page<LedgerEntryUserViewModel> search(UUID subscriberId, String search, Pageable pageable) {
-        Page<LedgerEntry> page = ledgerEntryRepository.search(subscriberId, search, pageable);
+    public Page<LedgerEntryUserViewModel> search(UUID subscriberId, String search, EntryType type, Instant dateFrom, Instant dateTo, Pageable pageable) {
+        Page<LedgerEntry> page = ledgerEntryRepository.search(subscriberId, search, type, dateFrom, dateTo, pageable);
         return page.map(ledgerMapper::createLedgerEntryUserViewModelFromLedgerEntry);
     }
 
@@ -113,8 +115,8 @@ public class LedgerService {
         return ledgerMapper.createLedgerEntryAdminViewModelsFromLedgerEntries(ledgerEntries);
     }
 
-    public Page<LedgerEntryAdminViewModel> searchForAdmin(UUID subscriberId, String search, Pageable pageable) {
-        Page<LedgerEntry> page = ledgerEntryRepository.search(subscriberId, search, pageable);
+    public Page<LedgerEntryAdminViewModel> searchForAdmin(UUID subscriberId, String search, EntryType type, Instant dateFrom, Instant dateTo, Pageable pageable) {
+        Page<LedgerEntry> page = ledgerEntryRepository.search(subscriberId, search, type, dateFrom, dateTo, pageable);
 
         Set<UUID> refundableChargeIds = ledgerEntryRepository.findRefundableCharges(subscriberId).stream()
                 .map(LedgerEntry::getId)
