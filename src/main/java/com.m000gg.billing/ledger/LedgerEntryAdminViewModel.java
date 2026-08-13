@@ -7,7 +7,21 @@ public class LedgerEntryAdminViewModel extends LedgerEntryUserViewModel {
     private UUID originalEntryId;
     private UUID id;
     private boolean refundable;
+    private EntrySource source;
+    private UUID performedByAdmin;
 
+    public EntrySource getSource() {
+        return source;
+    }
+    public void setSource(EntrySource source) {
+        this.source = source;
+    }
+    public UUID getPerformedByAdmin() {
+        return performedByAdmin;
+    }
+    public void setPerformedByAdmin(UUID performedByAdmin) {
+        this.performedByAdmin = performedByAdmin;
+    }
     public boolean isRefundable() {
         return refundable;
     }

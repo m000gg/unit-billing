@@ -158,6 +158,7 @@
                 <th>Description</th>
                 <th>Type</th>
                 <th class="ledger-amount-col">Amount</th>
+                <th>Performed by</th>
             </tr>
             </thead>
             <tbody>
@@ -174,9 +175,12 @@
                     th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
                     -$9.99
                 </td>
+                <td th:text="${entry.source.name() == 'ADMIN' ? 'Performed by Admin' : #strings.replace(entry.source.name(), '_', ' ')}">
+                    Performed by Admin
+                </td>
             </tr>
             <tr th:if="${ledgerEntriesPage.empty}">
-                <td colspan="4" style="text-align:center; color: var(--ink-faint);">No transactions found.</td>
+                <td colspan="5" style="text-align:center; color: var(--ink-faint);">No transactions found.</td>
             </tr>
             </tbody>
         </table>

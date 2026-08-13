@@ -48,6 +48,7 @@
         <th>Type</th>
         <th class="ledger-amount-col">Amount</th>
         <th>Reference</th>
+        <th>Performed by</th>
         <th>Action</th>
       </tr>
       </thead>
@@ -75,13 +76,21 @@
           <span th:if="${entry.originalEntryId == null}" class="ledger-ref-empty">—</span>
         </td>
         <td>
+          <span th:if="${entry.source.name() == 'ADMIN'}"
+                class="id-cell" th:attr="data-full=${entry.performedByAdmin}"
+                th:text="${#strings.substring(entry.performedByAdmin, 0, 8) + '…'}"></span>
+          <span th:if="${entry.source.name() != 'ADMIN'}"
+                class="ledger-source-badge"
+                th:text="${#strings.replace(entry.source.name(), '_', ' ')}">APPLE PAY</span>
+        </td>
+        <td>
           <a th:if="${entry.refundable}"
              th:href="@{/admin/users/{id}/refund(id=${user.id},originalEntryId=${entry.id})}"
              class="table-link table-link-refund">Refund</a>
         </td>
       </tr>
       <tr th:if="${ledgerEntriesPage.empty}">
-        <td colspan="7" class="ledger-empty-row">No transactions found.</td>
+        <td colspan="8" class="ledger-empty-row">No transactions found.</td>
       </tr>
       </tbody>
     </table>

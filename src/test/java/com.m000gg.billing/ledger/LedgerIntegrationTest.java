@@ -1,5 +1,6 @@
 package com.m000gg.billing.ledger;
-
+import com.m000gg.billing.identity.Admin;
+import com.m000gg.billing.identity.AdminRepository;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -38,6 +39,9 @@ public class LedgerIntegrationTest {
     private LedgerEntryRepository ledgerEntryRepository;
 
     @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @Container
@@ -51,6 +55,7 @@ public class LedgerIntegrationTest {
     }
 
     private ApplicationUser user;
+    private Admin admin;
 
     @BeforeEach
     void setUp() {
@@ -60,16 +65,22 @@ public class LedgerIntegrationTest {
         user.setEmail("ledger_test_user@example.com");
         user.setBalance(BigDecimal.valueOf(100));
         user = applicationUserRepository.save(user);
+
+        admin = new Admin();
+        admin.setEmail("ledger_test_admin@example.com");
+        admin.setPassword("test-password-hash");
+        admin = adminRepository.save(admin);
     }
 
     @AfterEach
     void cleanUp() {
         ledgerEntryRepository.deleteAll();
         applicationUserRepository.deleteAll();
+        adminRepository.deleteAll();
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "ledger_test_admin@example.com", roles = "ADMIN")
     void applyTopUp_Success_UpdatesBalanceAndRedirects() throws Exception {
         mockMvc.perform(post("/admin/users/{id}/topup", user.getId())
                         .with(csrf())
@@ -87,7 +98,7 @@ public class LedgerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "ledger_test_admin@example.com", roles = "ADMIN")
     void applyTopUp_NegativeAmount_RejectedWithInlineError() throws Exception {
         mockMvc.perform(post("/admin/users/{id}/topup", user.getId())
                         .with(csrf())
@@ -102,7 +113,7 @@ public class LedgerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "ledger_test_admin@example.com", roles = "ADMIN")
     void issueBill_ExceedsBalance_RejectedWithInlineError() throws Exception {
         mockMvc.perform(post("/admin/users/{id}/bill", user.getId())
                         .with(csrf())
@@ -140,6 +151,7 @@ public class LedgerIntegrationTest {
         entryA.setType(EntryType.CHARGE);
         entryA.setCreatedAt(Instant.now());
         entryA.setDescription("A's charge");
+        entryA.setSource(EntrySource.ADMIN);
         ledgerEntryRepository.save(entryA);
 
         LedgerEntry entryB = new LedgerEntry();
@@ -148,6 +160,7 @@ public class LedgerIntegrationTest {
         entryB.setType(EntryType.CHARGE);
         entryB.setCreatedAt(Instant.now());
         entryB.setDescription("B's charge");
+        entryB.setSource(EntrySource.ADMIN);
         ledgerEntryRepository.save(entryB);
 
         Pageable pageable = PageRequest.of(0, 10);

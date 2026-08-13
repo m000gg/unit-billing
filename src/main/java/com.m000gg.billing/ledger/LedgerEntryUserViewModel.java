@@ -8,7 +8,10 @@ public class LedgerEntryUserViewModel {
     private String description;
     private Instant createdAt;
     private EntryType type;
+    private EntrySource source;
 
+    public EntrySource getSource() { return source; }
+    public void setSource(EntrySource source) { this.source = source; }
     public BigDecimal getAmount() {
         return amount;
     }

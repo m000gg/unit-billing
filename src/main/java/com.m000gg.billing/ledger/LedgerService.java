@@ -1,5 +1,6 @@
 package com.m000gg.billing.ledger;
 
+import com.m000gg.billing.identity.Admin;
 import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
 import com.m000gg.billing.ledger.exception.InvalidRefundTargetException;
 import com.m000gg.billing.ledger.exception.RefundExceedsOriginalChargeException;
@@ -29,31 +30,31 @@ public class LedgerService {
     private ApplicationUserRepository applicationUserRepository;
 
     @Transactional
-    public void applyTopUp(TopUpRequestDto topUpRequestDto, ApplicationUser user){
-        LedgerEntry entry = ledgerMapper.createLedgerEntryFromTopUpRequestDto(topUpRequestDto, user.getId());
+    public void applyTopUp(TopUpRequestDto topUpRequestDto, ApplicationUser user, Admin currentAdmin){
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromTopUpRequestDto(topUpRequestDto, user.getId(), currentAdmin.getId());
         user.setBalance(user.getBalance().add(topUpRequestDto.getAmount()));
         ledgerEntryRepository.save(entry);
         applicationUserRepository.save(user);
     }
 
     @Transactional
-    public void issueBill(@Valid BillRequestDto billRequestDto, ApplicationUser user) {
+    public void issueBill(@Valid BillRequestDto billRequestDto, ApplicationUser user, Admin currentAdmin) {
         if (billRequestDto.getAmount().compareTo(user.getBalance()) > 0) {
             throw new InsufficientBalanceException(user.getId(), billRequestDto.getAmount(), user.getBalance());
         }
-        LedgerEntry entry = ledgerMapper.createLedgerEntryFromBillRequestDto(billRequestDto, user.getId());
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromBillRequestDto(billRequestDto, user.getId(), currentAdmin.getId());
         user.setBalance(user.getBalance().subtract(billRequestDto.getAmount()));
         ledgerEntryRepository.save(entry);
         applicationUserRepository.save(user);
     }
 
     @Transactional
-    public void applyCorrection(CorrectionRequestDto correctionRequestDto, ApplicationUser user){
+    public void applyCorrection(CorrectionRequestDto correctionRequestDto, ApplicationUser user, Admin currentAdmin){
         CorrectionDirection correctionDirection = correctionRequestDto.getDirection();
         if (correctionRequestDto.getAmount().compareTo(user.getBalance()) > 0 && correctionDirection == CorrectionDirection.DECREASE) {
             throw new InsufficientBalanceException(user.getId(), correctionRequestDto.getAmount(), user.getBalance());
         }
-        LedgerEntry entry = ledgerMapper.createLedgerEntryFromCorrectionRequestDto(correctionRequestDto, user.getId());
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromCorrectionRequestDto(correctionRequestDto, user.getId(), currentAdmin.getId());
         if (correctionDirection == CorrectionDirection.DECREASE){
             user.setBalance(user.getBalance().subtract(correctionRequestDto.getAmount()));
         } else {
@@ -69,7 +70,7 @@ public class LedgerService {
     }
 
     @Transactional
-    public void applyRefund(RefundRequestDto refundRequestDto, ApplicationUser user){
+    public void applyRefund(RefundRequestDto refundRequestDto, ApplicationUser user, Admin currentAdmin){
         LedgerEntry originalChargeLedger = ledgerEntryRepository.findById(refundRequestDto.getOriginalEntryId())
                 .orElseThrow(() -> new InvalidRefundTargetException(refundRequestDto.getOriginalEntryId()));
         boolean alreadyRefunded = ledgerEntryRepository.existsByOriginalEntryIdAndType(
@@ -83,7 +84,7 @@ public class LedgerService {
 
         }
 
-        LedgerEntry entry = ledgerMapper.createLedgerEntryFromRefundRequestDto(refundRequestDto, user.getId());
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromRefundRequestDto(refundRequestDto, user.getId(), currentAdmin.getId());
         user.setBalance(user.getBalance().add(refundRequestDto.getAmount()));
         ledgerEntryRepository.save(entry);
         applicationUserRepository.save(user);
