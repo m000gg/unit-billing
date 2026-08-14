@@ -298,11 +298,11 @@ public class LedgerServiceTest {
         UUID subscriberId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
         Page<LedgerEntry> emptyPage = new PageImpl<>(List.of());
-        when(ledgerEntryRepository.search(eq(subscriberId), any(), eq(pageable)))
+        when(ledgerEntryRepository.search(eq(subscriberId), any(), isNull(), isNull(), isNull(), eq(pageable)))
                 .thenReturn(emptyPage);
-        ledgerService.search(subscriberId, "some search", pageable);
+        ledgerService.search(subscriberId, "some search", null, null, null, pageable);
         ArgumentCaptor<UUID> subscriberIdCaptor = ArgumentCaptor.forClass(UUID.class);
-        verify(ledgerEntryRepository).search(subscriberIdCaptor.capture(), any(), eq(pageable));
+        verify(ledgerEntryRepository).search(subscriberIdCaptor.capture(), any(), isNull(), isNull(), isNull(), eq(pageable));
         assertThat(subscriberIdCaptor.getValue()).isEqualTo(subscriberId);
     }
 }

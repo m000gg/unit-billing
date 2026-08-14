@@ -163,7 +163,7 @@ public class LedgerIntegrationTest {
         ledgerEntryRepository.save(entryB);
 
         Pageable pageable = PageRequest.of(0, 10);
-        Page<LedgerEntry> result = ledgerEntryRepository.search(user.getId(), null, pageable);
+        Page<LedgerEntry> result = ledgerEntryRepository.search(user.getId(), null, null, null, null, pageable);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getSubscriberId()).isEqualTo(user.getId());
