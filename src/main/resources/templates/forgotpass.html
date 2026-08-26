@@ -3,38 +3,50 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Contact</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title th:text="#{contact.title}">Contact</title>
+    <link rel="stylesheet" th:href="@{/css/forgotpass.css}">
 </head>
 <body>
-<div class="container py-5">
-    <div class="rounded border p-4 shadow-sm">
-        <h2 class="text-center mb-4">Contact</h2>
+
+<div class="container">
+    <div class="custom-card">
+        <div class="card-header-flex mb-4">
+            <h2 class="m-0" th:text="#{contact.title}">Contact</h2>
+            <div class="lang-switcher">
+                <a th:href="@{''(lang='en')}" class="lang-option" th:classappend="${#locale.language == 'en'} ? 'active'">EN</a>
+                <a th:href="@{''(lang='ru')}" class="lang-option" th:classappend="${#locale.language == 'ru'} ? 'active'">RU</a>
+                <a th:href="@{''(lang='uk')}" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'active'">UKR</a>
+                <a th:href="@{''(lang='de')}" class="lang-option" th:classappend="${#locale.language == 'de'} ? 'active'">DE</a>
+                <a th:href="@{''(lang='fr')}" class="lang-option" th:classappend="${#locale.language == 'fr'} ? 'active'">FR</a>
+            </div>
+        </div>
+
         <hr>
 
-        <div class="row">
-            <div class="col-md-5">
-                <h5>Direct Contact</h5>
-                <p class="text-muted">
-                    General Inquiries Email:
-                    <strong>info@unitbilling.com</strong>
-                </p>
-                <p class="text-muted">
-                    Technical Support Email:
-                    <strong>support@unitbilling.com</strong>
-                </p>
-                <p class="text-muted">
-                    Phone Number:
-                    <strong>+49157770456</strong>
-                </p>
+        <div class="contact-body">
+            <h5 th:text="#{contact.direct}">Direct Contact</h5>
 
-                <p class="text-muted mt-4 mb-4">
-                    If you forgot your password, please contact the administrator at:
-                    <strong>admin@unitbilling.com</strong>
-                </p>
+            <p>
+                <span class="text-muted" th:text="#{contact.email.general}">General Inquiries Email:</span><br>
+                <strong>info@unitbilling.com</strong>
+            </p>
 
-                <a href="/login" class="btn btn-outline-secondary btn-sm">← Back to Login</a>
-            </div>
+            <p>
+                <span class="text-muted" th:text="#{contact.email.support}">Technical Support Email:</span><br>
+                <strong>support@unitbilling.com</strong>
+            </p>
+
+            <p>
+                <span class="text-muted" th:text="#{contact.phone}">Phone Number:</span><br>
+                <strong>+49157770456</strong>
+            </p>
+
+            <p class="mt-4 mb-4">
+                <span class="text-muted" th:text="#{contact.forgot_password}">If you forgot your password, please contact the administrator at:</span><br>
+                <strong>admin@unitbilling.com</strong>
+            </p>
+
+            <a href="/login" class="btn-back" th:text="#{contact.back_to_login}">← Back to Login</a>
         </div>
     </div>
 </div>

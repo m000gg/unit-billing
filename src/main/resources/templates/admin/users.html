@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Users</title>
+    <title th:text="#{subscribers.usersList.pageTitle}">Users</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/index.css}">
@@ -15,15 +15,15 @@
 <div class="main-content">
 
     <div class="page-header">
-        <p class="eyebrow">User Management</p>
-        <h1>Users</h1>
+        <p class="eyebrow" th:text="#{subscribers.usersList.eyebrow}">User Management</p>
+        <h1 th:text="#{subscribers.usersList.title}">Users</h1>
     </div>
 
     <div class="search-bar">
         <form method="get" th:action="@{/admin/users/}">
-            <input type="text" name="search" placeholder="Search by name or email"
+            <input type="text" name="search" th:placeholder="#{subscribers.usersList.searchPlaceholder}"
                    th:value="${search}">
-            <button type="submit" class="btn-save">Search</button>
+            <button type="submit" class="btn-save" th:text="#{subscribers.usersList.searchButton}">Search</button>
         </form>
     </div>
 
@@ -31,33 +31,34 @@
         <table class="user-table" id="userTable">
             <thead>
             <tr>
-                <th>Id</th>
-                <th>First name</th>
-                <th>Last name</th>
-                <th>Phone number</th>
-                <th>Email</th>
-                <th>Full Address</th>
-                <th>Balance</th>
-                <th>View profile</th>
+                <th th:text="#{subscribers.usersList.table.id}">Id</th>
+                <th th:text="#{subscribers.usersList.table.firstName}">First name</th>
+                <th th:text="#{subscribers.usersList.table.lastName}">Last name</th>
+                <th th:text="#{subscribers.usersList.table.phone}">Phone number</th>
+                <th th:text="#{subscribers.usersList.table.email}">Email</th>
+                <th th:text="#{subscribers.usersList.table.address}">Full Address</th>
+                <th th:text="#{subscribers.usersList.table.balance}">Balance</th>
+                <th th:text="#{subscribers.usersList.table.viewProfile}">View profile</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="user : ${usersPage.content}"
-                th:classappend="${user.deleted} ? 'row-deleted'">
+                th:classappend="${user.deleted} ? 'row-deleted'"
+                th:with="aptLabel=${#messages.msg('subscribers.userProfile.apt', null, #locale)}">
                 <td>
                     <span class="id-cell" th:attr="data-full=${user.id}" th:text="${#strings.substring(user.id, 0, 8) + '…'}"></span>
                 </td>
                 <td>
                     <span th:text="${user.firstName}"></span>
-                    <span th:if="${user.deleted}" class="deleted-badge">Deleted</span>
+                    <span th:if="${user.deleted}" class="deleted-badge" th:text="#{subscribers.usersList.deletedBadge}">Deleted</span>
                 </td>
                 <td th:text="${user.lastName}"></td>
                 <td th:text="${user.phone}"></td>
                 <td th:text="${user.email}"></td>
-                <td th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', Apt. ' + user.apartment : '') + ', ' + user.postalCode}"></td>
+                <td th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', ' + aptLabel + ' ' + user.apartment : '') + ', ' + user.postalCode}"></td>
                 <td th:text="${user.balance + ' $'}"></td>
 
-                <td><a class="table-link" th:href="@{/admin/users/profile/{id}(id=${user.id})}">Go to profile</a></td>
+                <td><a class="table-link" th:href="@{/admin/users/profile/{id}(id=${user.id})}" th:text="#{subscribers.usersList.goToProfile}">Go to profile</a></td>
             </tr>
             </tbody>
         </table>
@@ -65,7 +66,8 @@
 
     <div class="pagination" th:if="${usersPage.totalPages > 1}">
         <a th:if="${usersPage.hasPrevious()}"
-           th:href="@{/admin/users/(page=${usersPage.number - 1}, search=${search})}">← Prev</a>
+           th:href="@{/admin/users/(page=${usersPage.number - 1}, search=${search})}"
+           th:text="#{subscribers.usersList.pagination.prev}">← Prev</a>
 
         <a th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
            th:href="@{/admin/users/(page=${i}, search=${search})}"
@@ -73,7 +75,8 @@
            th:text="${i + 1}"></a>
 
         <a th:if="${usersPage.hasNext()}"
-           th:href="@{/admin/users/(page=${usersPage.number + 1}, search=${search})}">Next →</a>
+           th:href="@{/admin/users/(page=${usersPage.number + 1}, search=${search})}"
+           th:text="#{subscribers.usersList.pagination.next}">Next →</a>
     </div>
 
 </div>
