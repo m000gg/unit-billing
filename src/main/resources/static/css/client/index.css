@@ -492,3 +492,111 @@ a {
     background: rgba(194, 96, 20, 0.12);
     color: #c2410c;
 }
+
+/* ---------- Language Switcher ---------- */
+.lang-switcher {
+    position: relative;
+    display: inline-block;
+}
+
+.lang-switcher__btn {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 8px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.lang-switcher__btn:hover,
+.lang-switcher:hover .lang-switcher__btn {
+    border-color: var(--ink-soft);
+    color: var(--ink);
+}
+
+.lang-switcher__icon {
+    color: inherit;
+}
+
+.lang-switcher__chevron {
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+}
+
+.lang-switcher:hover .lang-switcher__chevron {
+    transform: rotate(180deg);
+}
+
+.lang-switcher__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    min-width: 160px;
+    padding: 6px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-5px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.lang-switcher:hover .lang-switcher__menu,
+.lang-switcher:focus-within .lang-switcher__menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.lang-switcher__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 13px;
+    transition: background-color 0.15s ease;
+}
+
+.lang-switcher__item:hover,
+.lang-switcher__item:focus {
+    background-color: var(--bg);
+}
+
+.lang-switcher__name {
+    font-weight: 500;
+}
+
+.lang-switcher__code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+}
+
+
+@media (max-width: 640px) {
+    .lang-switcher__current,
+    .lang-switcher__chevron {
+        display: none;
+    }
+
+    .lang-switcher__btn {
+        padding: 8px;
+    }
+
+    .lang-switcher__menu {
+        right: -40px;
+    }
+}
