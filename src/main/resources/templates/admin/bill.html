@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Bill Client</title>
+    <title th:text="#{admin.bill.title}">Bill Client</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/index.css}">
@@ -18,18 +18,18 @@
 
     <a th:href="@{/admin/users/profile/{id}(id=${user?.id} ?: 0)}" class="back-link">
         <span class="back-arrow">←</span>
-        Back to profile
+        <span th:text="#{admin.bill.back}">Back to profile</span>
     </a>
 
     <div class="profile-hero">
         <div class="hero-avatar" th:text="${user != null ? #strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1) : 'VA'}">VA</div>
         <div class="hero-info">
-            <p class="eyebrow">Bill Client</p>
-            <h1 th:text="${user != null ? user.firstName + ' ' + user.lastName : 'Vladyslav Livandovskyi'}">User Name</h1>
+            <p class="eyebrow" th:text="#{admin.bill.eyebrow}">Bill Client</p>
+            <h1 th:text="${user != null ? user.firstName + ' ' + user.lastName : 'User Name'}">User Name</h1>
             <p class="page-subtitle" th:text="${user != null ? user.email : 'user@example.com'}">user@example.com</p>
         </div>
         <div class="hero-balance">
-            <span class="hero-balance-label">Current balance</span>
+            <span class="hero-balance-label" th:text="#{admin.bill.currentBalance}">Current balance</span>
             <span class="hero-balance-value">$<span th:text="${user != null ? user.balance : '0.00'}">0.00</span></span>
         </div>
     </div>
@@ -40,11 +40,11 @@
               method="post" id="billForm" onsubmit="return confirmBill(event)">
 
             <div class="form-section">
-                <h4 class="section-title">Entry details</h4>
+                <h4 class="section-title" th:text="#{admin.bill.section.details}">Entry details</h4>
 
                 <div class="form-row">
                     <div class="data-group">
-                        <label for="amount">Amount</label>
+                        <label for="amount" th:text="#{admin.bill.amount}">Amount</label>
                         <input type="number" id="amount" th:field="*{amount}" class="data-input"
                                th:classappend="${#fields.hasErrors('amount')} ? 'input-error'"
                                step="0.0001" min="0.0001" placeholder="0.00">
@@ -52,21 +52,24 @@
                     </div>
 
                     <div class="data-group">
-                        <label>Entry type</label>
-                        <div class="entry-type-badge entry-type-charge">Bill (charge)</div>
+                        <label th:text="#{admin.bill.entryType}">Entry type</label>
+                        <div class="entry-type-badge entry-type-charge" th:text="#{admin.bill.badge.charge}">Bill (charge)</div>
                     </div>
                 </div>
 
                 <div class="data-group data-group-full">
-                    <label for="description">Reference note <span class="label-optional">(optional)</span></label>
+                    <label for="description">
+                        <span th:text="#{admin.bill.referenceNote}">Reference note</span>
+                        <span class="label-optional" th:text="#{admin.bill.optional}">(optional)</span>
+                    </label>
                     <input type="text" id="description" th:field="*{description}" class="data-input"
-                           placeholder="e.g. Router replacement, March">
+                           th:placeholder="#{admin.bill.placeholder.description}">
                 </div>
             </div>
 
             <div class="profile-actions">
-                <button type="submit" class="btn-save btn-bill-submit">Apply bill</button>
-                <a th:href="@{/admin/users/profile/{id}(id=${user?.id} ?: 0)}" class="btn-outline">Cancel</a>
+                <button type="submit" class="btn-save btn-bill-submit" th:text="#{admin.bill.btn.submit}">Apply bill</button>
+                <a th:href="@{/admin/users/profile/{id}(id=${user?.id} ?: 0)}" class="btn-outline" th:text="#{admin.bill.btn.cancel}">Cancel</a>
             </div>
 
         </form>
@@ -75,6 +78,10 @@
 
 </div>
 
+<div id="i18n-data"
+     th:data-confirm-msg="#{admin.bill.confirm.message}"
+     style="display: none;"></div>
+
 <script>
     function confirmBill(e) {
         const amountInput = document.getElementById('amount');
@@ -82,7 +89,11 @@
         if (!amount || Number(amount) <= 0) {
             return true;
         }
-        const ok = confirm('Charge $' + Number(amount).toFixed(2) + ' to this client\'s balance?');
+
+        const template = document.getElementById('i18n-data').getAttribute('data-confirm-msg');
+        const message = template.replace('{0}', Number(amount).toFixed(2));
+
+        const ok = confirm(message);
         if (!ok) e.preventDefault();
         return ok;
     }
