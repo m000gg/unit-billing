@@ -1,4 +1,6 @@
 package com.m000gg.billing.web.admin;
+import com.m000gg.billing.identity.Admin;
+import com.m000gg.billing.identity.AdminManagementService;
 import com.m000gg.billing.ledger.BillRequestDto;
 import com.m000gg.billing.ledger.LedgerService;
 import com.m000gg.billing.ledger.RefundRequestDto;
@@ -18,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -29,6 +32,9 @@ public class LedgerEntryAdminController {
 
     @Autowired
     private ApplicationUserManagementService applicationUserManagementService;
+
+    @Autowired
+    private AdminManagementService adminManagementService;
 
     @GetMapping("/{id}/topup")
     public String showManualTopUpPage(@PathVariable UUID id, Model model){
@@ -44,21 +50,23 @@ public class LedgerEntryAdminController {
                                  @Valid @ModelAttribute("topUpRequest") TopUpRequestDto topUpRequestDto,
                                  BindingResult bindingResult,
                                  Model model) {
-
+        Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
+        if (currentAdminOptional.isEmpty()) {
+            return "redirect:/login";
+        }
+        Admin currentAdmin = currentAdminOptional.get();
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             return "admin/topup";
         }
-
         try {
-            ledgerService.applyTopUp(topUpRequestDto, user);
+            ledgerService.applyTopUp(topUpRequestDto, user, currentAdmin);
         } catch (ObjectOptimisticLockingFailureException ex) {
             model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
             model.addAttribute("user", user);
             return "admin/topup";
         }
-
         return "redirect:/admin/users/profile/" + id;
     }
 
@@ -74,15 +82,21 @@ public class LedgerEntryAdminController {
     public String issueBillForUser(@PathVariable UUID id,
                                    @Valid @ModelAttribute("billRequest") BillRequestDto billRequestDto,
                                    BindingResult bindingResult,
-                                   Model model){
+                                   Model model) {
+        Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
+        if (currentAdminOptional.isEmpty()) {
+            return "redirect:/login";
+        }
+        Admin currentAdmin = currentAdminOptional.get();
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             return "admin/bill";
         }
 
         try {
-            ledgerService.issueBill(billRequestDto,user);
+            ledgerService.issueBill(billRequestDto, user, currentAdmin);
         } catch (InsufficientBalanceException ex) {
             bindingResult.rejectValue("amount", "insufficient.balance",
                     "Amount exceeds available balance ($" + user.getBalance() + ")");
@@ -93,13 +107,15 @@ public class LedgerEntryAdminController {
             model.addAttribute("user", user);
             return "admin/bill";
         }
-
         return "redirect:/admin/users/profile/" + id;
     }
 
     @GetMapping("/{id}/refund")
-    public String showRefundForm(@PathVariable UUID id,Model model){
+    public String showRefundForm(@PathVariable UUID id,@RequestParam(required = false) UUID originalEntryId,Model model){
         RefundRequestDto refundRequestDto = new RefundRequestDto();
+        if (originalEntryId != null) {
+            refundRequestDto.setOriginalEntryId(originalEntryId);
+        }
         model.addAttribute("user", applicationUserManagementService.findApplicationUserById(id));
         model.addAttribute("refundRequest", refundRequestDto);
         model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
@@ -108,10 +124,18 @@ public class LedgerEntryAdminController {
 
     @PostMapping("/{id}/refund")
     public String applyRefundForUser(@PathVariable UUID id,
-                                     @Valid @ModelAttribute("refundRequest")  RefundRequestDto refundRequestDto,
+                                     @Valid @ModelAttribute("refundRequest") RefundRequestDto refundRequestDto,
                                      BindingResult bindingResult,
-                                     Model model){
+                                     Model model) {
+
+        Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
+        if (currentAdminOptional.isEmpty()) {
+            return "redirect:/login";
+        }
+        Admin currentAdmin = currentAdminOptional.get();
+
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
@@ -119,7 +143,7 @@ public class LedgerEntryAdminController {
         }
 
         try {
-            ledgerService.applyRefund(refundRequestDto, user);
+            ledgerService.applyRefund(refundRequestDto, user, currentAdmin);
         } catch (InvalidRefundTargetException ex) {
             bindingResult.rejectValue("originalEntryId", "invalid.refund.target", ex.getMessage());
             model.addAttribute("user", user);
@@ -152,15 +176,23 @@ public class LedgerEntryAdminController {
     public String applyCorrectionForUser(@PathVariable UUID id,
                                          @Valid @ModelAttribute("correctionRequest") CorrectionRequestDto correctionRequestDto,
                                          BindingResult bindingResult,
-                                         Model model){
+                                         Model model) {
+
+        Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
+        if (currentAdminOptional.isEmpty()) {
+            return "redirect:/login";
+        }
+        Admin currentAdmin = currentAdminOptional.get();
+
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             return "admin/correction";
         }
 
         try {
-            ledgerService.applyCorrection(correctionRequestDto,user);
+            ledgerService.applyCorrection(correctionRequestDto, user, currentAdmin);
         } catch (InsufficientBalanceException ex) {
             bindingResult.rejectValue("amount", "insufficient.balance",
                     "Amount exceeds available balance ($" + user.getBalance() + ")");

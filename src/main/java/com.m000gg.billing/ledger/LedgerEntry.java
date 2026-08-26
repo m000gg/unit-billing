@@ -31,6 +31,23 @@ public class LedgerEntry {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    private EntrySource source;
+
+    private UUID performedByAdmin;
+
+    public EntrySource getSource() {
+        return source;
+    }
+    public void setSource(EntrySource source) {
+        this.source = source;
+    }
+    public UUID getPerformedByAdmin() {
+        return performedByAdmin;
+    }
+    public void setPerformedByAdmin(UUID performedByAdmin) {
+        this.performedByAdmin = performedByAdmin;
+    }
     public UUID getOriginalEntryId() {
         return originalEntryId;
     }

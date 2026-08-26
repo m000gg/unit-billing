@@ -28,7 +28,8 @@
 
         <div class="topbar__account">
             <a class="profile-btn" href="/client/profile">
-                <span class="profile-btn__avatar" th:text="${#strings.isEmpty(userViewModel.firstName) ? '—' : #strings.substring(userViewModel.firstName, 0, 1)}">V</span>
+
+                <span class="profile-btn__avatar" th:text="${userProfileViewModel != null and !#strings.isEmpty(userProfileViewModel.firstName) ? #strings.substring(userProfileViewModel.firstName, 0, 1) : '—'}">V</span>
                 <span class="profile-btn__text">
                     <span class="profile-btn__name" th:text="|${userProfileViewModel.firstName} ${userProfileViewModel.lastName}|"></span>
                     <span class="profile-btn__id" th:text="${userProfileViewModel.email}"></span>
@@ -140,6 +141,90 @@
         </div>
     </section>
 
+    <section class="profile-section">
+        <h2 class="profile-section__title">Ledger</h2>
+
+        <form class="ledger-filter-bar" method="get" th:action="@{/client/profile}">
+            <div class="ledger-filter-field ledger-filter-field--grow">
+                <label for="filter-search">Description</label>
+                <input type="text" id="filter-search" name="search" placeholder="Search by description..."
+                       th:value="${search}" />
+            </div>
+
+            <div class="ledger-filter-field">
+                <label for="filter-type">Type</label>
+                <select id="filter-type" name="type">
+                    <option value="">All types</option>
+                    <option value="PAYMENT" th:selected="${type != null and type.name() == 'PAYMENT'}">Payment</option>
+                    <option value="CHARGE" th:selected="${type != null and type.name() == 'CHARGE'}">Charge</option>
+                    <option value="REFUND" th:selected="${type != null and type.name() == 'REFUND'}">Refund</option>
+                    <option value="CORRECTION_INCREASE" th:selected="${type != null and type.name() == 'CORRECTION_INCREASE'}">Correction increase</option>
+                    <option value="CORRECTION_DECREASE" th:selected="${type != null and type.name() == 'CORRECTION_DECREASE'}">Correction decrease</option>
+                </select>
+            </div>
+
+            <div class="ledger-filter-field">
+                <label for="filter-date">Date</label>
+                <input type="date" id="filter-date" name="date" th:value="${date}" />
+            </div>
+
+            <input type="hidden" name="size" th:value="${ledgerEntriesPage.size}" />
+
+            <div class="ledger-filter-actions">
+                <button type="submit" class="ledger-filter-submit">Search</button>
+                <a th:href="@{/client/profile}" class="ledger-filter-clear-btn">Clear</a>
+            </div>
+        </form>
+
+        <table class="ledger-table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th class="ledger-amount-col">Amount</th>
+                <th>Performed by</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${ledgerEntriesPage.content}">
+                <td th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy HH:mm')}">Aug 10, 2026 14:32</td>
+                <td th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription charge</td>
+                <td>
+                    <span class="ledger-type-badge"
+                          th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
+                          th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+                </td>
+                <td class="ledger-amount-col"
+                    th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
+                    th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+                    -$9.99
+                </td>
+                <td th:text="${entry.source.name() == 'ADMIN' ? 'Performed by Admin' : #strings.replace(entry.source.name(), '_', ' ')}">
+                    Performed by Admin
+                </td>
+            </tr>
+            <tr th:if="${ledgerEntriesPage.empty}">
+                <td colspan="5" style="text-align:center; color: var(--ink-faint);">No transactions found.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="ledger-pagination" th:if="${ledgerEntriesPage.totalPages > 1}">
+            <a th:if="${ledgerEntriesPage.hasPrevious()}"
+               th:href="@{/client/profile(page=${ledgerEntriesPage.number - 1}, size=${ledgerEntriesPage.size}, search=${search}, type=${type}, date=${date})}"
+               class="ledger-pagination__link">← Previous</a>
+            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasPrevious()}">← Previous</span>
+
+            <span class="ledger-pagination__status"
+                  th:text="|Page ${ledgerEntriesPage.number + 1} of ${ledgerEntriesPage.totalPages}|">Page 1 of 3</span>
+
+            <a th:if="${ledgerEntriesPage.hasNext()}"
+               th:href="@{/client/profile(page=${ledgerEntriesPage.number + 1}, size=${ledgerEntriesPage.size}, search=${search}, type=${type}, date=${date})}"
+               class="ledger-pagination__link">Next →</a>
+            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasNext()}">Next →</span>
+        </div>
+    </section>
 
 </main>
 

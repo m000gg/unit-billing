@@ -134,3 +134,307 @@
         transition: none !important;
     }
 }
+
+/* ---------- Ledger table ---------- */
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.ledger-table thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--line);
+}
+
+.ledger-table tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+}
+
+.ledger-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.ledger-table tbody tr:hover td {
+    background: rgba(0, 0, 0, 0.015);
+}
+
+.ledger-amount-col {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.ledger-amount-positive {
+    color: #1a7f4b;
+}
+
+.ledger-amount-negative {
+    color: var(--danger);
+}
+
+.ledger-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ledger-type-charge {
+    background: rgba(179, 38, 30, 0.08);
+    color: var(--danger);
+}
+
+.ledger-type-payment {
+    background: rgba(26, 127, 75, 0.1);
+    color: #1a7f4b;
+}
+
+.ledger-type-refund {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+}
+
+.ledger-type-correction_increase {
+    background: rgba(180, 130, 20, 0.12);
+    color: #a16207;
+}
+
+.ledger-type-correction_decrease {
+    background: rgba(194, 96, 20, 0.12);
+    color: #c2410c;
+}
+
+/* ---------- Ledger search ---------- */
+
+.ledger-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.ledger-search__input {
+    flex: 1;
+    max-width: 320px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--surface);
+}
+
+.ledger-search__input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.ledger-search__btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent-strong);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.ledger-search__btn:hover {
+    border-color: var(--accent-strong);
+    background: var(--accent-soft);
+}
+
+/* ---------- Ledger pagination ---------- */
+
+.ledger-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+}
+
+.ledger-pagination__link {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent-strong);
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.ledger-pagination__link:hover {
+    background: var(--accent-soft);
+}
+
+.ledger-pagination__link--disabled {
+    color: var(--ink-faint);
+    cursor: default;
+    pointer-events: none;
+}
+
+.ledger-pagination__status {
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+}
+/* ---------- Ledger filter bar ---------- */
+
+.ledger-filter-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: #fbfbfd;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+}
+
+.ledger-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ledger-filter-field--grow {
+    flex: 1;
+    min-width: 200px;
+}
+
+.ledger-filter-field label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+}
+
+.ledger-filter-field input,
+.ledger-filter-field select {
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: #fff;
+    min-width: 160px;
+    transition: border-color 0.15s ease;
+}
+
+.ledger-filter-field input:focus,
+.ledger-filter-field select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.ledger-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ledger-filter-field input,
+.ledger-filter-field select {
+    height: 40px;
+    padding: 0 14px;
+    box-sizing: border-box;
+}
+
+.ledger-filter-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235B606B' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 34px;
+    cursor: pointer;
+}
+
+.ledger-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 40px;
+}
+
+.ledger-filter-submit {
+    height: 40px;
+    padding: 0 22px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(47, 93, 80, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ledger-filter-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(47, 93, 80, 0.32);
+}
+
+.ledger-filter-submit:active {
+    transform: translateY(0);
+}
+
+.ledger-filter-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.ledger-filter-clear-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+@media (max-width: 640px) {
+    .ledger-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ledger-filter-field input,
+    .ledger-filter-field select {
+        min-width: 0;
+        width: 100%;
+    }
+}

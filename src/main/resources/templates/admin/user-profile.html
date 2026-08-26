@@ -117,6 +117,45 @@
       </div>
     </div>
 
+    <div class="form-section">
+      <h4 class="section-title">Recent activity</h4>
+
+      <table class="ledger-table" th:if="${!#lists.isEmpty(recentLedgerEntries)}">
+        <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Type</th>
+          <th class="ledger-amount-col">Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${recentLedgerEntries}">
+          <td th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy HH:mm')}">Aug 10, 2026 14:32</td>
+          <td th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription charge</td>
+          <td>
+        <span class="ledger-type-badge"
+              th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
+              th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+          </td>
+          <td class="ledger-amount-col"
+              th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
+              th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+            -$9.99
+          </td>
+
+        </tr>
+        </tbody>
+      </table>
+
+      <p class="ledger-empty" th:if="${#lists.isEmpty(recentLedgerEntries)}">No transactions yet.</p>
+
+      <a th:href="@{/admin/users/profile/{id}/ledger(id=${user.id})}" class="btn-outline btn-view-ledger">
+        View full ledger
+        <span class="btn-view-ledger-arrow">→</span>
+      </a>
+    </div>
+
     <div class="profile-actions">
       <a th:if="${!user.deleted}"
          th:href="@{/admin/users/profile/update/{id}(id=${user.id})}" class="btn-save">Edit profile</a>

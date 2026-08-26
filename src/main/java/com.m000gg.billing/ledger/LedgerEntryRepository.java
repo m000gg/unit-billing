@@ -1,8 +1,12 @@
 package com.m000gg.billing.ledger;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,4 +26,22 @@ public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, UUID> 
     List<LedgerEntry> findRefundableCharges(@Param("subscriberId") UUID subscriberId);
 
     boolean existsByOriginalEntryIdAndType(UUID originalEntryId, EntryType type);
+    List<LedgerEntry> findBySubscriberIdOrderByCreatedAtDesc(UUID subscriberId);
+    List<LedgerEntry> findTop5BySubscriberIdOrderByCreatedAtDesc(UUID subscriberId);
+
+    @Query("""
+    SELECT l FROM LedgerEntry l
+    WHERE l.subscriberId = :subscriberId
+      AND (:search IS NULL OR :search = '' OR LOWER(l.description) LIKE LOWER(CONCAT('%', :search, '%')))
+      AND (CAST(:type AS string) IS NULL OR l.type = :type)
+      AND (CAST(:dateFrom AS timestamp) IS NULL OR l.createdAt >= :dateFrom)
+      AND (CAST(:dateTo AS timestamp) IS NULL OR l.createdAt <= :dateTo)
+    """)
+    Page<LedgerEntry> search(@Param("subscriberId") UUID subscriberId,
+                             @Param("search") String search,
+                             @Param("type") EntryType type,
+                             @Param("dateFrom") Instant dateFrom,
+                             @Param("dateTo") Instant dateTo,
+                             Pageable pageable);
+
 }
