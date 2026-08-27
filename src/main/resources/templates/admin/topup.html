@@ -37,7 +37,7 @@
     <div class="profile-card">
 
         <form th:action="@{/admin/users/{id}/topup(id=${user?.id} ?: 0)}" th:object="${topUpRequest}"
-              method="post" id="topupForm" onsubmit="return confirmTopUp(event)">
+              method="post" id="topupForm" onsubmit="return confirmTopUp(event)" novalidate>
 
             <div class="form-section">
                 <h4 class="section-title" th:text="#{admin.topUp.section.details}">Entry details</h4>

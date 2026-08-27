@@ -37,7 +37,7 @@
     <div class="profile-card">
 
         <form th:action="@{/admin/users/{id}/bill(id=${user?.id} ?: 0)}" th:object="${billRequest}"
-              method="post" id="billForm" onsubmit="return confirmBill(event)">
+              method="post" id="billForm" onsubmit="return confirmBill(event)" novalidate>
 
             <div class="form-section">
                 <h4 class="section-title" th:text="#{admin.bill.section.details}">Entry details</h4>

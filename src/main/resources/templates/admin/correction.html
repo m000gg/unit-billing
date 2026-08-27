@@ -37,7 +37,7 @@
     <div class="profile-card">
 
         <form th:action="@{/admin/users/{id}/correction(id=${user?.id} ?: 0)}" th:object="${correctionRequest}"
-              method="post" id="correctionForm" onsubmit="return confirmCorrection(event)">
+              method="post" id="correctionForm" onsubmit="return confirmCorrection(event)" novalidate>
 
             <div class="form-section">
                 <h4 class="section-title" th:text="#{admin.correction.section.direction}">Direction</h4>

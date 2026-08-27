@@ -4,36 +4,36 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 
 public class ApplicationUserRegisterDto {
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.firstName.required}")
     private String firstName;
 
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.lastName.required}")
     private String lastName;
 
-    @NotEmpty
-    @Email
+    @NotEmpty(message = "{subscribers.validation.email.required}")
+    @Email(message = "{subscribers.validation.email.invalid}")
     private String email;
 
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.phone.required}")
     private String phone;
 
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.country.required}")
     private String country;
 
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.city.required}")
     private String city;
 
     private String region;
 
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.street.required}")
     private String street;
 
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.houseNumber.required}")
     private String houseNumber;
 
     private String apartment;
 
-    @NotEmpty
+    @NotEmpty(message = "{subscribers.validation.postalCode.required}")
     private String postalCode;
 
     public String getFirstName() { return firstName; }

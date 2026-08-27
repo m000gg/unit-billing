@@ -5,16 +5,16 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public class CorrectionRequestDto {
-    @NotNull
-    @Positive
-    @Digits(integer = 15, fraction = 4, message = "Amount must have at most 15 integer and 4 fractional digits")
+    @NotNull(message = "{ledger.validation.amount.required}")
+    @Positive(message = "{ledger.validation.amount.positive}")
+    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
     private BigDecimal amount;
 
-    @NotNull(message = "Select a direction")
+    @NotNull(message = "{ledger.validation.direction.required}")
     private CorrectionDirection direction;
 
-    @NotBlank(message = "Reason is required")
-    @Size(max = 255)
+    @NotBlank(message = "{ledger.validation.description.required}")
+    @Size(max = 255, message = "{ledger.validation.description.size}")
     private String description;
 
     public BigDecimal getAmount() {

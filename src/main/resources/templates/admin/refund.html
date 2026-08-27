@@ -37,7 +37,7 @@
     <div class="profile-card">
 
         <form th:action="@{/admin/users/{id}/refund(id=${user?.id} ?: 0)}" th:object="${refundRequest}"
-              method="post" id="refundForm" onsubmit="return confirmRefund(event)">
+              method="post" id="refundForm" onsubmit="return confirmRefund(event)" novalidate>
 
             <div class="form-section">
                 <h4 class="section-title" th:text="#{admin.refund.section.original}">Original charge</h4>
