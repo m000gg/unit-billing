@@ -1,15 +1,21 @@
 package com.m000gg.billing.subscribers.exception;
 
 public class EmailAlreadyTakenException extends RuntimeException {
-    public EmailAlreadyTakenException(){
-        super();
+
+    private final String messageKey;
+    private final Object[] args;
+
+    public EmailAlreadyTakenException(String email) {
+        super("Email already taken: " + email);
+        this.messageKey = "errors.identity.emailAlreadyTaken";
+        this.args = new Object[]{email};
     }
 
-    public EmailAlreadyTakenException(String message) {
-        super(message);
+    public String getMessageKey() {
+        return messageKey;
     }
 
-    public EmailAlreadyTakenException(String message, Throwable cause){
-        super(message, cause);
+    public Object[] getArgs() {
+        return args;
     }
 }

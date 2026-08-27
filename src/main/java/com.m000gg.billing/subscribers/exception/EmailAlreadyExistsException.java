@@ -2,15 +2,20 @@ package com.m000gg.billing.subscribers.exception;
 
 public class EmailAlreadyExistsException extends RuntimeException {
 
-    public EmailAlreadyExistsException(){
-        super();
+    private final String messageKey;
+    private final Object[] args;
+
+    public EmailAlreadyExistsException(String email) {
+        super("Email already exists: " + email);
+        this.messageKey = "errors.identity.emailAlreadyExists";
+        this.args = new Object[]{email};
     }
 
-    public EmailAlreadyExistsException(String message){
-        super(message);
+    public String getMessageKey() {
+        return messageKey;
     }
 
-    public EmailAlreadyExistsException(String message, Throwable cause){
-        super(message, cause);
+    public Object[] getArgs() {
+        return args;
     }
 }

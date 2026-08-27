@@ -13,6 +13,7 @@ import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserManagementService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +21,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,6 +38,9 @@ public class LedgerEntryAdminController {
     @Autowired
     private AdminManagementService adminManagementService;
 
+    @Autowired
+    private MessageSource messageSource;
+
     @GetMapping("/{id}/topup")
     public String showManualTopUpPage(@PathVariable UUID id, Model model){
         TopUpRequestDto topUpRequestDto = new TopUpRequestDto();
@@ -49,7 +54,8 @@ public class LedgerEntryAdminController {
     public String addTopUpToUser(@PathVariable UUID id,
                                  @Valid @ModelAttribute("topUpRequest") TopUpRequestDto topUpRequestDto,
                                  BindingResult bindingResult,
-                                 Model model) {
+                                 Model model,
+                                 Locale locale) {
         Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
         if (currentAdminOptional.isEmpty()) {
             return "redirect:/login";
@@ -63,7 +69,8 @@ public class LedgerEntryAdminController {
         try {
             ledgerService.applyTopUp(topUpRequestDto, user, currentAdmin);
         } catch (ObjectOptimisticLockingFailureException ex) {
-            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            String message = messageSource.getMessage("errors.common.concurrentUpdate", null, locale);
+            model.addAttribute("errorMessage", message);
             model.addAttribute("user", user);
             return "admin/topup";
         }
@@ -82,7 +89,8 @@ public class LedgerEntryAdminController {
     public String issueBillForUser(@PathVariable UUID id,
                                    @Valid @ModelAttribute("billRequest") BillRequestDto billRequestDto,
                                    BindingResult bindingResult,
-                                   Model model) {
+                                   Model model,
+                                   Locale locale) {
         Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
         if (currentAdminOptional.isEmpty()) {
             return "redirect:/login";
@@ -98,12 +106,13 @@ public class LedgerEntryAdminController {
         try {
             ledgerService.issueBill(billRequestDto, user, currentAdmin);
         } catch (InsufficientBalanceException ex) {
-            bindingResult.rejectValue("amount", "insufficient.balance",
-                    "Amount exceeds available balance ($" + user.getBalance() + ")");
+            String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), ex.getMessage(), locale);
+            bindingResult.rejectValue("amount", "insufficient.balance", message);
             model.addAttribute("user", user);
             return "admin/bill";
         } catch (ObjectOptimisticLockingFailureException ex) {
-            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            String message = messageSource.getMessage("errors.common.concurrentUpdate", null, locale);
+            model.addAttribute("errorMessage", message);
             model.addAttribute("user", user);
             return "admin/bill";
         }
@@ -126,7 +135,8 @@ public class LedgerEntryAdminController {
     public String applyRefundForUser(@PathVariable UUID id,
                                      @Valid @ModelAttribute("refundRequest") RefundRequestDto refundRequestDto,
                                      BindingResult bindingResult,
-                                     Model model) {
+                                     Model model,
+                                     Locale locale) {
 
         Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
         if (currentAdminOptional.isEmpty()) {
@@ -145,17 +155,20 @@ public class LedgerEntryAdminController {
         try {
             ledgerService.applyRefund(refundRequestDto, user, currentAdmin);
         } catch (InvalidRefundTargetException ex) {
-            bindingResult.rejectValue("originalEntryId", "invalid.refund.target", ex.getMessage());
+            String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), ex.getMessage(), locale);
+            bindingResult.rejectValue("originalEntryId", "invalid.refund.target", message);
             model.addAttribute("user", user);
             model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
             return "admin/refund";
         } catch (RefundExceedsOriginalChargeException ex) {
-            bindingResult.rejectValue("amount", "refund.exceeds.charge", ex.getMessage());
+            String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), ex.getMessage(), locale);
+            bindingResult.rejectValue("amount", "refund.exceeds.charge", message);
             model.addAttribute("user", user);
             model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
             return "admin/refund";
         } catch (ObjectOptimisticLockingFailureException ex) {
-            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            String message = messageSource.getMessage("errors.common.concurrentUpdate", null, locale);
+            model.addAttribute("errorMessage", message);
             model.addAttribute("user", user);
             model.addAttribute("availableCharges", ledgerService.findRefundableCharges(id));
             return "admin/refund";
@@ -176,7 +189,8 @@ public class LedgerEntryAdminController {
     public String applyCorrectionForUser(@PathVariable UUID id,
                                          @Valid @ModelAttribute("correctionRequest") CorrectionRequestDto correctionRequestDto,
                                          BindingResult bindingResult,
-                                         Model model) {
+                                         Model model,
+                                         Locale locale) {
 
         Optional<Admin> currentAdminOptional = adminManagementService.getCurrentAdmin();
         if (currentAdminOptional.isEmpty()) {
@@ -194,12 +208,13 @@ public class LedgerEntryAdminController {
         try {
             ledgerService.applyCorrection(correctionRequestDto, user, currentAdmin);
         } catch (InsufficientBalanceException ex) {
-            bindingResult.rejectValue("amount", "insufficient.balance",
-                    "Amount exceeds available balance ($" + user.getBalance() + ")");
+            String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), ex.getMessage(), locale);
+            bindingResult.rejectValue("amount", "insufficient.balance", message);
             model.addAttribute("user", user);
             return "admin/correction";
         } catch (ObjectOptimisticLockingFailureException ex) {
-            model.addAttribute("errorMessage", "The user's balance was modified by another administrator. Please refresh and try again.");
+            String message = messageSource.getMessage("errors.common.concurrentUpdate", null, locale);
+            model.addAttribute("errorMessage", message);
             model.addAttribute("user", user);
             return "admin/correction";
         }

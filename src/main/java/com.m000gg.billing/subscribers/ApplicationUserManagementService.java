@@ -40,8 +40,8 @@ public class ApplicationUserManagementService {
         ApplicationUser newApplicationUser = new ApplicationUser();
 
         String email = applicationUserRegisterDto.getEmail();
-        if (applicationUserRepository.existsByEmail(email)){
-            throw new EmailAlreadyExistsException("User with this email already exists: " + email );
+        if (applicationUserRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException(email);
         }
         String generatedPassword = customPasswordGenerator.generatePassayPassword();
         String encodedPassword = passwordEncoder.encode(generatedPassword);
@@ -50,7 +50,7 @@ public class ApplicationUserManagementService {
         try {
             applicationUserRepository.save(newApplicationUser);
         } catch (DataIntegrityViolationException ex) {
-            throw new EmailAlreadyExistsException("User with this email already exists: " + email);
+            throw new EmailAlreadyExistsException(email);
         }
 
         return generatedPassword;
@@ -70,12 +70,12 @@ public class ApplicationUserManagementService {
     }
 
     @Transactional
-    public void editApplicationUserProfile(UUID id, ApplicationUserEditDto dataToChange){
+    public void editApplicationUserProfile(UUID id, ApplicationUserEditDto dataToChange) {
         ApplicationUser user = findApplicationUserById(id);
 
         if (!user.getEmail().equals(dataToChange.getEmail())
                 && applicationUserRepository.existsByEmail(dataToChange.getEmail())) {
-            throw new EmailAlreadyTakenException("This email is already taken by another user: " + dataToChange.getEmail());
+            throw new EmailAlreadyTakenException(dataToChange.getEmail());
         }
 
         applicationUserMapper.updateEntityFromDto(user, dataToChange);
