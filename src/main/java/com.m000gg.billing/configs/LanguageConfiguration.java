@@ -1,5 +1,7 @@
 package com.m000gg.billing.configs;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +12,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+
+import java.util.List;
 import java.util.Locale;
 
 @Configuration
@@ -24,7 +28,18 @@ public class LanguageConfiguration implements WebMvcConfigurer {
 
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {
-        LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
+        LocaleChangeInterceptor lci = new LocaleChangeInterceptor() {
+            private final List<String> SUPPORTED_LOCALES = List.of("en", "ru", "uk", "de", "fr");
+
+            @Override
+            public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws jakarta.servlet.ServletException {
+                String newLang = request.getParameter(getParamName());
+                if (newLang != null && !SUPPORTED_LOCALES.contains(newLang.toLowerCase())) {
+                    return true;
+                }
+                return super.preHandle(request, response, handler);
+            }
+        };
         lci.setParamName("lang");
         return lci;
     }

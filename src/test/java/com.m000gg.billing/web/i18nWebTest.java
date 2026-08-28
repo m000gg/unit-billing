@@ -103,6 +103,7 @@ public class i18nWebTest {
     @Test
     void whenLangParamIsUnsupported_thenFallsBackToDefault() throws Exception {
         mockMvc.perform(get("/login").param("lang", "xx-unsupported"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Login")));
     }
 }

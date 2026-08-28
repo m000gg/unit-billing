@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MessagePropertiesCoverageTest {
 
     private static final List<String> BASENAMES = List.of(
-            "admin", "client", "subscribers", "ledger", "identity", "catalog", "subscriptions", "common"
+            "admin", "client", "subscribers", "ledger", "identity", "catalog", "subscriptions", "common", "errors"
     );
     private static final List<String> LOCALES = List.of("en", "ru", "uk", "de", "fr");
 
