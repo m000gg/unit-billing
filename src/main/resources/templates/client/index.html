@@ -27,13 +27,13 @@
         <div class="topbar__account">
 
             <div class="lang-switcher">
-                <button class="lang-switcher__btn" type="button" aria-label="Change language">
+                <button class="lang-switcher__btn" type="button" th:aria-label="#{client.langSwitcher.ariaLabel}">
                     <svg class="lang-switcher__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="2" y1="12" x2="22" y2="12"></line>
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                     </svg>
-                    <span class="lang-switcher__current">EN</span>
+                    <span class="lang-switcher__current" th:text="${#locale.language == 'uk' ? 'UKR' : #strings.toUpperCase(#locale.language)}">EN</span>
                     <svg class="lang-switcher__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>

@@ -14,6 +14,8 @@
 
 <div class="main-content">
 
+    <div th:if="${errorMessage}" class="error-banner" th:text="${errorMessage}"></div>
+
     <div class="page-header">
         <p class="eyebrow" th:text="#{subscribers.usersList.eyebrow}">User Management</p>
         <h1 th:text="#{subscribers.usersList.title}">Users</h1>

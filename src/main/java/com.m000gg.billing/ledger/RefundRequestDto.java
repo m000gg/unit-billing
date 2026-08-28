@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public class RefundRequestDto {
-    @NotNull(message = "{ledger.validation.amount.required}")
+    @NotNull(message = "{ledger.validation.originalEntryId.required}")
     private UUID originalEntryId;
 
     @Positive(message = "{ledger.validation.amount.positive}")

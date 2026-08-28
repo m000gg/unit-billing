@@ -163,7 +163,8 @@
 
       <form th:if="${!user.deleted}"
             th:action="@{/admin/users/profile/delete/{id}(id=${user.id})}" method="post"
-            th:onsubmit="return confirm([[#{admin.userProfile.deleteConfirm}]])">
+            class="delete-account-form"
+            th:attr="data-confirm=#{admin.userProfile.deleteConfirm}">
         <button type="submit" class="btn-danger" th:text="#{admin.userProfile.delete}">Delete account</button>
       </form>
     </div>
@@ -171,6 +172,17 @@
   </div>
 
 </div>
+
+<script>
+  document.querySelectorAll('form.delete-account-form').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      var message = form.getAttribute('data-confirm');
+      if (!confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
 
 </body>
 </html>

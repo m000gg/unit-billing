@@ -32,6 +32,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleUnexpected(Exception ex, Model model, Locale locale, HttpServletRequest request) {
         log.error("Unhandled exception", ex);
         String message = messageSource.getMessage("errors.common.unexpected", null,
