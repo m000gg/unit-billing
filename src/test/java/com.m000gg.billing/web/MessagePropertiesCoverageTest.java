@@ -27,7 +27,9 @@ class MessagePropertiesCoverageTest {
             Map<String, Set<String>> keysByLocale = new HashMap<>();
 
             for (String locale : LOCALES) {
-                String path = "i18n/%s_%s.properties".formatted(basename, locale);
+                String path = locale.equals("en")
+                        ? "i18n/%s.properties".formatted(basename)
+                        : "i18n/%s_%s.properties".formatted(basename, locale);
                 Properties props = new Properties();
                 try (InputStream is = getClass().getClassLoader().getResourceAsStream(path)) {
                     if (is == null) continue;
