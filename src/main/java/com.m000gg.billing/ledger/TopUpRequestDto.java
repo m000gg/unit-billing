@@ -8,12 +8,12 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public class TopUpRequestDto {
-    @NotNull(message = "Amount is required")
-    @Positive(message = "Amount must be greater than zero")
-    @Digits(integer = 15, fraction = 4, message = "Amount must have at most 15 integer and 4 fractional digits")
+    @NotNull(message = "{ledger.validation.amount.required}")
+    @Positive(message = "{ledger.validation.amount.positive}")
+    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
     private BigDecimal amount;
 
-    @Size(max = 255, message = "Note must be under 255 characters")
+    @Size(max = 255, message = "{ledger.validation.note.size}")
     private String description;
 
     public BigDecimal getAmount() {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Profile</title>
+    <title th:text="#{client.profile.title}">Profile</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -16,19 +16,55 @@
     <div class="topbar__inner">
         <a class="brand" href="/client/">
             <span class="brand__mark">UB</span>
-            <span class="brand__name">Unit billing</span>
+            <span class="brand__name" th:text="#{client.profile.brand}">Unit billing</span>
         </a>
 
         <nav class="topnav">
-            <a class="topnav__link" href="/client/">Home</a>
-            <a class="topnav__link" href="#">Invoices</a>
-            <a class="topnav__link" href="#">Payment method</a>
-            <a class="topnav__link topnav__link--active" href="/client/profile">Profile</a>
+            <a class="topnav__link" href="/client/" th:text="#{client.profile.nav.home}">Home</a>
+            <a class="topnav__link" href="#" th:text="#{client.profile.nav.invoices}">Invoices</a>
+            <a class="topnav__link" href="#" th:text="#{client.profile.nav.paymentMethod}">Payment method</a>
         </nav>
 
         <div class="topbar__account">
-            <a class="profile-btn" href="/client/profile">
 
+            <div class="lang-switcher">
+                <button class="lang-switcher__btn" type="button" th:aria-label="#{client.langSwitcher.ariaLabel}">
+                    <svg class="lang-switcher__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span class="lang-switcher__current" th:text="${#locale.language == 'uk' ? 'UKR' : #strings.toUpperCase(#locale.language)}">EN</span>
+                    <svg class="lang-switcher__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="lang-switcher__menu">
+                    <a href="?lang=en" class="lang-switcher__item">
+                        <span class="lang-switcher__name">English</span>
+                        <span class="lang-switcher__code">EN</span>
+                    </a>
+                    <a href="?lang=de" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Deutsch</span>
+                        <span class="lang-switcher__code">DE</span>
+                    </a>
+                    <a href="?lang=fr" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Français</span>
+                        <span class="lang-switcher__code">FR</span>
+                    </a>
+                    <a href="?lang=uk" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Українська</span>
+                        <span class="lang-switcher__code">UKR</span>
+                    </a>
+                    <a href="?lang=ru" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Русский</span>
+                        <span class="lang-switcher__code">RU</span>
+                    </a>
+                </div>
+            </div>
+
+            <a class="profile-btn" href="/client/profile">
                 <span class="profile-btn__avatar" th:text="${userProfileViewModel != null and !#strings.isEmpty(userProfileViewModel.firstName) ? #strings.substring(userProfileViewModel.firstName, 0, 1) : '—'}">V</span>
                 <span class="profile-btn__text">
                     <span class="profile-btn__name" th:text="|${userProfileViewModel.firstName} ${userProfileViewModel.lastName}|"></span>
@@ -37,7 +73,7 @@
             </a>
             <form method="post" action="/logout">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit" class="btn-logout">Log out</button>
+                <button type="submit" class="btn-logout" th:text="#{client.profile.logout}">Log out</button>
             </form>
         </div>
     </div>
@@ -47,143 +83,143 @@
 
     <section class="statement">
         <div class="statement__intro">
-            <p class="statement__eyebrow">Account settings</p>
-            <h1 class="statement__title">Your profile</h1>
-            <p class="statement__sub">Manage your personal information and account details.</p>
+            <p class="statement__eyebrow" th:text="#{client.profile.eyebrow}">Account settings</p>
+            <h1 class="statement__title" th:text="#{client.profile.heading}">Your profile</h1>
+            <p class="statement__sub" th:text="#{client.profile.subtitle}">Manage your personal information and account details.</p>
         </div>
     </section>
 
     <section class="profile-section">
-        <h2 class="profile-section__title">Personal information</h2>
+        <h2 class="profile-section__title" th:text="#{client.profile.section.personal}">Personal information</h2>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">First name</label>
+                <label class="info-label" th:text="#{client.profile.field.firstName}">First name</label>
                 <p class="info-value" th:text="${userProfileViewModel.firstName}">John</p>
             </div>
             <div class="info-field">
-                <label class="info-label">Last name</label>
+                <label class="info-label" th:text="#{client.profile.field.lastName}">Last name</label>
                 <p class="info-value" th:text="${userProfileViewModel.lastName}">Doe</p>
             </div>
         </div>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">Email</label>
+                <label class="info-label" th:text="#{client.profile.field.email}">Email</label>
                 <p class="info-value" th:text="${userProfileViewModel.email}">john@example.com</p>
             </div>
             <div class="info-field">
-                <label class="info-label">Phone</label>
+                <label class="info-label" th:text="#{client.profile.field.phone}">Phone</label>
                 <p class="info-value" th:text="${userProfileViewModel.phone != null ? userProfileViewModel.phone : '—'}">—</p>
             </div>
         </div>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">Account created</label>
+                <label class="info-label" th:text="#{client.profile.field.accountCreated}">Account created</label>
                 <p class="info-value" th:text="${#dates.format(userProfileViewModel.createdAt, 'MMM d, yyyy')}">Aug 1, 2026</p>
             </div>
         </div>
     </section>
 
     <section class="profile-section">
-        <h2 class="profile-section__title">Address</h2>
+        <h2 class="profile-section__title" th:text="#{client.profile.section.address}">Address</h2>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">Country</label>
+                <label class="info-label" th:text="#{client.profile.field.country}">Country</label>
                 <p class="info-value" th:text="${userProfileViewModel.country != null ? userProfileViewModel.country : '—'}">—</p>
             </div>
             <div class="info-field">
-                <label class="info-label">Region</label>
+                <label class="info-label" th:text="#{client.profile.field.region}">Region</label>
                 <p class="info-value" th:text="${userProfileViewModel.region != null ? userProfileViewModel.region : '—'}">—</p>
             </div>
         </div>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">City</label>
+                <label class="info-label" th:text="#{client.profile.field.city}">City</label>
                 <p class="info-value" th:text="${userProfileViewModel.city != null ? userProfileViewModel.city : '—'}">—</p>
             </div>
             <div class="info-field">
-                <label class="info-label">Postal code</label>
+                <label class="info-label" th:text="#{client.profile.field.postalCode}">Postal code</label>
                 <p class="info-value" th:text="${userProfileViewModel.postalCode != null ? userProfileViewModel.postalCode : '—'}">—</p>
             </div>
         </div>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">Street</label>
+                <label class="info-label" th:text="#{client.profile.field.street}">Street</label>
                 <p class="info-value" th:text="${userProfileViewModel.street != null ? userProfileViewModel.street : '—'}">—</p>
             </div>
             <div class="info-field">
-                <label class="info-label">House number</label>
+                <label class="info-label" th:text="#{client.profile.field.houseNumber}">House number</label>
                 <p class="info-value" th:text="${userProfileViewModel.houseNumber != null ? userProfileViewModel.houseNumber : '—'}">—</p>
             </div>
         </div>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">Apartment</label>
+                <label class="info-label" th:text="#{client.profile.field.apartment}">Apartment</label>
                 <p class="info-value" th:text="${userProfileViewModel.apartment != null ? userProfileViewModel.apartment : '—'}">—</p>
             </div>
         </div>
     </section>
 
     <section class="profile-section">
-        <h2 class="profile-section__title">Account information</h2>
+        <h2 class="profile-section__title" th:text="#{client.profile.section.account}">Account information</h2>
 
         <div class="info-grid">
             <div class="info-field">
-                <label class="info-label">Current balance</label>
+                <label class="info-label" th:text="#{client.profile.field.currentBalance}">Current balance</label>
                 <p class="info-value balance-value" th:text="${'$' + #numbers.formatDecimal(userProfileViewModel.balance, 1, 2)}">$0.00</p>
             </div>
         </div>
     </section>
 
     <section class="profile-section">
-        <h2 class="profile-section__title">Ledger</h2>
+        <h2 class="profile-section__title" th:text="#{client.profile.section.ledger}">Ledger</h2>
 
         <form class="ledger-filter-bar" method="get" th:action="@{/client/profile}">
             <div class="ledger-filter-field ledger-filter-field--grow">
-                <label for="filter-search">Description</label>
-                <input type="text" id="filter-search" name="search" placeholder="Search by description..."
+                <label for="filter-search" th:text="#{client.profile.filter.description}">Description</label>
+                <input type="text" id="filter-search" name="search" th:placeholder="#{client.profile.filter.searchPlaceholder}"
                        th:value="${search}" />
             </div>
 
             <div class="ledger-filter-field">
-                <label for="filter-type">Type</label>
+                <label for="filter-type" th:text="#{client.profile.filter.type}">Type</label>
                 <select id="filter-type" name="type">
-                    <option value="">All types</option>
-                    <option value="PAYMENT" th:selected="${type != null and type.name() == 'PAYMENT'}">Payment</option>
-                    <option value="CHARGE" th:selected="${type != null and type.name() == 'CHARGE'}">Charge</option>
-                    <option value="REFUND" th:selected="${type != null and type.name() == 'REFUND'}">Refund</option>
-                    <option value="CORRECTION_INCREASE" th:selected="${type != null and type.name() == 'CORRECTION_INCREASE'}">Correction increase</option>
-                    <option value="CORRECTION_DECREASE" th:selected="${type != null and type.name() == 'CORRECTION_DECREASE'}">Correction decrease</option>
+                    <option value="" th:text="#{client.profile.filter.allTypes}">All types</option>
+                    <option value="PAYMENT" th:selected="${type != null and type.name() == 'PAYMENT'}" th:text="#{admin.ledger.type.PAYMENT}">Payment</option>
+                    <option value="CHARGE" th:selected="${type != null and type.name() == 'CHARGE'}" th:text="#{admin.ledger.type.CHARGE}">Charge</option>
+                    <option value="REFUND" th:selected="${type != null and type.name() == 'REFUND'}" th:text="#{admin.ledger.type.REFUND}">Refund</option>
+                    <option value="CORRECTION_INCREASE" th:selected="${type != null and type.name() == 'CORRECTION_INCREASE'}" th:text="#{admin.ledger.type.CORRECTION_INCREASE}">Correction increase</option>
+                    <option value="CORRECTION_DECREASE" th:selected="${type != null and type.name() == 'CORRECTION_DECREASE'}" th:text="#{admin.ledger.type.CORRECTION_DECREASE}">Correction decrease</option>
                 </select>
             </div>
 
             <div class="ledger-filter-field">
-                <label for="filter-date">Date</label>
+                <label for="filter-date" th:text="#{client.profile.filter.date}">Date</label>
                 <input type="date" id="filter-date" name="date" th:value="${date}" />
             </div>
 
             <input type="hidden" name="size" th:value="${ledgerEntriesPage.size}" />
 
             <div class="ledger-filter-actions">
-                <button type="submit" class="ledger-filter-submit">Search</button>
-                <a th:href="@{/client/profile}" class="ledger-filter-clear-btn">Clear</a>
+                <button type="submit" class="ledger-filter-submit" th:text="#{client.profile.filter.search}">Search</button>
+                <a th:href="@{/client/profile}" class="ledger-filter-clear-btn" th:text="#{client.profile.filter.clear}">Clear</a>
             </div>
         </form>
 
         <table class="ledger-table">
             <thead>
             <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th class="ledger-amount-col">Amount</th>
-                <th>Performed by</th>
+                <th th:text="#{client.profile.table.date}">Date</th>
+                <th th:text="#{client.profile.table.description}">Description</th>
+                <th th:text="#{client.profile.table.type}">Type</th>
+                <th class="ledger-amount-col" th:text="#{client.profile.table.amount}">Amount</th>
+                <th th:text="#{client.profile.table.performedBy}">Performed by</th>
             </tr>
             </thead>
             <tbody>
@@ -193,19 +229,17 @@
                 <td>
                     <span class="ledger-type-badge"
                           th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
-                          th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+                          th:text="#{__${'admin.ledger.type.' + entry.type.name()}__}">CHARGE</span>
                 </td>
                 <td class="ledger-amount-col"
                     th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
                     th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
                     -$9.99
                 </td>
-                <td th:text="${entry.source.name() == 'ADMIN' ? 'Performed by Admin' : #strings.replace(entry.source.name(), '_', ' ')}">
-                    Performed by Admin
-                </td>
+                <td th:text="${entry.source.name() == 'ADMIN'} ? #{client.profile.ledger.performedByAdmin} : ${#strings.replace(entry.source.name(), '_', ' ')}">
             </tr>
             <tr th:if="${ledgerEntriesPage.empty}">
-                <td colspan="5" style="text-align:center; color: var(--ink-faint);">No transactions found.</td>
+                <td colspan="5" style="text-align:center; color: var(--ink-faint);" th:text="#{client.profile.table.empty}">No transactions found.</td>
             </tr>
             </tbody>
         </table>
@@ -213,16 +247,16 @@
         <div class="ledger-pagination" th:if="${ledgerEntriesPage.totalPages > 1}">
             <a th:if="${ledgerEntriesPage.hasPrevious()}"
                th:href="@{/client/profile(page=${ledgerEntriesPage.number - 1}, size=${ledgerEntriesPage.size}, search=${search}, type=${type}, date=${date})}"
-               class="ledger-pagination__link">← Previous</a>
-            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasPrevious()}">← Previous</span>
+               class="ledger-pagination__link" th:text="#{client.profile.pagination.prev}">← Previous</a>
+            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasPrevious()}" th:text="#{client.profile.pagination.prev}">← Previous</span>
 
             <span class="ledger-pagination__status"
-                  th:text="|Page ${ledgerEntriesPage.number + 1} of ${ledgerEntriesPage.totalPages}|">Page 1 of 3</span>
+                  th:text="#{client.profile.pagination.page(${ledgerEntriesPage.number + 1}, ${ledgerEntriesPage.totalPages})}">Page 1 of 3</span>
 
             <a th:if="${ledgerEntriesPage.hasNext()}"
                th:href="@{/client/profile(page=${ledgerEntriesPage.number + 1}, size=${ledgerEntriesPage.size}, search=${search}, type=${type}, date=${date})}"
-               class="ledger-pagination__link">Next →</a>
-            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasNext()}">Next →</span>
+               class="ledger-pagination__link" th:text="#{client.profile.pagination.next}">Next →</a>
+            <span class="ledger-pagination__link ledger-pagination__link--disabled" th:unless="${ledgerEntriesPage.hasNext()}" th:text="#{client.profile.pagination.next}">Next →</span>
         </div>
     </section>
 

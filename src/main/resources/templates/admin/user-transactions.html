@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>User Transactions</title>
+  <title th:text="#{admin.userTransactions.title}">User Transactions</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/admin/index.css}">
@@ -17,12 +17,12 @@
 
   <a th:href="@{/admin/users/profile/{id}(id=${user.id})}" class="back-link">
     <span class="back-arrow">←</span>
-    Back to profile
+    <span th:text="#{admin.userTransactions.back}">Back to profile</span>
   </a>
 
   <div class="page-header">
-    <p class="eyebrow">User Management</p>
-    <h1>Transactions</h1>
+    <p class="eyebrow" th:text="#{admin.userTransactions.management}">User Management</p>
+    <h1 th:text="#{admin.userTransactions.heading}">Transactions</h1>
     <p class="page-subtitle">
       <span th:text="${user.firstName + ' ' + user.lastName}">Jane Doe</span>
       <span class="page-subtitle-dot">·</span>
@@ -32,31 +32,31 @@
 
   <form method="get" th:action="@{/admin/users/profile/{id}/ledger(id=${user.id})}" class="ledger-filter-bar">
     <div class="ledger-filter-field ledger-filter-field--grow">
-      <label for="filter-search">Description</label>
-      <input type="text" id="filter-search" name="search" placeholder="Search by description"
+      <label for="filter-search" th:text="#{admin.userTransactions.filter.search}">Description</label>
+      <input type="text" id="filter-search" name="search" th:placeholder="#{admin.userTransactions.filter.searchPlaceholder}"
              th:value="${search}">
     </div>
 
     <div class="ledger-filter-field">
-      <label for="filter-type">Type</label>
+      <label for="filter-type" th:text="#{admin.userTransactions.filter.type}">Type</label>
       <select id="filter-type" name="type">
-        <option value="">All types</option>
-        <option value="PAYMENT" th:selected="${type != null and type.name() == 'PAYMENT'}">Payment</option>
-        <option value="CHARGE" th:selected="${type != null and type.name() == 'CHARGE'}">Charge</option>
-        <option value="REFUND" th:selected="${type != null and type.name() == 'REFUND'}">Refund</option>
-        <option value="CORRECTION_INCREASE" th:selected="${type != null and type.name() == 'CORRECTION_INCREASE'}">Correction increase</option>
-        <option value="CORRECTION_DECREASE" th:selected="${type != null and type.name() == 'CORRECTION_DECREASE'}">Correction decrease</option>
+        <option value="" th:text="#{admin.userTransactions.filter.allTypes}">All types</option>
+        <option value="PAYMENT" th:selected="${type != null and type.name() == 'PAYMENT'}" th:text="#{admin.userTransactions.type.payment}">Payment</option>
+        <option value="CHARGE" th:selected="${type != null and type.name() == 'CHARGE'}" th:text="#{admin.userTransactions.type.charge}">Charge</option>
+        <option value="REFUND" th:selected="${type != null and type.name() == 'REFUND'}" th:text="#{admin.userTransactions.type.refund}">Refund</option>
+        <option value="CORRECTION_INCREASE" th:selected="${type != null and type.name() == 'CORRECTION_INCREASE'}" th:text="#{admin.userTransactions.type.correctionIncrease}">Correction increase</option>
+        <option value="CORRECTION_DECREASE" th:selected="${type != null and type.name() == 'CORRECTION_DECREASE'}" th:text="#{admin.userTransactions.type.correctionDecrease}">Correction decrease</option>
       </select>
     </div>
 
     <div class="ledger-filter-field">
-      <label for="filter-date">Date</label>
+      <label for="filter-date" th:text="#{admin.userTransactions.filter.date}">Date</label>
       <input type="date" id="filter-date" name="date" th:value="${date}">
     </div>
 
     <div class="ledger-filter-actions">
-      <button type="submit" class="ledger-filter-submit">Apply filters</button>
-      <a th:href="@{/admin/users/profile/{id}/ledger(id=${user.id})}" class="ledger-filter-clear-btn">Clear</a>
+      <button type="submit" class="ledger-filter-submit" th:text="#{admin.userTransactions.filter.apply}">Apply filters</button>
+      <a th:href="@{/admin/users/profile/{id}/ledger(id=${user.id})}" class="ledger-filter-clear-btn" th:text="#{admin.userTransactions.filter.clear}">Clear</a>
     </div>
   </form>
 
@@ -64,14 +64,14 @@
     <table class="user-table ledger-table" id="ledgerTable">
       <thead>
       <tr>
-        <th>Id</th>
-        <th>Date</th>
-        <th>Description</th>
-        <th>Type</th>
-        <th class="ledger-amount-col">Amount</th>
-        <th>Reference</th>
-        <th>Performed by</th>
-        <th>Action</th>
+        <th th:text="#{admin.userTransactions.table.id}">Id</th>
+        <th th:text="#{admin.userTransactions.table.date}">Date</th>
+        <th th:text="#{admin.userTransactions.table.description}">Description</th>
+        <th th:text="#{admin.userTransactions.table.type}">Type</th>
+        <th class="ledger-amount-col" th:text="#{admin.userTransactions.table.amount}">Amount</th>
+        <th th:text="#{admin.userTransactions.table.reference}">Reference</th>
+        <th th:text="#{admin.userTransactions.table.performedBy}">Performed by</th>
+        <th th:text="#{admin.userTransactions.table.action}">Action</th>
       </tr>
       </thead>
       <tbody>
@@ -82,9 +82,9 @@
         <td class="ledger-date" th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy HH:mm')}">Aug 10, 2026 14:32</td>
         <td th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription charge</td>
         <td>
-                    <span class="ledger-type-badge"
-                          th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
-                          th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+            <span class="ledger-type-badge"
+                  th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
+                  th:text="#{__${'admin.ledger.type.' + entry.type.name()}__}">CHARGE</span>
         </td>
         <td class="ledger-amount-col"
             th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
@@ -92,9 +92,9 @@
           -$9.99
         </td>
         <td>
-                    <span th:if="${entry.originalEntryId != null}"
-                          class="id-cell" th:attr="data-full=${entry.originalEntryId}"
-                          th:text="${#strings.substring(entry.originalEntryId, 0, 8) + '…'}"></span>
+          <span th:if="${entry.originalEntryId != null}"
+                class="id-cell" th:attr="data-full=${entry.originalEntryId}"
+                th:text="${#strings.substring(entry.originalEntryId, 0, 8) + '…'}"></span>
           <span th:if="${entry.originalEntryId == null}" class="ledger-ref-empty">—</span>
         </td>
         <td>
@@ -108,11 +108,11 @@
         <td>
           <a th:if="${entry.refundable}"
              th:href="@{/admin/users/{id}/refund(id=${user.id},originalEntryId=${entry.id})}"
-             class="table-link table-link-refund">Refund</a>
+             class="table-link table-link-refund" th:text="#{admin.userTransactions.action.refund}">Refund</a>
         </td>
       </tr>
       <tr th:if="${ledgerEntriesPage.empty}">
-        <td colspan="8" class="ledger-empty-row">No transactions found.</td>
+        <td colspan="8" class="ledger-empty-row" th:text="#{admin.userTransactions.table.empty}">No transactions found.</td>
       </tr>
       </tbody>
     </table>
@@ -120,7 +120,8 @@
 
   <div class="pagination" th:if="${ledgerEntriesPage.totalPages > 1}">
     <a th:if="${ledgerEntriesPage.hasPrevious()}"
-       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number - 1}, search=${search}, type=${type}, date=${date})}">← Prev</a>
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number - 1}, search=${search}, type=${type}, date=${date})}"
+       th:text="#{admin.userTransactions.pagination.prev}">← Prev</a>
 
     <a th:each="i : ${#numbers.sequence(0, ledgerEntriesPage.totalPages - 1)}"
        th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${i}, search=${search}, type=${type}, date=${date})}"
@@ -128,7 +129,8 @@
        th:text="${i + 1}"></a>
 
     <a th:if="${ledgerEntriesPage.hasNext()}"
-       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number + 1}, search=${search}, type=${type}, date=${date})}">Next →</a>
+       th:href="@{/admin/users/profile/{id}/ledger(id=${user.id}, page=${ledgerEntriesPage.number + 1}, search=${search}, type=${type}, date=${date})}"
+       th:text="#{admin.userTransactions.pagination.next}">Next →</a>
   </div>
 
 </div>

@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Controller
@@ -42,6 +44,9 @@ public class ApplicationUserAdminController {
 
     @Autowired
     private LedgerService ledgerService;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @GetMapping("/")
     public String usersList(
@@ -63,7 +68,10 @@ public class ApplicationUserAdminController {
     }
 
     @PostMapping("/registration")
-    public String registerNewUser(Model model, @Valid @ModelAttribute("registerDto") ApplicationUserRegisterDto applicationUserRegisterDto, BindingResult result) {
+    public String registerNewUser(Model model,
+                                  @Valid @ModelAttribute("registerDto") ApplicationUserRegisterDto applicationUserRegisterDto,
+                                  BindingResult result,
+                                  Locale locale) {
         if (result.hasErrors()) {
             return "admin/user-registration";
         }
@@ -73,10 +81,13 @@ public class ApplicationUserAdminController {
             model.addAttribute("success", true);
             model.addAttribute("registerDto", new ApplicationUserRegisterDto());
         } catch (EmailAlreadyExistsException ex) {
-            model.addAttribute("error", ex.getMessage());
+            String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), ex.getMessage(), locale);
+            model.addAttribute("error", message);
         } catch (Exception ex) {
             log.error("Failed to register new application user", ex);
-            model.addAttribute("error", "Unexpected error occurred, please try again");
+            String message = messageSource.getMessage("errors.common.unexpected", null,
+                    "Unexpected error occurred, please try again", locale);
+            model.addAttribute("error", message);
         }
         return "admin/user-registration";
     }
@@ -99,14 +110,19 @@ public class ApplicationUserAdminController {
     }
 
     @PostMapping("/profile/update/{id}")
-    public String editUser(@PathVariable UUID id, @Valid @ModelAttribute("user") ApplicationUserEditDto applicationUserEditDto, BindingResult bindingResult, Model model) {
+    public String editUser(@PathVariable UUID id,
+                           @Valid @ModelAttribute("user") ApplicationUserEditDto applicationUserEditDto,
+                           BindingResult bindingResult,
+                           Model model,
+                           Locale locale) {
         if (bindingResult.hasErrors()) {
             return "admin/edit-user";
         }
         try {
             applicationUserRegistrationService.editApplicationUserProfile(id, applicationUserEditDto);
         } catch (EmailAlreadyTakenException e) {
-            bindingResult.rejectValue("email", "email.taken", e.getMessage());
+            String message = messageSource.getMessage(e.getMessageKey(), e.getArgs(), e.getMessage(), locale);
+            bindingResult.rejectValue("email", "email.taken", message);
             model.addAttribute("userId", id);
             return "admin/edit-user";
         }
@@ -114,11 +130,12 @@ public class ApplicationUserAdminController {
     }
 
     @PostMapping("/profile/delete/{id}")
-    public String deleteUser(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+    public String deleteUser(@PathVariable UUID id, RedirectAttributes redirectAttributes, Locale locale) {
         try {
             applicationUserRegistrationService.deleteApplicationUserProfile(id);
         } catch (UserAlreadyDeletedException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            String message = messageSource.getMessage(e.getMessageKey(), e.getArgs(), e.getMessage(), locale);
+            redirectAttributes.addFlashAttribute("errorMessage", message);
             return "redirect:/admin/users/profile/" + id;
         }
         return "redirect:/admin/users/";

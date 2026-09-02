@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Main Page</title>
+    <title th:text="#{client.index.title}">Main Page</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,16 +15,54 @@
     <div class="topbar__inner">
         <a class="brand" href="/client/">
             <span class="brand__mark">UB</span>
-            <span class="brand__name">Unit billing</span>
+            <span class="brand__name" th:text="#{client.index.brand}">Unit billing</span>
         </a>
 
         <nav class="topnav">
-            <a class="topnav__link topnav__link--active" href="/client/">Home</a>
-            <a class="topnav__link" href="#">Invoices</a>
-            <a class="topnav__link" href="#">Payment method</a>
+            <a class="topnav__link topnav__link--active" href="/client/" th:text="#{client.index.nav.home}">Home</a>
+            <a class="topnav__link" href="#" th:text="#{client.index.nav.invoices}">Invoices</a>
+            <a class="topnav__link" href="#" th:text="#{client.index.nav.paymentMethod}">Payment method</a>
         </nav>
 
         <div class="topbar__account">
+
+            <div class="lang-switcher">
+                <button class="lang-switcher__btn" type="button" th:aria-label="#{client.langSwitcher.ariaLabel}">
+                    <svg class="lang-switcher__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span class="lang-switcher__current" th:text="${#locale.language == 'uk' ? 'UKR' : #strings.toUpperCase(#locale.language)}">EN</span>
+                    <svg class="lang-switcher__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="lang-switcher__menu">
+                    <a href="?lang=en" class="lang-switcher__item">
+                        <span class="lang-switcher__name">English</span>
+                        <span class="lang-switcher__code">EN</span>
+                    </a>
+                    <a href="?lang=de" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Deutsch</span>
+                        <span class="lang-switcher__code">DE</span>
+                    </a>
+                    <a href="?lang=fr" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Français</span>
+                        <span class="lang-switcher__code">FR</span>
+                    </a>
+                    <a href="?lang=uk" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Українська</span>
+                        <span class="lang-switcher__code">UKR</span>
+                    </a>
+                    <a href="?lang=ru" class="lang-switcher__item">
+                        <span class="lang-switcher__name">Русский</span>
+                        <span class="lang-switcher__code">RU</span>
+                    </a>
+                </div>
+            </div>
+
             <a class="profile-btn" href="/client/profile">
                 <span class="profile-btn__avatar" th:text="${#strings.isEmpty(userViewModel.firstName) ? '—' : #strings.substring(userViewModel.firstName, 0, 1)}">V</span>
                 <span class="profile-btn__text">
@@ -34,7 +72,7 @@
             </a>
             <form method="post" action="/logout">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit" class="btn-logout">Log out</button>
+                <button type="submit" class="btn-logout" th:text="#{client.index.logout}">Log out</button>
             </form>
         </div>
     </div>
@@ -44,24 +82,24 @@
 
     <section class="statement">
         <div class="statement__intro">
-            <p class="statement__eyebrow">Account overview</p>
-            <h1 class="statement__title" th:text="|Welcome back, ${userViewModel.firstName}|">Welcome back, User</h1>
-            <p class="statement__sub">Here's where things stand on your billing account today.</p>
+            <p class="statement__eyebrow" th:text="#{client.index.eyebrow}">Account overview</p>
+            <h1 class="statement__title" th:text="#{client.index.welcome(${userViewModel.firstName})}">Welcome back, User</h1>
+            <p class="statement__sub" th:text="#{client.index.subtitle}">Here's where things stand on your billing account today.</p>
         </div>
 
         <div class="statement__figures">
             <div class="figure">
-                <span class="figure__label">Current balance</span>
+                <span class="figure__label" th:text="#{client.index.currentBalance}">Current balance</span>
                 <span class="figure__value" th:text="${'$' + #numbers.formatDecimal(userViewModel.balance, 1, 2)}">$128.40</span>
             </div>
             <div class="figure-divider" aria-hidden="true"></div>
             <div class="figure">
-                <span class="figure__label">Active plan</span>
-                <span class="figure__value figure__value--text">Standard</span>
+                <span class="figure__label" th:text="#{client.index.activePlan}">Active plan</span>
+                <span class="figure__value figure__value--text" th:text="#{client.index.plan.standard}">Standard</span>
             </div>
             <div class="figure-divider" aria-hidden="true"></div>
             <div class="figure">
-                <span class="figure__label">Next invoice</span>
+                <span class="figure__label" th:text="#{client.index.nextInvoice}">Next invoice</span>
                 <span class="figure__value figure__value--text">Sep 1, 2026</span>
             </div>
         </div>
@@ -69,28 +107,28 @@
 
     <section class="grid">
         <article class="card">
-            <h2 class="card__title">Plan &amp; subscription</h2>
-            <p class="card__body">Standard plan, billed monthly. Renews automatically unless cancelled before the billing date.</p>
-            <a class="card__link" href="#">Manage plan</a>
+            <h2 class="card__title" th:text="#{client.index.card.plan.title}">Plan &amp; subscription</h2>
+            <p class="card__body" th:text="#{client.index.card.plan.desc}">Standard plan, billed monthly. Renews automatically unless cancelled before the billing date.</p>
+            <a class="card__link" href="#" th:text="#{client.index.card.plan.link}">Manage plan</a>
         </article>
 
         <article class="card">
-            <h2 class="card__title">Payment method</h2>
-            <p class="card__body">Visa ending in 4412. Used for all upcoming invoices on this account.</p>
-            <a class="card__link" href="#">Update payment method</a>
+            <h2 class="card__title" th:text="#{client.index.card.payment.title}">Payment method</h2>
+            <p class="card__body" th:text="#{client.index.card.payment.desc}">Visa ending in 4412. Used for all upcoming invoices on this account.</p>
+            <a class="card__link" href="#" th:text="#{client.index.card.payment.link}">Update payment method</a>
         </article>
 
         <article class="card">
-            <h2 class="card__title">Invoices</h2>
-            <p class="card__body">Download or review statements from the last 12 months, including tax details.</p>
-            <a class="card__link" href="#">View invoice history</a>
+            <h2 class="card__title" th:text="#{client.index.card.invoices.title}">Invoices</h2>
+            <p class="card__body" th:text="#{client.index.card.invoices.desc}">Download or review statements from the last 12 months, including tax details.</p>
+            <a class="card__link" href="#" th:text="#{client.index.card.invoices.link}">View invoice history</a>
         </article>
     </section>
 
     <section class="ledger">
         <div class="ledger__header">
-            <h2 class="ledger__title">Recent activity</h2>
-            <a class="ledger__link" href="/client/profile">View all</a>
+            <h2 class="ledger__title" th:text="#{client.index.ledger.title}">Recent activity</h2>
+            <a class="ledger__link" href="/client/profile" th:text="#{client.index.ledger.viewAll}">View all</a>
         </div>
 
         <ul class="ledger__list" th:if="${!#lists.isEmpty(ledgerEntryUserViewModelList)}">
@@ -99,7 +137,7 @@
                     <span th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription</span>
                     <span class="ledger-row__type-badge"
                           th:classappend="${'ledger-row__type-badge--' + #strings.toLowerCase(entry.type.name())}"
-                          th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+                          th:text="#{__${'admin.ledger.type.' + entry.type.name()}__}">CHARGE</span>
                 </span>
                 <span class="ledger-row__date" th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy')}">Aug 1, 2026</span>
                 <span class="ledger-row__amount"
@@ -110,7 +148,7 @@
             </li>
         </ul>
 
-        <div class="ledger__empty" th:if="${#lists.isEmpty(ledgerEntryUserViewModelList)}">No transactions yet.</div>
+        <div class="ledger__empty" th:if="${#lists.isEmpty(ledgerEntryUserViewModelList)}" th:text="#{client.index.ledger.empty}">No transactions yet.</div>
     </section>
 
 </main>

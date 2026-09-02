@@ -6,9 +6,9 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public class BillRequestDto {
-    @NotNull(message = "Amount is required")
-    @Positive(message = "Amount must be greater than zero")
-    @Digits(integer = 15, fraction = 4, message = "Amount must have at most 15 integer and 4 fractional digits")
+    @NotNull(message = "{ledger.validation.amount.required}")
+    @Positive(message = "{ledger.validation.amount.positive}")
+    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
     private BigDecimal amount;
     private String description;
 

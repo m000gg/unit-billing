@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <body>
 
 <aside th:fragment="aside" class="sidebar">
@@ -11,20 +11,46 @@
 
     <nav>
         <ul>
-            <li><a href="/admin/"><span class="nav-icon">◦</span>Dashboard</a></li>
-            <li><a href="/admin/users/registration"><span class="nav-icon">◦</span>User Registration</a></li>
-            <li><a href="/admin/users/"><span class="nav-icon">◦</span>Users List</a></li>
+            <li><a href="/admin/"><span class="nav-icon">◦</span><span th:text="#{admin.sidebar.dashboard}">Dashboard</span></a></li>
+            <li><a href="/admin/users/registration"><span class="nav-icon">◦</span><span th:text="#{admin.sidebar.userRegistration}">User Registration</span></a></li>
+            <li><a href="/admin/users/"><span class="nav-icon">◦</span><span th:text="#{admin.sidebar.usersList}">Users List</span></a></li>
         </ul>
     </nav>
+
+    <details class="lang-dropdown lang-dropdown--sidebar">
+        <summary>
+            <span th:switch="${#locale.language}">
+                <span th:case="'uk'">UKR</span>
+                <span th:case="*" th:text="${#strings.toUpperCase(#locale.language)}">EN</span>
+            </span>
+            <span class="chevron">▾</span>
+        </summary>
+        <div class="lang-menu">
+            <a th:href="@{''(lang='ru')}" th:classappend="${#locale.language == 'ru'} ? ' active'">RU</a>
+            <a th:href="@{''(lang='uk')}" th:classappend="${#locale.language == 'uk'} ? ' active'">UKR</a>
+            <a th:href="@{''(lang='en')}" th:classappend="${#locale.language == 'en'} ? ' active'">EN</a>
+            <a th:href="@{''(lang='de')}" th:classappend="${#locale.language == 'de'} ? ' active'">DE</a>
+            <a th:href="@{''(lang='fr')}" th:classappend="${#locale.language == 'fr'} ? ' active'">FR</a>
+        </div>
+    </details>
 
     <form th:action="@{/logout}" method="post" class="logout-form">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <button type="submit" class="logout-btn">
-            <span>Logout</span>
+            <span th:text="#{admin.sidebar.logout}">Logout</span>
         </button>
     </form>
-</aside>
 
+    <script>
+        document.addEventListener('click', function (event) {
+            document.querySelectorAll('details.lang-dropdown[open]').forEach(function (details) {
+                if (!details.contains(event.target)) {
+                    details.removeAttribute('open');
+                }
+            });
+        });
+    </script>
+</aside>
 
 </body>
 </html>

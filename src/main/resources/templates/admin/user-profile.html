@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>User Profile</title>
+  <title th:text="#{admin.userProfile.title}">User Profile</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/admin/index.css}">
@@ -18,70 +18,71 @@
 
   <a th:href="@{/admin/users/}" class="back-link">
     <span class="back-arrow">←</span>
-    Back to users list
+    <span th:text="#{admin.userProfile.back}">Back to users list</span>
   </a>
 
   <div class="profile-hero" th:classappend="${user.deleted} ? 'profile-hero-deleted'">
     <div class="hero-avatar" th:text="${#strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1)}">VA</div>
     <div class="hero-info">
-      <p class="eyebrow">User Management</p>
+      <p class="eyebrow" th:text="#{admin.userProfile.management}">User Management</p>
       <h1>
         <span th:text="${user.firstName + ' ' + user.lastName}">User Information</span>
         <span th:if="${user.deleted}" class="hero-deleted-badge">
-                    <span class="hero-deleted-dot"></span>Deleted
-                </span>
+          <span class="hero-deleted-dot"></span><span th:text="#{admin.userProfile.deletedBadge}">Deleted</span>
+        </span>
       </h1>
       <p class="page-subtitle" th:text="${user.email}">user@mail.com</p>
     </div>
     <div class="hero-balance">
-      <span class="hero-balance-label">Balance</span>
+      <span class="hero-balance-label" th:text="#{admin.userProfile.balance}">Balance</span>
       <span class="hero-balance-value">$<span th:text="${user.balance}"></span></span>
     </div>
   </div>
 
   <div th:if="${user.deleted}" class="deleted-notice">
     <span class="deleted-notice-icon">!</span>
-    This account has been deleted. Editing is disabled and the account cannot be deleted again.
+    <span th:text="#{admin.userProfile.deletedNotice}">This account has been deleted. Editing is disabled and the account cannot be deleted again.</span>
   </div>
 
   <div class="profile-card">
 
     <div class="form-section">
-      <h4 class="section-title">Personal details</h4>
+      <h4 class="section-title" th:text="#{admin.userProfile.section.personal}">Personal details</h4>
       <div class="form-row">
         <div class="data-group">
-          <label>First name</label>
+          <label th:text="#{admin.userProfile.firstName}">First name</label>
           <div class="data-value" th:text="${user.firstName}"></div>
         </div>
         <div class="data-group">
-          <label>Last name</label>
+          <label th:text="#{admin.userProfile.lastName}">Last name</label>
           <div class="data-value" th:text="${user.lastName}"></div>
         </div>
       </div>
 
       <div class="form-row">
         <div class="data-group">
-          <label>Email address</label>
+          <label th:text="#{admin.userProfile.email}">Email address</label>
           <div class="data-value" th:text="${user.email}"></div>
         </div>
         <div class="data-group">
-          <label>Phone number</label>
+          <label th:text="#{admin.userProfile.phone}">Phone number</label>
           <div class="data-value" th:text="${user.phone}"></div>
         </div>
       </div>
 
       <div class="data-group data-group-full">
-        <label>Address</label>
+        <label th:text="#{admin.userProfile.address}">Address</label>
         <div class="data-value"
-             th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', Apt. ' + user.apartment : '') + ', ' + user.postalCode}">
+             th:with="aptLabel=#{subscribers.userProfile.apt}"
+             th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', ' + aptLabel + ' ' + user.apartment : '') + ', ' + user.postalCode}">
         </div>
       </div>
     </div>
 
     <div class="form-section">
-      <h4 class="section-title">Finance</h4>
+      <h4 class="section-title" th:text="#{admin.userProfile.section.finance}">Finance</h4>
       <div class="data-group">
-        <label>Current balance</label>
+        <label th:text="#{admin.userProfile.currentBalance}">Current balance</label>
         <div class="data-value balance-value">$<span th:text="${user.balance}"></span></div>
       </div>
 
@@ -89,44 +90,44 @@
         <a th:href="@{/admin/users/{id}/topup(id=${user.id})}" class="btn-ledger btn-topup">
           <span class="btn-ledger-icon">↑</span>
           <span class="btn-ledger-text">
-            <span class="btn-ledger-title">Top Up</span>
-            <span class="btn-ledger-subtitle">Add credit to balance</span>
+            <span class="btn-ledger-title" th:text="#{admin.userProfile.action.topup}">Top Up</span>
+            <span class="btn-ledger-subtitle" th:text="#{admin.userProfile.action.topupSub}">Add credit to balance</span>
           </span>
         </a>
         <a th:href="@{/admin/users/{id}/bill(id=${user.id})}" class="btn-ledger btn-bill">
           <span class="btn-ledger-icon">↓</span>
           <span class="btn-ledger-text">
-            <span class="btn-ledger-title">Bill</span>
-            <span class="btn-ledger-subtitle">Charge for a service</span>
+            <span class="btn-ledger-title" th:text="#{admin.userProfile.action.bill}">Bill</span>
+            <span class="btn-ledger-subtitle" th:text="#{admin.userProfile.action.billSub}">Charge for a service</span>
           </span>
         </a>
         <a th:href="@{/admin/users/{id}/refund(id=${user.id})}" class="btn-ledger btn-refund">
           <span class="btn-ledger-icon">↩</span>
           <span class="btn-ledger-text">
-            <span class="btn-ledger-title">Refund</span>
-            <span class="btn-ledger-subtitle">Return a prior charge</span>
+            <span class="btn-ledger-title" th:text="#{admin.userProfile.action.refund}">Refund</span>
+            <span class="btn-ledger-subtitle" th:text="#{admin.userProfile.action.refundSub}">Return a prior charge</span>
           </span>
         </a>
         <a th:href="@{/admin/users/{id}/correction(id=${user.id})}" class="btn-ledger btn-correction">
           <span class="btn-ledger-icon">±</span>
           <span class="btn-ledger-text">
-            <span class="btn-ledger-title">Correction</span>
-            <span class="btn-ledger-subtitle">Adjust balance manually</span>
+            <span class="btn-ledger-title" th:text="#{admin.userProfile.action.correction}">Correction</span>
+            <span class="btn-ledger-subtitle" th:text="#{admin.userProfile.action.correctionSub}">Adjust balance manually</span>
           </span>
         </a>
       </div>
     </div>
 
     <div class="form-section">
-      <h4 class="section-title">Recent activity</h4>
+      <h4 class="section-title" th:text="#{admin.userProfile.section.activity}">Recent activity</h4>
 
       <table class="ledger-table" th:if="${!#lists.isEmpty(recentLedgerEntries)}">
         <thead>
         <tr>
-          <th>Date</th>
-          <th>Description</th>
-          <th>Type</th>
-          <th class="ledger-amount-col">Amount</th>
+          <th th:text="#{admin.userProfile.table.date}">Date</th>
+          <th th:text="#{admin.userProfile.table.description}">Description</th>
+          <th th:text="#{admin.userProfile.table.type}">Type</th>
+          <th class="ledger-amount-col" th:text="#{admin.userProfile.table.amount}">Amount</th>
         </tr>
         </thead>
         <tbody>
@@ -134,43 +135,54 @@
           <td th:text="${#temporals.format(entry.createdAt, 'MMM d, yyyy HH:mm')}">Aug 10, 2026 14:32</td>
           <td th:text="${entry.description != null ? entry.description : '—'}">Monthly subscription charge</td>
           <td>
-        <span class="ledger-type-badge"
-              th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
-              th:text="${#strings.replace(entry.type.name(), '_', ' ')}">CHARGE</span>
+            <span class="ledger-type-badge"
+                  th:classappend="${'ledger-type-' + #strings.toLowerCase(entry.type.name())}"
+                  th:text="#{__${'admin.ledger.type.' + entry.type.name()}__}">CHARGE</span>
           </td>
           <td class="ledger-amount-col"
               th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
               th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
             -$9.99
           </td>
-
         </tr>
         </tbody>
       </table>
 
-      <p class="ledger-empty" th:if="${#lists.isEmpty(recentLedgerEntries)}">No transactions yet.</p>
+      <p class="ledger-empty" th:if="${#lists.isEmpty(recentLedgerEntries)}" th:text="#{admin.userProfile.table.empty}">No transactions yet.</p>
 
       <a th:href="@{/admin/users/profile/{id}/ledger(id=${user.id})}" class="btn-outline btn-view-ledger">
-        View full ledger
+        <span th:text="#{admin.userProfile.viewLedger}">View full ledger</span>
         <span class="btn-view-ledger-arrow">→</span>
       </a>
     </div>
 
     <div class="profile-actions">
       <a th:if="${!user.deleted}"
-         th:href="@{/admin/users/profile/update/{id}(id=${user.id})}" class="btn-save">Edit profile</a>
-      <span th:if="${user.deleted}" class="btn-save btn-disabled">Edit profile</span>
+         th:href="@{/admin/users/profile/update/{id}(id=${user.id})}" class="btn-save" th:text="#{admin.userProfile.edit}">Edit profile</a>
+      <span th:if="${user.deleted}" class="btn-save btn-disabled" th:text="#{admin.userProfile.edit}">Edit profile</span>
 
       <form th:if="${!user.deleted}"
             th:action="@{/admin/users/profile/delete/{id}(id=${user.id})}" method="post"
-            onsubmit="return confirm('Delete this user account? This action cannot be undone.')">
-        <button type="submit" class="btn-danger">Delete account</button>
+            class="delete-account-form"
+            th:attr="data-confirm=#{admin.userProfile.deleteConfirm}">
+        <button type="submit" class="btn-danger" th:text="#{admin.userProfile.delete}">Delete account</button>
       </form>
     </div>
 
   </div>
 
 </div>
+
+<script>
+  document.querySelectorAll('form.delete-account-form').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      var message = form.getAttribute('data-confirm');
+      if (!confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
 
 </body>
 </html>

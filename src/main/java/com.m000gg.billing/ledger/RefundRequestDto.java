@@ -8,12 +8,12 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public class RefundRequestDto {
-    @NotNull
+    @NotNull(message = "{ledger.validation.originalEntryId.required}")
     private UUID originalEntryId;
 
-    @Positive
-    @NotNull
-    @Digits(integer = 15, fraction = 4, message = "Amount must have at most 15 integer and 4 fractional digits")
+    @Positive(message = "{ledger.validation.amount.positive}")
+    @NotNull(message = "{ledger.validation.amount.required}")
+    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
     private BigDecimal amount;
 
     private String description;
