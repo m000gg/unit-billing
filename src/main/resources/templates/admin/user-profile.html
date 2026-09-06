@@ -35,7 +35,7 @@
     </div>
     <div class="hero-balance">
       <span class="hero-balance-label" th:text="#{admin.userProfile.balance}">Balance</span>
-      <span class="hero-balance-value">$<span th:text="${user.balance}"></span></span>
+      <span class="hero-balance-value" th:text="${user.balance + ' ' + user.userCurrency}">0.00 USD</span>
     </div>
   </div>
 
@@ -81,9 +81,16 @@
 
     <div class="form-section">
       <h4 class="section-title" th:text="#{admin.userProfile.section.finance}">Finance</h4>
-      <div class="data-group">
-        <label th:text="#{admin.userProfile.currentBalance}">Current balance</label>
-        <div class="data-value balance-value">$<span th:text="${user.balance}"></span></div>
+
+      <div class="form-row">
+        <div class="data-group">
+          <label th:text="#{admin.userProfile.currency}">Account currency</label>
+          <div class="data-value" th:text="${user.userCurrency}">USD</div>
+        </div>
+        <div class="data-group">
+          <label th:text="#{admin.userProfile.currentBalance}">Current balance</label>
+          <div class="data-value balance-value" th:text="${user.balance + ' ' + user.userCurrency}">0.00 USD</div>
+        </div>
       </div>
 
       <div class="ledger-actions" th:if="${!user.deleted}">
@@ -141,8 +148,8 @@
           </td>
           <td class="ledger-amount-col"
               th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
-              th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
-            -$9.99
+              th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + #numbers.formatDecimal(entry.amount.abs(), 1, 2) + ' ' + user.userCurrency}">
+            -9.99 USD
           </td>
         </tr>
         </tbody>

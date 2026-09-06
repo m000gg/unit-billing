@@ -3,6 +3,7 @@ package com.m000gg.billing.web.admin;
 import com.m000gg.billing.ledger.EntryType;
 import com.m000gg.billing.ledger.LedgerEntryAdminViewModel;
 import com.m000gg.billing.ledger.LedgerService;
+import com.m000gg.billing.settings.exception.InvalidCurrencyException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserEditDto;
 import com.m000gg.billing.subscribers.ApplicationUserRegisterDto;
@@ -83,6 +84,13 @@ public class ApplicationUserAdminController {
         } catch (EmailAlreadyExistsException ex) {
             String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), ex.getMessage(), locale);
             model.addAttribute("error", message);
+        } catch (InvalidCurrencyException ex) {
+            result.rejectValue("userCurrency",
+                    ex.getMessageKey(),
+                    ex.getArgs(),
+                    "Invalid or unsupported currency");
+            return "admin/user-registration";
+
         } catch (Exception ex) {
             log.error("Failed to register new application user", ex);
             String message = messageSource.getMessage("errors.common.unexpected", null,

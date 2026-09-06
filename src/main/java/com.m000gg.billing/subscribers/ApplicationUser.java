@@ -56,6 +56,8 @@ public class ApplicationUser {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    @Column(name = "user_currency", length = 3, nullable = false)
+    private String userCurrency;
 
     public UUID getId() {
         return id;
@@ -183,5 +185,13 @@ public class ApplicationUser {
 
     public void setDeleted(Boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public String getUserCurrency() {
+        return userCurrency;
+    }
+
+    public void setUserCurrency(String userCurrency) {
+        this.userCurrency = userCurrency;
     }
 }

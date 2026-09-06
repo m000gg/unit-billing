@@ -1,6 +1,7 @@
 package com.m000gg.billing.subscribers;
 
 
+import com.m000gg.billing.settings.exception.InvalidCurrencyException;
 import com.m000gg.billing.subscribers.exception.ApplicationUserNotFoundException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyTakenException;
@@ -16,8 +17,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Currency;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ApplicationUserManagementService {
@@ -34,6 +38,11 @@ public class ApplicationUserManagementService {
     @Autowired
     private CustomPasswordGenerator customPasswordGenerator;
 
+    private static final Set<String> VALID_CURRENCIES = Currency.getAvailableCurrencies()
+            .stream()
+            .map(Currency::getCurrencyCode)
+            .collect(Collectors.toSet());
+
     @Transactional
     public String createNewApplicationUser(ApplicationUserRegisterDto applicationUserRegisterDto) {
 
@@ -42,6 +51,10 @@ public class ApplicationUserManagementService {
         String email = applicationUserRegisterDto.getEmail();
         if (applicationUserRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException(email);
+        }
+        String userCurrency = applicationUserRegisterDto.getUserCurrency();
+        if ( userCurrency.isBlank() || !VALID_CURRENCIES.contains(userCurrency.toUpperCase())) {
+            throw new InvalidCurrencyException(userCurrency);
         }
         String generatedPassword = customPasswordGenerator.generatePassayPassword();
         String encodedPassword = passwordEncoder.encode(generatedPassword);

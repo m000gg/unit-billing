@@ -9,6 +9,7 @@ CREATE TABLE application_users (
                                    country VARCHAR(255),
                                    city VARCHAR(255),
                                    region VARCHAR(255),
+                                   user_currency VARCHAR(3),
                                    street VARCHAR(255),
                                    house_number VARCHAR(255),
                                    apartment VARCHAR(255),

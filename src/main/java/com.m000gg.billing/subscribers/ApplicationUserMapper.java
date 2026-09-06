@@ -33,6 +33,7 @@ public class ApplicationUserMapper {
         dto.setHouseNumber(entity.getHouseNumber());
         dto.setApartment(entity.getApartment());
         dto.setPostalCode(entity.getPostalCode());
+        dto.setUserCurrency(entity.getUserCurrency());
         return dto;
     }
 
@@ -50,6 +51,7 @@ public class ApplicationUserMapper {
         newApplicationUser.setPostalCode(applicationUserRegisterDto.getPostalCode());
         newApplicationUser.setBalance(BigDecimal.ZERO);
         newApplicationUser.setPassword(encodedPassword);
+        newApplicationUser.setUserCurrency(applicationUserRegisterDto.getUserCurrency());
     }
 
     public AccountOverviewViewModel accountViewModelFromUser(ApplicationUser currentUser, AccountOverviewViewModel accountOverviewViewModel){
@@ -66,6 +68,7 @@ public class ApplicationUserMapper {
         accountOverviewViewModel.setApartment(currentUser.getApartment());
         accountOverviewViewModel.setPostalCode(currentUser.getPostalCode());
         accountOverviewViewModel.setPhone(currentUser.getPhone());
+        accountOverviewViewModel.setUserCurrency(currentUser.getUserCurrency());
         return accountOverviewViewModel;
     }
 }

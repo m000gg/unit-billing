@@ -17,6 +17,7 @@ public class AccountOverviewViewModel {
     private String postalCode;
     private Date createdAt;
     private String phone;
+    private String userCurrency;
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
@@ -95,5 +96,11 @@ public class AccountOverviewViewModel {
     }
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+    public String getUserCurrency() {
+        return userCurrency;
+    }
+    public void setUserCurrency(String userCurrency) {
+        this.userCurrency = userCurrency;
     }
 }
