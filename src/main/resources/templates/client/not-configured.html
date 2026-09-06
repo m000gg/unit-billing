@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Unavailable</title>
+    <link rel="stylesheet" th:href="@{/css/client/not-configured.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<main class="setup-pending">
+    <div class="setup-pending__card">
+
+        <div class="setup-pending__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <line x1="12" y1="8" x2="12" y2="13"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+
+        <p class="setup-pending__eyebrow">Setup In Progress</p>
+        <h1 class="setup-pending__title">Billing isn't set up yet</h1>
+        <p class="setup-pending__body">
+            An administrator needs to finish the initial platform configuration before your account and balance
+            become available. This usually only takes a moment — try refreshing shortly.
+        </p>
+
+        <div class="setup-pending__status">
+            <span class="setup-pending__status-dot"></span>
+            <span>Waiting on administrator</span>
+        </div>
+
+        <div class="setup-pending__actions">
+            <button type="button" class="btn-refresh" onclick="window.location.reload()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Check again
+            </button>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>

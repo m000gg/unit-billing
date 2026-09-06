@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Setup - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin/billing-setup.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;650;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<div class="setup-container">
+    <div class="setup-card">
+
+        <div class="setup-header">
+            <p class="eyebrow">Initial Configuration</p>
+            <h1>Billing Setup</h1>
+            <p class="page-subtitle">Configure your multi-currency environment before launching.</p>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}">Unexpected error occurred.</span>
+        </div>
+
+        <form th:action="@{/admin/billing-setup}" th:object="${billingSetupDto}" method="post" class="setup-form">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="form-group">
+                <label for="baseCurrency" class="form-label">Base Currency</label>
+                <input type="text" id="baseCurrency" th:field="*{baseCurrency}" class="form-control"
+                       placeholder="e.g. USD, EUR" th:errorclass="is-invalid">
+                <div class="error-message" th:if="${#fields.hasErrors('baseCurrency')}" th:errors="*{baseCurrency}">Error</div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    Complete Setup
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
