@@ -2,6 +2,7 @@ package com.m000gg.billing.web.admin;
 
 import com.m000gg.billing.settings.BillingSetupDto;
 import com.m000gg.billing.settings.SystemSettingService;
+import com.m000gg.billing.settings.exception.InvalidCurrencyException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,14 @@ public class AdminSetupController {
         }
         try {
             systemSettingService.saveInitialSetup(billingSetupDto);
+        } catch (InvalidCurrencyException exception) {
+            result.rejectValue("baseCurrency",
+                    exception.getMessageKey(),
+                    exception.getArgs(),
+                    "Invalid or unsupported currency");
+
+            return "admin/billing-setup";
+
         } catch (Exception ex) {
             log.error("Failed to setup billing system", ex);
             String message = messageSource.getMessage("errors.common.unexpected", null,

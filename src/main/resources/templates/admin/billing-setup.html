@@ -21,17 +21,31 @@
             <p class="page-subtitle">Configure your multi-currency environment before launching.</p>
         </div>
 
-        <div th:if="${error}" class="alert alert-danger">
+        <div th:if="${error}" class="alert alert-danger slide-down">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
             <span th:text="${error}">Unexpected error occurred.</span>
         </div>
 
         <form th:action="@{/admin/billing-setup}" th:object="${billingSetupDto}" method="post" class="setup-form">
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
             <div class="form-group">
                 <label for="baseCurrency" class="form-label">Base Currency</label>
                 <input type="text" id="baseCurrency" th:field="*{baseCurrency}" class="form-control"
                        placeholder="e.g. USD, EUR" th:errorclass="is-invalid">
-                <div class="error-message" th:if="${#fields.hasErrors('baseCurrency')}" th:errors="*{baseCurrency}">Error</div>
+
+                <div class="field-error slide-down" th:if="${#fields.hasErrors('baseCurrency')}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span th:errors="*{baseCurrency}">Invalid currency code</span>
+                </div>
             </div>
 
             <div class="form-actions">
