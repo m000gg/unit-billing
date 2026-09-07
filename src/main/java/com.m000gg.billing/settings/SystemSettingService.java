@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Currency;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class SystemSettingService {
             if ( value.isBlank() || !VALID_CURRENCIES.contains(value.toUpperCase())) {
                 throw new InvalidCurrencyException(value);
             }
-            systemSetting.setSettingValue(value);
+            systemSetting.setSettingValue(value.toUpperCase());
 
             systemSetting.setDescription(description);
             systemSetting.setUpdatedAt(Instant.now());

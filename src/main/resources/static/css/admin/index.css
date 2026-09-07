@@ -370,3 +370,18 @@ body {
     color: #fff;
     font-weight: 700;
 }
+
+/* ---------- Task panel sections ---------- */
+
+.task-panel {
+    margin-bottom: 36px;
+}
+
+.task-panel h3 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    margin: 0 0 16px;
+}

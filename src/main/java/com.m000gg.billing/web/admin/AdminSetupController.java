@@ -61,4 +61,11 @@ public class AdminSetupController {
         }
         return "redirect:/admin/";
     }
+
+    @GetMapping("/admin/billing-configuration")
+    public String showBillingConfiguration(Model model){
+        String baseCurrency = systemSettingService.getBaseCurrency();
+        model.addAttribute("baseCurrency",baseCurrency);
+        return "admin/billing-settings-page";
+    }
 }
