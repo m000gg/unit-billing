@@ -53,7 +53,7 @@ public class ApplicationUserManagementService {
             throw new EmailAlreadyExistsException(email);
         }
         String userCurrency = applicationUserRegisterDto.getUserCurrency();
-        if ( userCurrency.isBlank() || !VALID_CURRENCIES.contains(userCurrency.toUpperCase())) {
+        if (userCurrency == null || userCurrency.isBlank() || !VALID_CURRENCIES.contains(userCurrency.toUpperCase())) {
             throw new InvalidCurrencyException(userCurrency);
         }
         String generatedPassword = customPasswordGenerator.generatePassayPassword();

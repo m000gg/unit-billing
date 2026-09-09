@@ -1,15 +1,15 @@
 package com.m000gg.billing.subscribers;
 
+import com.m000gg.billing.settings.SystemSettingService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -20,6 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -28,17 +29,8 @@ public class ApplicationUserCRUDIntegrationTest {
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
 
-    @InjectMocks
-    private ApplicationUserManagementService applicationUserManagementService;
-
-    @Mock
-    private CustomPasswordGenerator customPasswordGenerator;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private ApplicationUserMapper applicationUserMapper;
+    @MockitoBean
+    private SystemSettingService systemSettingService;
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18");
@@ -52,6 +44,11 @@ public class ApplicationUserCRUDIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(true);
+    }
 
     @AfterEach
     void cleanUp() {
@@ -85,7 +82,8 @@ public class ApplicationUserCRUDIntegrationTest {
                         .param("city", "Chemnitz")
                         .param("street", "Hauptstrasse")
                         .param("houseNumber", "12")
-                        .param("postalCode", "09111"))
+                        .param("postalCode", "09111")
+                        .param("userCurrency", "USD"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/user-registration"))
                 .andExpect(model().attribute("success", true))

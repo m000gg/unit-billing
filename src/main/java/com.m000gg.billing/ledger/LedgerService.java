@@ -4,7 +4,6 @@ import com.m000gg.billing.identity.Admin;
 import com.m000gg.billing.ledger.exception.ExchangeRateMismatchException;
 import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
 import com.m000gg.billing.ledger.exception.InvalidRefundTargetException;
-import com.m000gg.billing.ledger.exception.RefundExceedsOriginalChargeException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import jakarta.transaction.Transactional;

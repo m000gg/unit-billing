@@ -1,6 +1,9 @@
 package com.m000gg.billing.ledger;
+
 import com.m000gg.billing.identity.Admin;
 import com.m000gg.billing.identity.AdminRepository;
+import com.m000gg.billing.settings.BillingSetupDto;
+import com.m000gg.billing.settings.SystemSettingService;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -41,6 +44,8 @@ public class LedgerIntegrationTest {
     private AdminRepository adminRepository;
 
     @Autowired
+    private SystemSettingService systemSettingService;
+    @Autowired
     private MockMvc mockMvc;
 
     @Container
@@ -58,11 +63,16 @@ public class LedgerIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        BillingSetupDto billingSetupDto = new BillingSetupDto();
+        billingSetupDto.setBaseCurrency("USD");
+        systemSettingService.saveInitialSetup(billingSetupDto);
+
         user = new ApplicationUser();
         user.setFirstName("John");
         user.setLastName("Pork");
         user.setEmail("ledger_test_user@example.com");
         user.setBalance(BigDecimal.valueOf(100));
+        user.setUserCurrency("USD");
         user = applicationUserRepository.save(user);
 
         admin = new Admin();
@@ -84,6 +94,10 @@ public class LedgerIntegrationTest {
         mockMvc.perform(post("/admin/users/{id}/topup", user.getId())
                         .with(csrf())
                         .param("amount", "50")
+                        .param("amountInBaseCurrency", "50")
+                        .param("exchangeRate", "1")
+                        .param("userCurrency", "USD")
+                        .param("baseCurrency", "USD")
                         .param("description", "Cash payment at office"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/users/profile/" + user.getId()));
@@ -102,6 +116,10 @@ public class LedgerIntegrationTest {
         mockMvc.perform(post("/admin/users/{id}/topup", user.getId())
                         .with(csrf())
                         .param("amount", "-50")
+                        .param("amountInBaseCurrency", "-50")
+                        .param("exchangeRate", "1")
+                        .param("userCurrency", "USD")
+                        .param("baseCurrency", "USD")
                         .param("description", "Should be rejected"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/topup"))
@@ -113,10 +131,32 @@ public class LedgerIntegrationTest {
 
     @Test
     @WithMockUser(username = "ledger_test_admin@example.com", roles = "ADMIN")
+    void applyTopUp_MismatchedExchangeRate_RejectedWithInlineError() throws Exception {
+        mockMvc.perform(post("/admin/users/{id}/topup", user.getId())
+                        .with(csrf())
+                        .param("amount", "50")
+                        .param("amountInBaseCurrency", "50")
+                        .param("exchangeRate", "2")
+                        .param("userCurrency", "USD")
+                        .param("baseCurrency", "USD")
+                        .param("description", "Inconsistent rate"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/topup"))
+                .andExpect(model().attributeHasFieldErrors("topUpRequest", "amountInBaseCurrency"));
+        ApplicationUser unchanged = applicationUserRepository.findById(user.getId()).orElseThrow();
+        assertThat(unchanged.getBalance()).isEqualByComparingTo(BigDecimal.valueOf(100));
+    }
+
+    @Test
+    @WithMockUser(username = "ledger_test_admin@example.com", roles = "ADMIN")
     void issueBill_ExceedsBalance_RejectedWithInlineError() throws Exception {
         mockMvc.perform(post("/admin/users/{id}/bill", user.getId())
                         .with(csrf())
                         .param("amount", "150")
+                        .param("amountInBaseCurrency", "150")
+                        .param("exchangeRate", "1")
+                        .param("userCurrency", "USD")
+                        .param("baseCurrency", "USD")
                         .param("description", "Too much"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/bill"))
@@ -127,10 +167,31 @@ public class LedgerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "ledger_test_admin@example.com", roles = "ADMIN")
+    void issueBill_Success_UpdatesBalanceAndRedirects() throws Exception {
+        mockMvc.perform(post("/admin/users/{id}/bill", user.getId())
+                        .with(csrf())
+                        .param("amount", "40")
+                        .param("amountInBaseCurrency", "40")
+                        .param("exchangeRate", "1")
+                        .param("userCurrency", "USD")
+                        .param("baseCurrency", "USD")
+                        .param("description", "Monthly charge"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/users/profile/" + user.getId()));
+        ApplicationUser updated = applicationUserRepository.findById(user.getId()).orElseThrow();
+        assertThat(updated.getBalance()).isEqualByComparingTo(BigDecimal.valueOf(60));
+    }
+
+    @Test
     void applyTopUp_Unauthenticated_RedirectsToLogin() throws Exception {
         mockMvc.perform(post("/admin/users/{id}/topup", user.getId())
                         .with(csrf())
-                        .param("amount", "50"))
+                        .param("amount", "50")
+                        .param("amountInBaseCurrency", "50")
+                        .param("exchangeRate", "1")
+                        .param("userCurrency", "USD")
+                        .param("baseCurrency", "USD"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/login"));
     }
@@ -142,6 +203,7 @@ public class LedgerIntegrationTest {
         otherUser.setLastName("Doe");
         otherUser.setEmail("ledger_test_other_user@example.com");
         otherUser.setBalance(BigDecimal.valueOf(100));
+        otherUser.setUserCurrency("USD");
         otherUser = applicationUserRepository.save(otherUser);
 
         LedgerEntry entryA = new LedgerEntry();
@@ -151,6 +213,10 @@ public class LedgerIntegrationTest {
         entryA.setCreatedAt(Instant.now());
         entryA.setDescription("A's charge");
         entryA.setSource(EntrySource.ADMIN);
+        entryA.setUserCurrency("USD");
+        entryA.setBaseCurrency("USD");
+        entryA.setExchangeRate(BigDecimal.ONE);
+        entryA.setAmountInBaseCurrency(new BigDecimal("10.00"));
         ledgerEntryRepository.save(entryA);
 
         LedgerEntry entryB = new LedgerEntry();
@@ -160,6 +226,10 @@ public class LedgerIntegrationTest {
         entryB.setCreatedAt(Instant.now());
         entryB.setDescription("B's charge");
         entryB.setSource(EntrySource.ADMIN);
+        entryB.setUserCurrency("USD");
+        entryB.setBaseCurrency("USD");
+        entryB.setExchangeRate(BigDecimal.ONE);
+        entryB.setAmountInBaseCurrency(new BigDecimal("10.00"));
         ledgerEntryRepository.save(entryB);
 
         Pageable pageable = PageRequest.of(0, 10);
