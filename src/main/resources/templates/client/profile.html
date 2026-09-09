@@ -172,7 +172,7 @@
         <div class="info-grid">
             <div class="info-field">
                 <label class="info-label" th:text="#{client.profile.field.currentBalance}">Current balance</label>
-                <p class="info-value balance-value" th:text="${'$' + #numbers.formatDecimal(userProfileViewModel.balance, 1, 2)}">$0.00</p>
+                <p class="info-value balance-value" th:text="${userProfileViewModel.userCurrency + ' ' + #numbers.formatDecimal(userProfileViewModel.balance, 1, 2)}">USD 0.00</p>
             </div>
         </div>
     </section>
@@ -233,8 +233,8 @@
                 </td>
                 <td class="ledger-amount-col"
                     th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
-                    th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
-                    -$9.99
+                    th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + entry.userCurrency + ' ' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
+                    - USD 9.99
                 </td>
                 <td th:text="${entry.source.name() == 'ADMIN'} ? #{client.profile.ledger.performedByAdmin} : ${#strings.replace(entry.source.name(), '_', ' ')}">
             </tr>
