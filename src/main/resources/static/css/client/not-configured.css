@@ -32,7 +32,51 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- Not-configured empty state ---------- */
+.lang-picker {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+}
+
+.lang-picker form {
+    margin: 0;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.lang-picker select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 8px 30px 8px 12px;
+    font-size: 13px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.lang-picker select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.select-arrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--ink-faint);
+    display: flex;
+}
 
 .setup-pending {
     display: flex;
@@ -121,25 +165,38 @@ body {
 
 .setup-pending__actions {
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    justify-content: center;
     gap: 12px;
-    margin-top: 6px;
+    margin-top: 12px;
 }
 
-.btn-refresh {
+.setup-pending__actions form {
+    margin: 0;
+    display: flex;
+}
+
+.btn-refresh,
+.btn-secondary {
     font-family: var(--font-body);
     font-size: 13.5px;
     font-weight: 600;
-    color: #fff;
-    background: var(--accent);
-    border: 1px solid var(--accent);
     border-radius: 7px;
-    padding: 10px 18px;
+    padding: 11px 20px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    height: 100%;
+}
+
+.btn-refresh {
+    color: #fff;
+    background: var(--accent);
+    border: 1px solid var(--accent);
 }
 
 .btn-refresh:hover {
@@ -155,6 +212,18 @@ body {
     transform: rotate(180deg);
 }
 
+.btn-secondary {
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+}
+
+.btn-secondary:hover {
+    background: var(--surface);
+    border-color: var(--ink-faint);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .setup-pending__status-dot {
         animation: none;
@@ -164,5 +233,14 @@ body {
 @media (max-width: 640px) {
     .setup-pending__card {
         padding: 36px 24px;
+    }
+    .setup-pending__actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .setup-pending__actions form,
+    .btn-refresh,
+    .btn-secondary {
+        width: 100%;
     }
 }
