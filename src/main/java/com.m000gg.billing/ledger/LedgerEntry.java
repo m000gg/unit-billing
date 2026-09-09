@@ -19,7 +19,7 @@ public class LedgerEntry {
     @Column(name = "original_entry_id")
     private UUID originalEntryId;
 
-    @Column(nullable = false, precision = 19, scale = 4)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)

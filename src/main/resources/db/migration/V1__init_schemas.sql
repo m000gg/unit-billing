@@ -5,7 +5,7 @@ CREATE TABLE application_users (
                                    email VARCHAR(255) NOT NULL UNIQUE,
                                    phone VARCHAR(255),
                                    password VARCHAR(255),
-                                   balance NUMERIC NOT NULL,
+                                   balance NUMERIC(15, 2) NOT NULL DEFAULT 0.00,
                                    country VARCHAR(255),
                                    city VARCHAR(255),
                                    region VARCHAR(255),

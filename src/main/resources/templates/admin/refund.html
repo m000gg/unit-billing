@@ -57,11 +57,10 @@
                         <option value="" disabled selected th:text="#{admin.refund.selectCharge}">Select a charge to refund</option>
                         <option th:each="charge : ${availableCharges}"
                                 th:value="${charge.id}"
-                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — ' + charge.amount + ' ' + charge.userCurrency + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
+                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — ' + charge.amount + ' ' + charge.userCurrency + ' (Base: ' + charge.amountInBaseCurrency + ', Rate: ' + charge.exchangeRate + ')' + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
                                 th:data-amount="${charge.amount}"
                                 th:data-base-amount="${charge.amountInBaseCurrency}"
                                 th:data-exchange-rate="${charge.exchangeRate}">
-                            12 Mar 2026 — 49.99 UAH — Hardware cost
                         </option>
                     </select>
                     <span class="field-error" th:if="${#fields.hasErrors('originalEntryId')}" th:errors="*{originalEntryId}">Select a charge to refund</span>
@@ -169,7 +168,7 @@
         if (!amount || amount <= 0 || !rate) {
             return;
         }
-        baseAmountInput.value = (amount / rate).toFixed(4);
+        baseAmountInput.value = (amount / rate).toFixed(2);
     }
 
     function recalcFromBaseAmount() {
@@ -178,7 +177,7 @@
         if (!baseAmount || baseAmount <= 0 || !rate) {
             return;
         }
-        amountInput.value = (baseAmount * rate).toFixed(4);
+        amountInput.value = (baseAmount * rate).toFixed(2);
     }
 
     function recalcOnRateChange() {

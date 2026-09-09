@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public class TopUpRequestDto {
     @NotNull(message = "{ledger.validation.amount.required}")
     @Positive(message = "{ledger.validation.amount.positive}")
-    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
+    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.amount.digits}")
     private BigDecimal amount;
 
     @Size(max = 255, message = "{ledger.validation.note.size}")
@@ -24,7 +24,7 @@ public class TopUpRequestDto {
     private String exchangeRateSource;
     @NotNull(message = "{ledger.validation.amount.required}")
     @Positive(message = "{ledger.validation.amount.positive}")
-    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
+    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.amount.digits}")
     private BigDecimal amountInBaseCurrency;
 
     public BigDecimal getAmount() {

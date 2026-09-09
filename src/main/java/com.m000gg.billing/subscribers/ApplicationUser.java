@@ -32,7 +32,7 @@ public class ApplicationUser {
     private String phone;
     private String password;
 
-    @Column(nullable = false)
+    @Column(nullable = false,precision = 19, scale = 2)
     private BigDecimal balance;
 
 

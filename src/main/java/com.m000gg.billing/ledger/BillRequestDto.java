@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public class BillRequestDto {
     @NotNull(message = "{ledger.validation.amount.required}")
     @Positive(message = "{ledger.validation.amount.positive}")
-    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
+    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.amount.digits}")
     private BigDecimal amount;
     private String description;
     private String userCurrency;
@@ -16,7 +16,7 @@ public class BillRequestDto {
     private String exchangeRateSource;
     @NotNull(message = "{ledger.validation.userAmount.required}")
     @Positive(message = "{ledger.validation.userAmount.positive}")
-    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.userAmount.digits}")
+    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.userAmount.digits}")
     private BigDecimal amountInBaseCurrency;
     @NotNull(message = "{ledger.validation.exchangeRate.required}")
     @Positive(message = "{ledger.validation.exchangeRate.positive}")

@@ -145,7 +145,7 @@
         if (!amount || amount <= 0 || !rate) {
             return;
         }
-        baseAmountInput.value = (amount / rate).toFixed(4);
+        baseAmountInput.value = (amount / rate).toFixed(2);
     }
 
     function recalcFromBaseAmount() {
@@ -154,7 +154,7 @@
         if (!baseAmount || baseAmount <= 0 || !rate) {
             return;
         }
-        amountInput.value = (baseAmount * rate).toFixed(4);
+        amountInput.value = (baseAmount * rate).toFixed(2);
     }
 
     function recalcOnRateChange() {

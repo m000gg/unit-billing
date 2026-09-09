@@ -13,7 +13,7 @@ public class RefundRequestDto {
 
     @Positive(message = "{ledger.validation.amount.positive}")
     @NotNull(message = "{ledger.validation.amount.required}")
-    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
+    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.amount.digits}")
     private BigDecimal amount;
     private String description;
     private String userCurrency;
@@ -25,7 +25,7 @@ public class RefundRequestDto {
     private String exchangeRateSource;
     @NotNull(message = "{ledger.validation.amount.required}")
     @Positive(message = "{ledger.validation.amount.positive}")
-    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
+    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.amount.digits}")
     private BigDecimal amountInBaseCurrency;
 
     public UUID getOriginalEntryId() {
