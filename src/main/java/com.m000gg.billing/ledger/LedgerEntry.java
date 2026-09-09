@@ -36,6 +36,16 @@ public class LedgerEntry {
 
     private UUID performedByAdmin;
 
+    private String userCurrency;
+
+    private String baseCurrency;
+
+    private String exchangeRateSource;
+
+    private BigDecimal amountInBaseCurrency;
+
+    private BigDecimal exchangeRate;
+
     public EntrySource getSource() {
         return source;
     }
@@ -101,6 +111,46 @@ public class LedgerEntry {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getUserCurrency() {
+        return userCurrency;
+    }
+
+    public void setUserCurrency(String userCurrency) {
+        this.userCurrency = userCurrency;
+    }
+
+    public String getBaseCurrency() {
+        return baseCurrency;
+    }
+
+    public void setBaseCurrency(String baseCurrency) {
+        this.baseCurrency = baseCurrency;
+    }
+
+    public String getExchangeRateSource() {
+        return exchangeRateSource;
+    }
+
+    public void setExchangeRateSource(String exchangeRateSource) {
+        this.exchangeRateSource = exchangeRateSource;
+    }
+
+    public BigDecimal getAmountInBaseCurrency() {
+        return amountInBaseCurrency;
+    }
+
+    public void setAmountInBaseCurrency(BigDecimal amountInBaseCurrency) {
+        this.amountInBaseCurrency = amountInBaseCurrency;
+    }
+
+    public BigDecimal getExchangeRate() {
+        return exchangeRate;
+    }
+
+    public void setExchangeRate(BigDecimal exchangeRate) {
+        this.exchangeRate = exchangeRate;
     }
 }
 

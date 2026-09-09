@@ -9,7 +9,13 @@ public class LedgerEntryUserViewModel {
     private Instant createdAt;
     private EntryType type;
     private EntrySource source;
-
+    private String userCurrency;
+    public String getUserCurrency() {
+        return userCurrency;
+    }
+    public void setUserCurrency(String userCurrency) {
+        this.userCurrency = userCurrency;
+    }
     public EntrySource getSource() { return source; }
     public void setSource(EntrySource source) { this.source = source; }
     public BigDecimal getAmount() {

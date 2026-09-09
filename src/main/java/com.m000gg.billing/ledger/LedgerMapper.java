@@ -8,40 +8,55 @@ import java.util.UUID;
 
 @Component
 public class LedgerMapper {
-    public LedgerEntry createLedgerEntryFromTopUpRequestDto(TopUpRequestDto topUpRequestDto, UUID SubscriberId, UUID currentAdminId){
-        LedgerEntry ledgerEntry = new  LedgerEntry();
+    public LedgerEntry createLedgerEntryFromTopUpRequestDto(TopUpRequestDto topUpRequestDto, UUID subscriberId, UUID currentAdminId){
+        LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(topUpRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
         ledgerEntry.setPerformedByAdmin(currentAdminId);
         ledgerEntry.setType(EntryType.PAYMENT);
         ledgerEntry.setCreatedAt(Instant.now());
         ledgerEntry.setDescription(topUpRequestDto.getDescription());
-        ledgerEntry.setSubscriberId(SubscriberId);
+        ledgerEntry.setSubscriberId(subscriberId);
+        ledgerEntry.setUserCurrency(topUpRequestDto.getUserCurrency());
+        ledgerEntry.setBaseCurrency(topUpRequestDto.getBaseCurrency());
+        ledgerEntry.setExchangeRate(topUpRequestDto.getExchangeRate());
+        ledgerEntry.setExchangeRateSource(topUpRequestDto.getExchangeRateSource());
+        ledgerEntry.setAmountInBaseCurrency(topUpRequestDto.getAmountInBaseCurrency());
 
         return ledgerEntry;
     }
 
-    public LedgerEntry createLedgerEntryFromBillRequestDto(BillRequestDto billRequestDto, UUID SubscriberId, UUID currentAdminId){
-        LedgerEntry ledgerEntry = new  LedgerEntry();
+    public LedgerEntry createLedgerEntryFromBillRequestDto(BillRequestDto billRequestDto, UUID subscriberId, UUID currentAdminId){
+        LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(billRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
         ledgerEntry.setPerformedByAdmin(currentAdminId);
         ledgerEntry.setType(EntryType.CHARGE);
         ledgerEntry.setCreatedAt(Instant.now());
         ledgerEntry.setDescription(billRequestDto.getDescription());
-        ledgerEntry.setSubscriberId(SubscriberId);
+        ledgerEntry.setSubscriberId(subscriberId);
+        ledgerEntry.setUserCurrency(billRequestDto.getUserCurrency());
+        ledgerEntry.setBaseCurrency(billRequestDto.getBaseCurrency());
+        ledgerEntry.setExchangeRate(billRequestDto.getExchangeRate());
+        ledgerEntry.setExchangeRateSource(billRequestDto.getExchangeRateSource());
+        ledgerEntry.setAmountInBaseCurrency(billRequestDto.getAmountInBaseCurrency());
 
         return ledgerEntry;
     }
 
-    public LedgerEntry createLedgerEntryFromCorrectionRequestDto(CorrectionRequestDto correctionRequestDto, UUID SubscriberId, UUID currentAdminId){
-        LedgerEntry ledgerEntry = new  LedgerEntry();
+    public LedgerEntry createLedgerEntryFromCorrectionRequestDto(CorrectionRequestDto correctionRequestDto, UUID subscriberId, UUID currentAdminId){
+        LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(correctionRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
         ledgerEntry.setPerformedByAdmin(currentAdminId);
         ledgerEntry.setDescription(correctionRequestDto.getDescription());
         ledgerEntry.setCreatedAt(Instant.now());
-        ledgerEntry.setSubscriberId(SubscriberId);
+        ledgerEntry.setSubscriberId(subscriberId);
+        ledgerEntry.setUserCurrency(correctionRequestDto.getUserCurrency());
+        ledgerEntry.setBaseCurrency(correctionRequestDto.getBaseCurrency());
+        ledgerEntry.setExchangeRate(correctionRequestDto.getExchangeRate());
+        ledgerEntry.setExchangeRateSource(correctionRequestDto.getExchangeRateSource());
+        ledgerEntry.setAmountInBaseCurrency(correctionRequestDto.getAmountInBaseCurrency());
 
         if (correctionRequestDto.getDirection() == CorrectionDirection.INCREASE){
             ledgerEntry.setType(EntryType.CORRECTION_INCREASE);
@@ -52,18 +67,23 @@ public class LedgerMapper {
         return ledgerEntry;
     }
 
-    public LedgerEntry createLedgerEntryFromRefundRequestDto(RefundRequestDto refundRequestDto, UUID SubscriberId, UUID currentAdminId){
-        LedgerEntry ledgerEntry = new  LedgerEntry();
+    public LedgerEntry createLedgerEntryFromRefundRequestDto(RefundRequestDto refundRequestDto, UUID subscriberId, UUID currentAdminId){
+        LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(refundRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
         ledgerEntry.setPerformedByAdmin(currentAdminId);
         ledgerEntry.setType(EntryType.REFUND);
         ledgerEntry.setCreatedAt(Instant.now());
-        ledgerEntry.setSubscriberId(SubscriberId);
+        ledgerEntry.setSubscriberId(subscriberId);
         ledgerEntry.setOriginalEntryId(refundRequestDto.getOriginalEntryId());
         ledgerEntry.setDescription(refundRequestDto.getDescription());
-        return ledgerEntry;
+        ledgerEntry.setUserCurrency(refundRequestDto.getUserCurrency());
+        ledgerEntry.setBaseCurrency(refundRequestDto.getBaseCurrency());
+        ledgerEntry.setExchangeRate(refundRequestDto.getExchangeRate());
+        ledgerEntry.setExchangeRateSource(refundRequestDto.getExchangeRateSource());
+        ledgerEntry.setAmountInBaseCurrency(refundRequestDto.getAmountInBaseCurrency());
 
+        return ledgerEntry;
     }
 
     public LedgerEntryUserViewModel createLedgerEntryUserViewModelFromLedgerEntry(LedgerEntry ledgerEntry){
@@ -73,6 +93,7 @@ public class LedgerMapper {
         ledgerEntryUserViewModel.setDescription(ledgerEntry.getDescription());
         ledgerEntryUserViewModel.setType(ledgerEntry.getType());
         ledgerEntryUserViewModel.setSource(ledgerEntry.getSource());
+        ledgerEntryUserViewModel.setUserCurrency(ledgerEntry.getUserCurrency());
         return ledgerEntryUserViewModel;
     }
 
@@ -81,6 +102,8 @@ public class LedgerMapper {
                 .map(this::createLedgerEntryUserViewModelFromLedgerEntry)
                 .toList();
     }
+
+
 
     public LedgerEntryAdminViewModel createLedgerEntryAdminViewModelFromLedgerEntry(LedgerEntry ledgerEntry){
         LedgerEntryAdminViewModel ledgerEntryAdminViewModel = new LedgerEntryAdminViewModel();
@@ -93,6 +116,11 @@ public class LedgerMapper {
         ledgerEntryAdminViewModel.setSubscriberId(ledgerEntry.getSubscriberId());
         ledgerEntryAdminViewModel.setSource(ledgerEntry.getSource());
         ledgerEntryAdminViewModel.setPerformedByAdmin(ledgerEntry.getPerformedByAdmin());
+        ledgerEntryAdminViewModel.setUserCurrency(ledgerEntry.getUserCurrency());
+        ledgerEntryAdminViewModel.setAmountInBaseCurrency(ledgerEntry.getAmountInBaseCurrency());
+        ledgerEntryAdminViewModel.setExchangeRate(ledgerEntry.getExchangeRate());
+        ledgerEntryAdminViewModel.setExchangeRateSource(ledgerEntry.getExchangeRateSource());
+        ledgerEntryAdminViewModel.setBaseCurrency(ledgerEntry.getBaseCurrency());
         return ledgerEntryAdminViewModel;
     }
 

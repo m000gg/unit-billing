@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/index.css}">
     <link rel="stylesheet" th:href="@{/css/admin/refund.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/topup.css}">
 </head>
 <body>
 
@@ -30,7 +31,10 @@
         </div>
         <div class="hero-balance">
             <span class="hero-balance-label" th:text="#{admin.refund.currentBalance}">Current balance</span>
-            <span class="hero-balance-value">$<span th:text="${user != null ? user.balance : '0.00'}">0.00</span></span>
+            <span class="hero-balance-value">
+                <span th:text="${user != null ? user.balance : '0.00'}">0.00</span>
+                <span class="hero-balance-currency" th:text="${user != null ? user.userCurrency : ''}">USD</span>
+            </span>
         </div>
     </div>
 
@@ -39,6 +43,9 @@
         <form th:action="@{/admin/users/{id}/refund(id=${user?.id} ?: 0)}" th:object="${refundRequest}"
               method="post" id="refundForm" onsubmit="return confirmRefund(event)" novalidate>
 
+            <input type="hidden" th:field="*{userCurrency}">
+            <input type="hidden" th:field="*{baseCurrency}">
+
             <div class="form-section">
                 <h4 class="section-title" th:text="#{admin.refund.section.original}">Original charge</h4>
 
@@ -46,13 +53,15 @@
                     <label for="originalEntryId" th:text="#{admin.refund.billToRefund}">Bill to refund</label>
                     <select id="originalEntryId" th:field="*{originalEntryId}" class="data-input"
                             th:classappend="${#fields.hasErrors('originalEntryId')} ? 'input-error'"
-                            onchange="prefillAmount(this)">
+                            onchange="prefillFromCharge(this)">
                         <option value="" disabled selected th:text="#{admin.refund.selectCharge}">Select a charge to refund</option>
                         <option th:each="charge : ${availableCharges}"
                                 th:value="${charge.id}"
-                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — $' + charge.amount + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
-                                th:data-amount="${charge.amount}">
-                            12 Mar 2026 — $49.99 — Hardware cost
+                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — ' + charge.amount + ' ' + charge.userCurrency + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
+                                th:data-amount="${charge.amount}"
+                                th:data-base-amount="${charge.amountInBaseCurrency}"
+                                th:data-exchange-rate="${charge.exchangeRate}">
+                            12 Mar 2026 — 49.99 UAH — Hardware cost
                         </option>
                     </select>
                     <span class="field-error" th:if="${#fields.hasErrors('originalEntryId')}" th:errors="*{originalEntryId}">Select a charge to refund</span>
@@ -67,7 +76,10 @@
 
                 <div class="form-row">
                     <div class="data-group">
-                        <label for="amount" th:text="#{admin.refund.amount}">Amount</label>
+                        <label for="amount">
+                            <span th:text="#{admin.refund.amount}">Amount</span>
+                            <span class="currency-badge" th:text="${user != null ? user.userCurrency : ''}">UAH</span>
+                        </label>
                         <input type="number" id="amount" th:field="*{amount}" class="data-input"
                                th:classappend="${#fields.hasErrors('amount')} ? 'input-error'"
                                step="0.0001" min="0.0001" placeholder="0.00">
@@ -78,6 +90,39 @@
                         <label th:text="#{admin.refund.entryType}">Entry type</label>
                         <div class="entry-type-badge entry-type-refund" th:text="#{admin.refund.badge.refund}">Refund (credit)</div>
                     </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="data-group">
+                        <label for="exchangeRate" th:text="#{admin.topUp.exchangeRate}">Exchange rate</label>
+                        <input type="number" id="exchangeRate" th:field="*{exchangeRate}" class="data-input"
+                               th:classappend="${#fields.hasErrors('exchangeRate')} ? 'input-error'"
+                               step="0.000001" min="0.000001" placeholder="0.000000">
+                        <span class="field-error" th:if="${#fields.hasErrors('exchangeRate')}" th:errors="*{exchangeRate}">Exchange rate must be positive</span>
+                        <span class="field-hint" th:text="${user != null ? (user.userCurrency + ' per 1 ') + (baseCurrency ?: '') : ''}">UAH per 1 USD</span>
+                    </div>
+
+                    <div class="data-group">
+                        <label for="amountInBaseCurrency">
+                            <span th:text="#{admin.topUp.baseAmount}">Amount in base currency</span>
+                            <span class="currency-badge currency-badge-computed" th:text="${baseCurrency}">USD</span>
+                        </label>
+                        <input type="number" id="amountInBaseCurrency" th:field="*{amountInBaseCurrency}"
+                               class="data-input"
+                               th:classappend="${#fields.hasErrors('amountInBaseCurrency')} ? 'input-error'"
+                               step="0.0001" min="0.0001" placeholder="0.00">
+                        <span class="field-error" th:if="${#fields.hasErrors('amountInBaseCurrency')}" th:errors="*{amountInBaseCurrency}">Amount must be greater than zero</span>
+                        <span class="field-hint" th:text="#{admin.topUp.baseAmount.hint}">This is the amount capped against the original charge</span>
+                    </div>
+                </div>
+
+                <div class="data-group data-group-full">
+                    <label for="exchangeRateSource">
+                        <span th:text="#{admin.topUp.exchangeRateSource}">Rate source</span>
+                        <span class="label-optional" th:text="#{admin.refund.optional}">(optional)</span>
+                    </label>
+                    <input type="text" id="exchangeRateSource" th:field="*{exchangeRateSource}" class="data-input"
+                           th:placeholder="#{admin.topUp.placeholder.exchangeRateSource}">
                 </div>
 
                 <div class="data-group data-group-full">
@@ -106,22 +151,72 @@
      style="display: none;"></div>
 
 <script>
-    function prefillAmount(selectEl) {
-        const selectedOption = selectEl.options[selectEl.selectedIndex];
-        const originalAmount = selectedOption.getAttribute('data-amount');
-        if (originalAmount) {
-            document.getElementById('amount').value = originalAmount;
+    const amountInput = document.getElementById('amount');
+    const rateInput = document.getElementById('exchangeRate');
+    const baseAmountInput = document.getElementById('amountInBaseCurrency');
+    const originalEntrySelect = document.getElementById('originalEntryId');
+
+    let lastEdited = null;
+
+    function getRate() {
+        const rate = parseFloat(rateInput.value);
+        return (!rate || rate <= 0) ? null : rate;
+    }
+
+    function recalcFromAmount() {
+        const amount = parseFloat(amountInput.value);
+        const rate = getRate();
+        if (!amount || amount <= 0 || !rate) {
+            return;
+        }
+        baseAmountInput.value = (amount / rate).toFixed(4);
+    }
+
+    function recalcFromBaseAmount() {
+        const baseAmount = parseFloat(baseAmountInput.value);
+        const rate = getRate();
+        if (!baseAmount || baseAmount <= 0 || !rate) {
+            return;
+        }
+        amountInput.value = (baseAmount * rate).toFixed(4);
+    }
+
+    function recalcOnRateChange() {
+        if (lastEdited === 'base') {
+            recalcFromBaseAmount();
+        } else {
+            recalcFromAmount();
         }
     }
 
+    amountInput.addEventListener('input', () => {
+        lastEdited = 'amount';
+        recalcFromAmount();
+    });
+
+    baseAmountInput.addEventListener('input', () => {
+        lastEdited = 'base';
+        recalcFromBaseAmount();
+    });
+
+    rateInput.addEventListener('input', recalcOnRateChange);
+    function prefillFromCharge(selectEl) {
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        const originalAmount = selectedOption.getAttribute('data-amount');
+        const originalBaseAmount = selectedOption.getAttribute('data-base-amount');
+        const originalRate = selectedOption.getAttribute('data-exchange-rate');
+        if (originalAmount) amountInput.value = originalAmount;
+        if (originalRate) rateInput.value = originalRate;
+        if (originalBaseAmount) baseAmountInput.value = originalBaseAmount;
+
+        lastEdited = 'amount';
+    }
+
     function confirmRefund(e) {
-        const amountInput = document.getElementById('amount');
-        const originalEntrySelect = document.getElementById('originalEntryId');
         const amount = amountInput.value;
         if (!amount || Number(amount) <= 0 || !originalEntrySelect.value) {
             return true;
         }
-
         const template = document.getElementById('i18n-data').getAttribute('data-confirm-msg');
         const message = template.replace('{0}', Number(amount).toFixed(2));
 

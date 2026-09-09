@@ -1,5 +1,6 @@
 package com.m000gg.billing.ledger;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class LedgerEntryAdminViewModel extends LedgerEntryUserViewModel {
@@ -9,6 +10,10 @@ public class LedgerEntryAdminViewModel extends LedgerEntryUserViewModel {
     private boolean refundable;
     private EntrySource source;
     private UUID performedByAdmin;
+    private BigDecimal amountInBaseCurrency;
+    private BigDecimal exchangeRate;
+    private String exchangeRateSource;
+    private String baseCurrency;
 
     public EntrySource getSource() {
         return source;
@@ -45,5 +50,29 @@ public class LedgerEntryAdminViewModel extends LedgerEntryUserViewModel {
     }
     public void setOriginalEntryId(UUID originalEntryId) {
         this.originalEntryId = originalEntryId;
+    }
+    public BigDecimal getAmountInBaseCurrency() {
+        return amountInBaseCurrency;
+    }
+    public void setAmountInBaseCurrency(BigDecimal amountInBaseCurrency) {
+        this.amountInBaseCurrency = amountInBaseCurrency;
+    }
+    public BigDecimal getExchangeRate() {
+        return exchangeRate;
+    }
+    public void setExchangeRate(BigDecimal exchangeRate) {
+        this.exchangeRate = exchangeRate;
+    }
+    public String getExchangeRateSource() {
+        return exchangeRateSource;
+    }
+    public void setExchangeRateSource(String exchangeRateSource) {
+        this.exchangeRateSource = exchangeRateSource;
+    }
+    public String getBaseCurrency() {
+        return baseCurrency;
+    }
+    public void setBaseCurrency(String baseCurrency) {
+        this.baseCurrency = baseCurrency;
     }
 }

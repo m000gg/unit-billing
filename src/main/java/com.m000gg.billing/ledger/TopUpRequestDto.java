@@ -15,6 +15,17 @@ public class TopUpRequestDto {
 
     @Size(max = 255, message = "{ledger.validation.note.size}")
     private String description;
+    private String userCurrency;
+    private String baseCurrency;
+
+    @NotNull(message = "{ledger.validation.exchangeRate.required}")
+    @Positive(message = "{ledger.validation.exchangeRate.positive}")
+    private BigDecimal exchangeRate;
+    private String exchangeRateSource;
+    @NotNull(message = "{ledger.validation.amount.required}")
+    @Positive(message = "{ledger.validation.amount.positive}")
+    @Digits(integer = 15, fraction = 4, message = "{ledger.validation.amount.digits}")
+    private BigDecimal amountInBaseCurrency;
 
     public BigDecimal getAmount() {
         return amount;
@@ -27,5 +38,35 @@ public class TopUpRequestDto {
     }
     public void setDescription(String description) {
         this.description = description;
+    }
+    public String getUserCurrency() {
+        return userCurrency;
+    }
+    public void setUserCurrency(String userCurrency) {
+        this.userCurrency = userCurrency;
+    }
+    public String getBaseCurrency() {
+        return baseCurrency;
+    }
+    public void setBaseCurrency(String baseCurrency) {
+        this.baseCurrency = baseCurrency;
+    }
+    public BigDecimal getExchangeRate() {
+        return exchangeRate;
+    }
+    public void setExchangeRate(BigDecimal exchangeRate) {
+        this.exchangeRate = exchangeRate;
+    }
+    public String getExchangeRateSource() {
+        return exchangeRateSource;
+    }
+    public void setExchangeRateSource(String exchangeRateSource) {
+        this.exchangeRateSource = exchangeRateSource;
+    }
+    public BigDecimal getAmountInBaseCurrency() {
+        return amountInBaseCurrency;
+    }
+    public void setAmountInBaseCurrency(BigDecimal amountInBaseCurrency) {
+        this.amountInBaseCurrency = amountInBaseCurrency;
     }
 }

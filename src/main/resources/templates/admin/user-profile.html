@@ -135,6 +135,7 @@
           <th th:text="#{admin.userProfile.table.description}">Description</th>
           <th th:text="#{admin.userProfile.table.type}">Type</th>
           <th class="ledger-amount-col" th:text="#{admin.userProfile.table.amount}">Amount</th>
+          <th class="ledger-amount-col" th:text="#{admin.userTransactions.table.baseAmount}">Base amount</th>
         </tr>
         </thead>
         <tbody>
@@ -148,8 +149,12 @@
           </td>
           <td class="ledger-amount-col"
               th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
-              th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + #numbers.formatDecimal(entry.amount.abs(), 1, 2) + ' ' + user.userCurrency}">
+              th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + #numbers.formatDecimal(entry.amount.abs(), 1, 2) + ' ' + entry.userCurrency}">
             -9.99 USD
+          </td>
+          <td class="ledger-amount-col ledger-base-amount"
+              th:text="${entry.amountInBaseCurrency != null ? #numbers.formatDecimal(entry.amountInBaseCurrency, 1, 2) + ' ' + entry.baseCurrency : '—'}">
+            92.20 USD
           </td>
         </tr>
         </tbody>
