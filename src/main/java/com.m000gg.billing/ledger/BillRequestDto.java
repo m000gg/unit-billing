@@ -14,9 +14,9 @@ public class BillRequestDto {
     private String userCurrency;
     private String baseCurrency;
     private String exchangeRateSource;
-    @NotNull(message = "{ledger.validation.userAmount.required}")
-    @Positive(message = "{ledger.validation.userAmount.positive}")
-    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.userAmount.digits}")
+    @NotNull(message = "{ledger.validation.baseAmount.required}")
+    @Positive(message = "{ledger.validation.baseAmount.positive}")
+    @Digits(integer = 15, fraction = 2, message = "{ledger.validation.baseAmount.digits}")
     private BigDecimal amountInBaseCurrency;
     @NotNull(message = "{ledger.validation.exchangeRate.required}")
     @Positive(message = "{ledger.validation.exchangeRate.positive}")

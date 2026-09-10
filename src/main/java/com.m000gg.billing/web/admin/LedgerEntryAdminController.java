@@ -72,6 +72,8 @@ public class LedgerEntryAdminController {
         Admin currentAdmin = currentAdminOptional.get();
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
         String baseCurrency = systemSettingService.getBaseCurrency();
+        topUpRequestDto.setUserCurrency(user.getUserCurrency());
+        topUpRequestDto.setBaseCurrency(baseCurrency);
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
@@ -120,9 +122,12 @@ public class LedgerEntryAdminController {
         if (currentAdminOptional.isEmpty()) {
             return "redirect:/login";
         }
+
         Admin currentAdmin = currentAdminOptional.get();
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
         String baseCurrency = systemSettingService.getBaseCurrency();
+        billRequestDto.setUserCurrency(user.getUserCurrency());
+        billRequestDto.setBaseCurrency(baseCurrency);
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
@@ -188,6 +193,8 @@ public class LedgerEntryAdminController {
 
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
         String baseCurrency = systemSettingService.getBaseCurrency();
+        refundRequestDto.setUserCurrency(user.getUserCurrency());
+        refundRequestDto.setBaseCurrency(baseCurrency);
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
@@ -259,6 +266,8 @@ public class LedgerEntryAdminController {
 
         ApplicationUser user = applicationUserManagementService.findApplicationUserById(id);
         String baseCurrency = systemSettingService.getBaseCurrency();
+        correctionRequestDto.setUserCurrency(user.getUserCurrency());
+        correctionRequestDto.setBaseCurrency(baseCurrency);
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);

@@ -53,9 +53,11 @@ public class ApplicationUserManagementService {
             throw new EmailAlreadyExistsException(email);
         }
         String userCurrency = applicationUserRegisterDto.getUserCurrency();
-        if (userCurrency == null || userCurrency.isBlank() || !VALID_CURRENCIES.contains(userCurrency.toUpperCase())) {
+        String normalizedCurrency = userCurrency == null ? null : userCurrency.toUpperCase(java.util.Locale.ROOT);
+        if (normalizedCurrency == null || normalizedCurrency.isBlank() || !VALID_CURRENCIES.contains(normalizedCurrency)) {
             throw new InvalidCurrencyException(userCurrency);
         }
+        applicationUserRegisterDto.setUserCurrency(normalizedCurrency);
         String generatedPassword = customPasswordGenerator.generatePassayPassword();
         String encodedPassword = passwordEncoder.encode(generatedPassword);
         applicationUserMapper.registerUserFromDto(newApplicationUser, applicationUserRegisterDto, encodedPassword);

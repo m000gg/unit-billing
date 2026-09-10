@@ -25,6 +25,7 @@ public class SystemSettingService {
             .map(Currency::getCurrencyCode)
             .collect(Collectors.toSet());
 
+    @Cacheable("baseCurrencyConfigured")
     public boolean isBaseCurrencyConfigured() {
         return systemSettingRepository.existsById(BASE_CURRENCY_KEY);
     }
@@ -35,8 +36,13 @@ public class SystemSettingService {
         return baseCurrency;
     }
 
-    @CacheEvict(value = "baseCurrency", allEntries = true)
+    @CacheEvict(value = {"baseCurrency", "baseCurrencyConfigured"}, allEntries = true)
     public void saveInitialSetup(BillingSetupDto billingSetupDto){
+
+        if (isBaseCurrencyConfigured()) {
+            throw new IllegalStateException("Base currency is already configured and cannot be changed.");
+        }
+
         saveSingleSetting(BASE_CURRENCY_KEY ,billingSetupDto.getBaseCurrency(), "Base currency of platform.");
     }
 

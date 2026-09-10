@@ -1,6 +1,8 @@
 package com.m000gg.billing.ledger;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -40,6 +42,7 @@ public class LedgerEntry {
 
     private String baseCurrency;
 
+    @Size(max = 50)
     private String exchangeRateSource;
 
     private BigDecimal amountInBaseCurrency;
