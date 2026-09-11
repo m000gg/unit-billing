@@ -12,7 +12,7 @@
 <div class="lang-picker">
     <form action="" method="get">
         <div class="select-wrapper">
-            <select name="lang" onchange="this.form.submit()">
+            <select name="lang" onchange="this.form.submit()" th:aria-label="#{client.langSwitcher.ariaLabel}">
                 <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{client.language.en}"></option>
                 <option value="fr" th:selected="${#locale.language == 'fr'}" th:text="#{client.language.fr}"></option>
                 <option value="de" th:selected="${#locale.language == 'de'}" th:text="#{client.language.de}"></option>

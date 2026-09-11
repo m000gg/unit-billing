@@ -12,9 +12,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private SetupInterceptor setupInterceptor;
 
     @Override
-    public void addInterceptors(InterceptorRegistry interceptorRegistry){
+    public void addInterceptors(InterceptorRegistry interceptorRegistry) {
         interceptorRegistry.addInterceptor(setupInterceptor).addPathPatterns("/**")
-                .excludePathPatterns("/css/**", "/js/**", "/images/**", "/error");;
+                .excludePathPatterns("/css/**", "/js/**", "/images/**", "/error");
+        ;
 
     }
 }

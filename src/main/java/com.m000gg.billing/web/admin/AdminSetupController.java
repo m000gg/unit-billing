@@ -28,7 +28,7 @@ public class AdminSetupController {
     private SystemSettingService systemSettingService;
 
     @GetMapping("/admin/billing-setup")
-    public String showBillingSetupPage(Model model){
+    public String showBillingSetupPage(Model model) {
         BillingSetupDto billingSetupDto = new BillingSetupDto();
         model.addAttribute("billingSetupDto", billingSetupDto);
         return "admin/billing-setup";
@@ -63,9 +63,9 @@ public class AdminSetupController {
     }
 
     @GetMapping("/admin/billing-configuration")
-    public String showBillingConfiguration(Model model){
+    public String showBillingConfiguration(Model model) {
         String baseCurrency = systemSettingService.getBaseCurrency();
-        model.addAttribute("baseCurrency",baseCurrency);
+        model.addAttribute("baseCurrency", baseCurrency);
         return "admin/billing-settings-page";
     }
 }

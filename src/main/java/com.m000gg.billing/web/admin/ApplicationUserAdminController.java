@@ -56,14 +56,14 @@ public class ApplicationUserAdminController {
             @RequestParam(required = false) String search,
             Model model) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("lastName").ascending());
-        Page<ApplicationUser> usersPage =  applicationUserRegistrationService.search(search, pageable);
+        Page<ApplicationUser> usersPage = applicationUserRegistrationService.search(search, pageable);
         model.addAttribute("usersPage", usersPage);
         model.addAttribute("search", search);
         return "admin/users";
     }
 
     @GetMapping("/registration")
-    public String showRegistrationForm(Model model){
+    public String showRegistrationForm(Model model) {
         model.addAttribute("registerDto", new ApplicationUserRegisterDto());
         return "admin/user-registration";
     }

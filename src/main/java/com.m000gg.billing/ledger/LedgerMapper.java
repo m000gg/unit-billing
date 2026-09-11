@@ -2,13 +2,14 @@ package com.m000gg.billing.ledger;
 
 import com.m000gg.billing.identity.Admin;
 import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Component
 public class LedgerMapper {
-    public LedgerEntry createLedgerEntryFromTopUpRequestDto(TopUpRequestDto topUpRequestDto, UUID subscriberId, UUID currentAdminId){
+    public LedgerEntry createLedgerEntryFromTopUpRequestDto(TopUpRequestDto topUpRequestDto, UUID subscriberId, UUID currentAdminId) {
         LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(topUpRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
@@ -26,7 +27,7 @@ public class LedgerMapper {
         return ledgerEntry;
     }
 
-    public LedgerEntry createLedgerEntryFromBillRequestDto(BillRequestDto billRequestDto, UUID subscriberId, UUID currentAdminId){
+    public LedgerEntry createLedgerEntryFromBillRequestDto(BillRequestDto billRequestDto, UUID subscriberId, UUID currentAdminId) {
         LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(billRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
@@ -44,7 +45,7 @@ public class LedgerMapper {
         return ledgerEntry;
     }
 
-    public LedgerEntry createLedgerEntryFromCorrectionRequestDto(CorrectionRequestDto correctionRequestDto, UUID subscriberId, UUID currentAdminId){
+    public LedgerEntry createLedgerEntryFromCorrectionRequestDto(CorrectionRequestDto correctionRequestDto, UUID subscriberId, UUID currentAdminId) {
         LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(correctionRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
@@ -58,16 +59,16 @@ public class LedgerMapper {
         ledgerEntry.setExchangeRateSource(correctionRequestDto.getExchangeRateSource());
         ledgerEntry.setAmountInBaseCurrency(correctionRequestDto.getAmountInBaseCurrency());
 
-        if (correctionRequestDto.getDirection() == CorrectionDirection.INCREASE){
+        if (correctionRequestDto.getDirection() == CorrectionDirection.INCREASE) {
             ledgerEntry.setType(EntryType.CORRECTION_INCREASE);
-        } else{
+        } else {
             ledgerEntry.setType(EntryType.CORRECTION_DECREASE);
         }
 
         return ledgerEntry;
     }
 
-    public LedgerEntry createLedgerEntryFromRefundRequestDto(RefundRequestDto refundRequestDto, UUID subscriberId, UUID currentAdminId){
+    public LedgerEntry createLedgerEntryFromRefundRequestDto(RefundRequestDto refundRequestDto, UUID subscriberId, UUID currentAdminId) {
         LedgerEntry ledgerEntry = new LedgerEntry();
         ledgerEntry.setAmount(refundRequestDto.getAmount());
         ledgerEntry.setSource(EntrySource.ADMIN);
@@ -86,7 +87,7 @@ public class LedgerMapper {
         return ledgerEntry;
     }
 
-    public LedgerEntryUserViewModel createLedgerEntryUserViewModelFromLedgerEntry(LedgerEntry ledgerEntry){
+    public LedgerEntryUserViewModel createLedgerEntryUserViewModelFromLedgerEntry(LedgerEntry ledgerEntry) {
         LedgerEntryUserViewModel ledgerEntryUserViewModel = new LedgerEntryUserViewModel();
         ledgerEntryUserViewModel.setAmount(ledgerEntry.getAmount());
         ledgerEntryUserViewModel.setCreatedAt(ledgerEntry.getCreatedAt());
@@ -104,8 +105,7 @@ public class LedgerMapper {
     }
 
 
-
-    public LedgerEntryAdminViewModel createLedgerEntryAdminViewModelFromLedgerEntry(LedgerEntry ledgerEntry){
+    public LedgerEntryAdminViewModel createLedgerEntryAdminViewModelFromLedgerEntry(LedgerEntry ledgerEntry) {
         LedgerEntryAdminViewModel ledgerEntryAdminViewModel = new LedgerEntryAdminViewModel();
         ledgerEntryAdminViewModel.setAmount(ledgerEntry.getAmount());
         ledgerEntryAdminViewModel.setCreatedAt(ledgerEntry.getCreatedAt());
@@ -124,8 +124,8 @@ public class LedgerMapper {
         return ledgerEntryAdminViewModel;
     }
 
-    public List<LedgerEntryAdminViewModel> createLedgerEntryAdminViewModelsFromLedgerEntries(List<LedgerEntry> ledgerEntries){
-        return  ledgerEntries.stream()
+    public List<LedgerEntryAdminViewModel> createLedgerEntryAdminViewModelsFromLedgerEntries(List<LedgerEntry> ledgerEntries) {
+        return ledgerEntries.stream()
                 .map(this::createLedgerEntryAdminViewModelFromLedgerEntry)
                 .toList();
     }

@@ -1,6 +1,7 @@
 package com.m000gg.billing.subscribers;
 
 import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 
 @Component
@@ -37,7 +38,7 @@ public class ApplicationUserMapper {
         return dto;
     }
 
-    public void registerUserFromDto(ApplicationUser newApplicationUser, ApplicationUserRegisterDto applicationUserRegisterDto, String encodedPassword){
+    public void registerUserFromDto(ApplicationUser newApplicationUser, ApplicationUserRegisterDto applicationUserRegisterDto, String encodedPassword) {
         newApplicationUser.setFirstName(applicationUserRegisterDto.getFirstName());
         newApplicationUser.setLastName(applicationUserRegisterDto.getLastName());
         newApplicationUser.setEmail(applicationUserRegisterDto.getEmail());
@@ -54,7 +55,7 @@ public class ApplicationUserMapper {
         newApplicationUser.setUserCurrency(applicationUserRegisterDto.getUserCurrency());
     }
 
-    public AccountOverviewViewModel accountViewModelFromUser(ApplicationUser currentUser, AccountOverviewViewModel accountOverviewViewModel){
+    public AccountOverviewViewModel accountViewModelFromUser(ApplicationUser currentUser, AccountOverviewViewModel accountOverviewViewModel) {
         accountOverviewViewModel.setBalance(currentUser.getBalance());
         accountOverviewViewModel.setFirstName(currentUser.getFirstName());
         accountOverviewViewModel.setLastName(currentUser.getLastName());

@@ -104,14 +104,16 @@ public class LedgerService {
         applicationUserRepository.save(user);
     }
 
-    public List<LedgerEntry> findRefundableCharges(UUID userId){
+    public List<LedgerEntry> findRefundableCharges(UUID userId) {
         return ledgerEntryRepository.findRefundableCharges(userId);
     }
+
     public List<LedgerEntryUserViewModel> getUserLedgerEntryInformation(ApplicationUser applicationUser) {
         UUID userId = applicationUser.getId();
         List<LedgerEntry> ledgerEntries = ledgerEntryRepository.findBySubscriberIdOrderByCreatedAtDesc(userId);
         return ledgerMapper.createLedgerEntryViewModelsFromLedgerEntries(ledgerEntries);
     }
+
     public List<LedgerEntryUserViewModel> getUserLastFiveLedgerEntries(ApplicationUser applicationUser) {
         UUID userId = applicationUser.getId();
         List<LedgerEntry> ledgerEntries = ledgerEntryRepository.findTop5BySubscriberIdOrderByCreatedAtDesc(userId);

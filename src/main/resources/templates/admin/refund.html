@@ -57,7 +57,7 @@
                         <option value="" disabled selected th:text="#{admin.refund.selectCharge}">Select a charge to refund</option>
                         <option th:each="charge : ${availableCharges}"
                                 th:value="${charge.id}"
-                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — ' + charge.amount + ' ' + charge.userCurrency + ' (Base: ' + charge.amountInBaseCurrency + ', Rate: ' + charge.exchangeRate + ')' + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
+                                th:text="${#temporals.format(charge.createdAt, 'dd MMM yyyy') + ' — ' + charge.amount + ' ' + charge.userCurrency + ' (' + #{ledger.label.base} + ': ' + charge.amountInBaseCurrency + ', ' + #{ledger.label.rate} + ': ' + charge.exchangeRate + ')' + (charge.description != null and !charge.description.isEmpty() ? ' — ' + charge.description : '')}"
                                 th:data-amount="${charge.amount}"
                                 th:data-base-amount="${charge.amountInBaseCurrency}"
                                 th:data-exchange-rate="${charge.exchangeRate}">

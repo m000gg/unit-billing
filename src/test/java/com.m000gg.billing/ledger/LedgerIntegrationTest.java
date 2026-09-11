@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import org.springframework.data.domain.Page;
@@ -24,9 +25,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -63,9 +66,11 @@ public class LedgerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        BillingSetupDto billingSetupDto = new BillingSetupDto();
-        billingSetupDto.setBaseCurrency("USD");
-        systemSettingService.saveInitialSetup(billingSetupDto);
+        if (!systemSettingService.isBaseCurrencyConfigured()) {
+            BillingSetupDto billingSetupDto = new BillingSetupDto();
+            billingSetupDto.setBaseCurrency("USD");
+            systemSettingService.saveInitialSetup(billingSetupDto);
+        }
 
         user = new ApplicationUser();
         user.setFirstName("John");

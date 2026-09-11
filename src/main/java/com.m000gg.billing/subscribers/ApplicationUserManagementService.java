@@ -71,16 +71,16 @@ public class ApplicationUserManagementService {
         return generatedPassword;
     }
 
-    public Page<ApplicationUser> search(String search, Pageable pageable){
+    public Page<ApplicationUser> search(String search, Pageable pageable) {
         return applicationUserRepository.search(search, pageable);
     }
 
-    public ApplicationUser findApplicationUserById(UUID id){
+    public ApplicationUser findApplicationUserById(UUID id) {
         return applicationUserRepository.findById(id)
                 .orElseThrow(() -> new ApplicationUserNotFoundException(id));
     }
 
-    public ApplicationUserEditDto findApplicationUserDtoById(UUID id){
+    public ApplicationUserEditDto findApplicationUserDtoById(UUID id) {
         return applicationUserMapper.toDto(findApplicationUserById(id));
     }
 
@@ -99,13 +99,14 @@ public class ApplicationUserManagementService {
     }
 
     @Transactional
-    public void deleteApplicationUserProfile(UUID id){
+    public void deleteApplicationUserProfile(UUID id) {
         ApplicationUser applicationUser = findApplicationUserById(id);
-        if (!applicationUser.getDeleted()){
+        if (!applicationUser.getDeleted()) {
             applicationUser.setDeleted(true);
             applicationUserRepository.save(applicationUser);
         } else {
-            throw new UserAlreadyDeletedException("This user with id: " + id + " is already deleted.");}
+            throw new UserAlreadyDeletedException("This user with id: " + id + " is already deleted.");
+        }
     }
 
     public Optional<ApplicationUser> getCurrentUser() {
@@ -120,7 +121,7 @@ public class ApplicationUserManagementService {
     }
 
     public AccountOverviewViewModel getUserInformationForMainPage(ApplicationUser applicationUser) {
-        AccountOverviewViewModel accountOverviewViewModel= new AccountOverviewViewModel();
-        return applicationUserMapper.accountViewModelFromUser(applicationUser,accountOverviewViewModel);
+        AccountOverviewViewModel accountOverviewViewModel = new AccountOverviewViewModel();
+        return applicationUserMapper.accountViewModelFromUser(applicationUser, accountOverviewViewModel);
     }
 }
