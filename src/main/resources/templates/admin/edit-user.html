@@ -54,6 +54,14 @@
                         <input type="text" th:field="*{phone}" placeholder="+XXXXXXXXXXXX" maxlength="13">
                     </div>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label th:text="#{admin.userEdit.currency}">Account currency</label>
+                        <input type="text" th:field="*{userCurrency}" class="input-readonly" readonly tabindex="-1">
+                        <span class="field-hint" th:text="#{admin.userEdit.currency.hint}">Currency cannot be changed after registration.</span>
+                    </div>
+                    <div class="form-group"></div>
+                </div>
             </div>
 
             <div class="form-section">

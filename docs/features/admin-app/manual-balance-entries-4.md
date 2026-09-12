@@ -2,9 +2,10 @@
 
 ---
 ## Changelog
-| Version    | Date       | Description                                                         | Authors                             |
-|------------|------------|---------------------------------------------------------------------|-------------------------------------|
-| 1.0        | 2026-08-08 | Initial feature: top-up, bill, refund, and correction admin actions | [m000gg](https://github.com/m000gg) |
+| Version    | Date       | Description                                                                                                   | Authors                             |
+|------------|------------|---------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| 1.0        | 2026-08-08 | Initial feature: top-up, bill, refund, and correction admin actions                                           | [m000gg](https://github.com/m000gg) |
+| 2.0        | 2026-09-09 | Sync with ADR0005 v3.0: numeric(15,2) scale, removed refund cap, removed bill category requirement            | [m000gg](https://github.com/m000gg) |
 ---
 
 - Issue #19 ➔ PR #25
@@ -23,10 +24,9 @@ has a clear type, amount, and reason attached to it.
 ### Feature objectives
 - Let an admin credit a subscriber's balance (top-up) in under 30 seconds
   from the user detail view, with the new balance visible immediately after.
-- Let an admin debit a subscriber's balance for a rendered service (bill),
-  categorized, with the same immediacy.
-- Let an admin reverse a specific prior charge (refund), capped at the
-  charge's original amount, preventing double-refunds.
+- Let an admin debit a subscriber's balance for a rendered service (bill)
+  with the same immediacy.
+- Let an admin reverse a specific prior charge (refund). To support customer loyalty and dispute resolution, the refund amount is **not capped** at the original charge's amount.
 - Let an admin correct a balance in either direction (correction) with a
   mandatory reason, for cases the other three actions don't cover.
 - Reject invalid input (zero, negative, non-numeric amounts) with inline
@@ -50,25 +50,25 @@ has a clear type, amount, and reason attached to it.
 
 ```mermaid
 flowchart TD
-    A[Admin opens user detail view] --> B{Choose action}
-    B -->|Top-up| C[Top-up form: amount, note]
-    B -->|Bill| D[Bill form: amount, category, note]
-    B -->|Refund| E[Refund form: select original charge, amount, note]
-    B -->|Correction| F[Correction form: direction, amount, reason]
+  A[Admin opens user detail view] --> B{Choose action}
+  B -->|Top-up| C[Top-up form: amount, note]
+  B -->|Bill| D[Bill form: amount, note]
+  B -->|Refund| E[Refund form: select original charge, amount, note]
+  B -->|Correction| F[Correction form: direction, amount, reason]
 
-    C --> G[Confirm dialog]
-    D --> G
-    E --> G
-    F --> G
+  C --> G[Confirm dialog]
+  D --> G
+  E --> G
+  F --> G
 
-    G -->|Cancel| A
-    G -->|Confirm| H[POST to server]
+  G -->|Cancel| A
+  G -->|Confirm| H[POST to server]
 
-    H --> I{Validation & business rules pass?}
-    I -->|No| J[Inline field errors shown, form re-rendered]
-    J --> B
-    I -->|Yes| K[LedgerEntry saved + balance updated, same transaction]
-    K --> L[Redirect to user detail view, new balance shown]
+  H --> I{Validation & business rules pass?}
+  I -->|No| J[Inline field errors shown, form re-rendered]
+  J --> B
+  I -->|Yes| K[LedgerEntry saved + balance updated, same transaction]
+  K --> L[Redirect to user detail view, new balance shown]
 ```
 
 ### Use cases
@@ -152,25 +152,25 @@ sequenceDiagram
 All four actions write to the existing `ledger_entries` table via the shared
 `LedgerEntry` entity. See **ADR0005** for the full rationale; summary below.
 
-| Column               | Type                 | Notes                                                         |
-|----------------------|----------------------|----------------------------------------------------------------|
-| `id`                 | UUID                 | Primary key                                                     |
-| `subscriber_id`      | UUID                 | FK to the affected subscriber                                   |
-| `amount`             | NUMERIC(19,4)        | Always positive; sign is derived from `type`                    |
-| `type`               | VARCHAR(50)          | `PAYMENT`, `CHARGE`, `REFUND`, `CORRECTION_INCREASE`, `CORRECTION_DECREASE` |
-| `description`        | TEXT                 | Optional for top-up/refund/bill; required for correction        |
-| `original_entry_id`  | UUID (self-FK)       | Set only for `REFUND`; references the charge being reversed     |
-| `created_at`         | TIMESTAMP WITH TZ    | Set at entry creation                                           |
+| Column              | Type              | Notes                                                                       |
+|---------------------|-------------------|-----------------------------------------------------------------------------|
+| `id`                | UUID              | Primary key                                                                 |
+| `subscriber_id`     | UUID              | FK to the affected subscriber                                               |
+| `amount`            | NUMERIC(15,2)     | Always positive; sign is derived from `type`                                |
+| `type`              | VARCHAR(50)       | `PAYMENT`, `CHARGE`, `REFUND`, `CORRECTION_INCREASE`, `CORRECTION_DECREASE` |
+| `description`       | TEXT              | Optional for top-up/refund/bill; required for correction                    |
+| `original_entry_id` | UUID (self-FK)    | Set only for `REFUND`; references the charge being reversed                 |
+| `created_at`        | TIMESTAMP WITH TZ | Set at entry creation                                                       |
 
 `ApplicationUser.balance` is a running total (not summed from ledger entries
 on read) and carries a `@Version` column for optimistic locking.
 
-| Action     | EntryType(s)                          | Balance effect | Required fields                          |
-|------------|----------------------------------------|:---------------:|--------------------------------------------|
-| Top-up     | `PAYMENT`                               | `+`              | amount                                      |
-| Bill       | `CHARGE`                                | `-`              | amount, category                            |
-| Refund     | `REFUND`                                | `+`              | amount, originalEntryId (must be a not-yet-refunded `CHARGE` owned by the same subscriber) |
-| Correction | `CORRECTION_INCREASE` / `_DECREASE`     | `+` or `-`       | amount, direction, reason                   |
+| Action      | EntryType(s)                        | Balance effect   | Required fields                                                                            |
+|-------------|-------------------------------------|:----------------:|--------------------------------------------------------------------------------------------|
+| Top-up      | `PAYMENT`                           |       `+`        | amount                                                                                     |
+| Bill        | `CHARGE`                            |       `-`        | amount, category                                                                           |
+| Refund      | `REFUND`                            |       `+`        | amount, originalEntryId (must be a not-yet-refunded `CHARGE` owned by the same subscriber) |
+| Correction  | `CORRECTION_INCREASE` / `_DECREASE` |    `+` or `-`    | amount, direction, reason                                                                  |
 
 ### API
 Not a JSON API — server-rendered form POSTs under `web/admin`, one per action:

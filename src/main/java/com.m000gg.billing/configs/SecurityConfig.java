@@ -1,6 +1,7 @@
-package com.m000gg.billing.identity;
+package com.m000gg.billing.configs;
 
 
+import com.m000gg.billing.identity.ApplicationUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,7 +45,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
-                .logout( logout -> logout
+                .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                         .permitAll()

@@ -30,7 +30,10 @@
         </div>
         <div class="hero-balance">
             <span class="hero-balance-label" th:text="#{admin.bill.currentBalance}">Current balance</span>
-            <span class="hero-balance-value">$<span th:text="${user != null ? user.balance : '0.00'}">0.00</span></span>
+            <span class="hero-balance-value">
+                <span th:text="${user != null ? user.balance : '0.00'}">0.00</span>
+                <span class="hero-balance-currency" th:text="${user != null ? user.userCurrency : ''}">USD</span>
+            </span>
         </div>
     </div>
 
@@ -39,12 +42,18 @@
         <form th:action="@{/admin/users/{id}/bill(id=${user?.id} ?: 0)}" th:object="${billRequest}"
               method="post" id="billForm" onsubmit="return confirmBill(event)" novalidate>
 
+            <input type="hidden" th:field="*{userCurrency}">
+            <input type="hidden" th:field="*{baseCurrency}">
+
             <div class="form-section">
                 <h4 class="section-title" th:text="#{admin.bill.section.details}">Entry details</h4>
 
                 <div class="form-row">
                     <div class="data-group">
-                        <label for="amount" th:text="#{admin.bill.amount}">Amount</label>
+                        <label for="amount">
+                            <span th:text="#{admin.bill.amount}">Amount</span>
+                            <span class="currency-badge" th:text="${user != null ? user.userCurrency : ''}">UAH</span>
+                        </label>
                         <input type="number" id="amount" th:field="*{amount}" class="data-input"
                                th:classappend="${#fields.hasErrors('amount')} ? 'input-error'"
                                step="0.0001" min="0.0001" placeholder="0.00">
@@ -55,6 +64,39 @@
                         <label th:text="#{admin.bill.entryType}">Entry type</label>
                         <div class="entry-type-badge entry-type-charge" th:text="#{admin.bill.badge.charge}">Bill (charge)</div>
                     </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="data-group">
+                        <label for="exchangeRate" th:text="#{admin.bill.exchangeRate}">Exchange rate</label>
+                        <input type="number" id="exchangeRate" th:field="*{exchangeRate}" class="data-input"
+                               th:classappend="${#fields.hasErrors('exchangeRate')} ? 'input-error'"
+                               step="0.000001" min="0.000001" placeholder="0.000000">
+                        <span class="field-error" th:if="${#fields.hasErrors('exchangeRate')}" th:errors="*{exchangeRate}">Exchange rate must be positive</span>
+                        <span class="field-hint" th:text="${user != null ? (user.userCurrency + ' per 1 ') + (baseCurrency ?: '') : ''}">UAH per 1 USD</span>
+                    </div>
+
+                    <div class="data-group">
+                        <label for="amountInBaseCurrency">
+                            <span th:text="#{admin.bill.baseAmount}">Amount in base currency</span>
+                            <span class="currency-badge currency-badge-computed" th:text="${baseCurrency}">USD</span>
+                        </label>
+                        <input type="number" id="amountInBaseCurrency" th:field="*{amountInBaseCurrency}"
+                               class="data-input"
+                               th:classappend="${#fields.hasErrors('amountInBaseCurrency')} ? 'input-error'"
+                               step="0.0001" min="0.0001" placeholder="0.00">
+                        <span class="field-error" th:if="${#fields.hasErrors('amountInBaseCurrency')}" th:errors="*{amountInBaseCurrency}">Amount must be greater than zero</span>
+                        <span class="field-hint" th:text="#{admin.bill.baseAmount.hint}">Auto-syncs with amount</span>
+                    </div>
+                </div>
+
+                <div class="data-group data-group-full">
+                    <label for="exchangeRateSource">
+                        <span th:text="#{admin.bill.exchangeRateSource}">Rate source</span>
+                        <span class="label-optional" th:text="#{admin.bill.optional}">(optional)</span>
+                    </label>
+                    <input type="text" id="exchangeRateSource" th:field="*{exchangeRateSource}" class="data-input"
+                           th:placeholder="#{admin.bill.placeholder.exchangeRateSource}">
                 </div>
 
                 <div class="data-group data-group-full">
@@ -83,8 +125,56 @@
      style="display: none;"></div>
 
 <script>
+    const amountInput = document.getElementById('amount');
+    const rateInput = document.getElementById('exchangeRate');
+    const baseAmountInput = document.getElementById('amountInBaseCurrency');
+
+    let lastEdited = null;
+
+    function getRate() {
+        const rate = parseFloat(rateInput.value);
+        return (!rate || rate <= 0) ? null : rate;
+    }
+
+    function recalcFromAmount() {
+        const amount = parseFloat(amountInput.value);
+        const rate = getRate();
+        if (!amount || amount <= 0 || !rate) {
+            return;
+        }
+        baseAmountInput.value = (amount / rate).toFixed(2);
+    }
+
+    function recalcFromBaseAmount() {
+        const baseAmount = parseFloat(baseAmountInput.value);
+        const rate = getRate();
+        if (!baseAmount || baseAmount <= 0 || !rate) {
+            return;
+        }
+        amountInput.value = (baseAmount * rate).toFixed(2);
+    }
+
+    function recalcOnRateChange() {
+        if (lastEdited === 'base') {
+            recalcFromBaseAmount();
+        } else {
+            recalcFromAmount();
+        }
+    }
+
+    amountInput.addEventListener('input', () => {
+        lastEdited = 'amount';
+        recalcFromAmount();
+    });
+
+    baseAmountInput.addEventListener('input', () => {
+        lastEdited = 'base';
+        recalcFromBaseAmount();
+    });
+
+    rateInput.addEventListener('input', recalcOnRateChange);
+
     function confirmBill(e) {
-        const amountInput = document.getElementById('amount');
         const amount = amountInput.value;
         if (!amount || Number(amount) <= 0) {
             return true;

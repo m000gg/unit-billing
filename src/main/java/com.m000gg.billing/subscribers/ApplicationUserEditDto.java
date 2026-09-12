@@ -36,6 +36,8 @@ public class ApplicationUserEditDto {
     @NotEmpty(message = "{subscribers.validation.postalCode.required}")
     private String postalCode;
 
+    private String userCurrency;
+
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
@@ -69,4 +71,10 @@ public class ApplicationUserEditDto {
     public String getPostalCode() { return postalCode; }
     public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
 
+    public String getUserCurrency() {
+        return userCurrency;
+    }
+    public void setUserCurrency(String userCurrency) {
+        this.userCurrency = userCurrency;
+    }
 }

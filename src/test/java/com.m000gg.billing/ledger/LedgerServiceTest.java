@@ -1,9 +1,9 @@
 package com.m000gg.billing.ledger;
 
 import com.m000gg.billing.identity.Admin;
+import com.m000gg.billing.ledger.exception.ExchangeRateMismatchException;
 import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
 import com.m000gg.billing.ledger.exception.InvalidRefundTargetException;
-import com.m000gg.billing.ledger.exception.RefundExceedsOriginalChargeException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,6 +65,8 @@ public class LedgerServiceTest {
     void applyTopUp_successful() {
         TopUpRequestDto topUpRequestDto = new TopUpRequestDto();
         topUpRequestDto.setAmount(BigDecimal.valueOf(100));
+        topUpRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(100));
+        topUpRequestDto.setExchangeRate(BigDecimal.ONE);
         LedgerEntry expectedEntry = new LedgerEntry();
         expectedEntry.setType(EntryType.PAYMENT);
         when(ledgerMapper.createLedgerEntryFromTopUpRequestDto(any(), any(), any())).thenReturn(expectedEntry);
@@ -72,11 +75,39 @@ public class LedgerServiceTest {
         verify(ledgerEntryRepository).save(argThat(ledgerEntry -> EntryType.PAYMENT.equals(ledgerEntry.getType())));
     }
 
+    @Test
+    void applyTopUp_mismatchedExchangeRate_throwsExchangeRateMismatchException() {
+        TopUpRequestDto topUpRequestDto = new TopUpRequestDto();
+        topUpRequestDto.setAmount(BigDecimal.valueOf(100));
+        topUpRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(100));
+        topUpRequestDto.setExchangeRate(BigDecimal.valueOf(2));
+        assertThatThrownBy(() -> ledgerService.applyTopUp(topUpRequestDto, user, currentAdmin))
+                .isInstanceOf(ExchangeRateMismatchException.class);
+        verifyNoInteractions(applicationUserRepository);
+        verify(ledgerEntryRepository, never()).save(any());
+    }
+
+    @Test
+    void applyTopUp_balanceRoundedToTwoDecimals() {
+        user.setBalance(new BigDecimal("100.005"));
+        TopUpRequestDto topUpRequestDto = new TopUpRequestDto();
+        topUpRequestDto.setAmount(new BigDecimal("0.004"));
+        topUpRequestDto.setAmountInBaseCurrency(new BigDecimal("0.004"));
+        topUpRequestDto.setExchangeRate(BigDecimal.ONE);
+        LedgerEntry expectedEntry = new LedgerEntry();
+        expectedEntry.setType(EntryType.PAYMENT);
+        when(ledgerMapper.createLedgerEntryFromTopUpRequestDto(any(), any(), any())).thenReturn(expectedEntry);
+        ledgerService.applyTopUp(topUpRequestDto, user, currentAdmin);
+        assertEquals(0, new BigDecimal("100.01").compareTo(user.getBalance()));
+    }
+
     //*----Bill-Tests----*//
     @Test
     void issueBill_successful() {
         BillRequestDto billRequestDto = new BillRequestDto();
         billRequestDto.setAmount(BigDecimal.valueOf(50));
+        billRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(50));
+        billRequestDto.setExchangeRate(BigDecimal.ONE);
         LedgerEntry expectedEntry = new LedgerEntry();
         expectedEntry.setType(EntryType.CHARGE);
         when(ledgerMapper.createLedgerEntryFromBillRequestDto(any(), any(), any())).thenReturn(expectedEntry);
@@ -89,6 +120,8 @@ public class LedgerServiceTest {
     void issueBill_raiseInsufficientBalanceException() {
         BillRequestDto billRequestDto = new BillRequestDto();
         billRequestDto.setAmount(BigDecimal.valueOf(150));
+        billRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(150));
+        billRequestDto.setExchangeRate(BigDecimal.ONE);
 
         assertThatThrownBy(() -> ledgerService.issueBill(billRequestDto, user, currentAdmin))
                 .isInstanceOf(InsufficientBalanceException.class);
@@ -100,12 +133,30 @@ public class LedgerServiceTest {
     void issueBill_limitingCase() {
         BillRequestDto billRequestDto = new BillRequestDto();
         billRequestDto.setAmount(BigDecimal.valueOf(100));
+        billRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(100));
+        billRequestDto.setExchangeRate(BigDecimal.ONE);
         LedgerEntry expectedEntry = new LedgerEntry();
         expectedEntry.setType(EntryType.CHARGE);
         when(ledgerMapper.createLedgerEntryFromBillRequestDto(any(), any(), any())).thenReturn(expectedEntry);
+
         ledgerService.issueBill(billRequestDto, user, currentAdmin);
+
         assertEquals(0, BigDecimal.valueOf(0).compareTo(user.getBalance()));
         verify(ledgerEntryRepository).save(argThat(ledgerEntry -> EntryType.CHARGE.equals(ledgerEntry.getType())));
+    }
+
+    @Test
+    void issueBill_mismatchedExchangeRate_checkedBeforeInsufficientBalance() {
+        BillRequestDto billRequestDto = new BillRequestDto();
+        billRequestDto.setAmount(BigDecimal.valueOf(150));
+        billRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(150));
+        billRequestDto.setExchangeRate(BigDecimal.valueOf(2));
+
+        assertThatThrownBy(() -> ledgerService.issueBill(billRequestDto, user, currentAdmin))
+                .isInstanceOf(ExchangeRateMismatchException.class);
+
+        verifyNoInteractions(applicationUserRepository);
+        verify(ledgerEntryRepository, never()).save(any());
     }
 
     //*----Correction-Tests----*//
@@ -114,11 +165,15 @@ public class LedgerServiceTest {
     void applyCorrectionIncrease_successful() {
         CorrectionRequestDto correctionRequestDto = new CorrectionRequestDto();
         correctionRequestDto.setAmount(BigDecimal.valueOf(50));
+        correctionRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(50));
+        correctionRequestDto.setExchangeRate(BigDecimal.ONE);
         correctionRequestDto.setDirection(CorrectionDirection.INCREASE);
         LedgerEntry expectedEntry = new LedgerEntry();
         expectedEntry.setType(EntryType.CORRECTION_INCREASE);
         when(ledgerMapper.createLedgerEntryFromCorrectionRequestDto(any(), any(), any())).thenReturn(expectedEntry);
+
         ledgerService.applyCorrection(correctionRequestDto, user, currentAdmin);
+
         assertEquals(0, BigDecimal.valueOf(150).compareTo(user.getBalance()));
         verify(ledgerEntryRepository).save(argThat(ledgerEntry -> EntryType.CORRECTION_INCREASE.equals(ledgerEntry.getType())));
     }
@@ -127,11 +182,15 @@ public class LedgerServiceTest {
     void applyCorrectionDecrease_successful() {
         CorrectionRequestDto correctionRequestDto = new CorrectionRequestDto();
         correctionRequestDto.setAmount(BigDecimal.valueOf(50));
+        correctionRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(50));
+        correctionRequestDto.setExchangeRate(BigDecimal.ONE);
         correctionRequestDto.setDirection(CorrectionDirection.DECREASE);
         LedgerEntry expectedEntry = new LedgerEntry();
         expectedEntry.setType(EntryType.CORRECTION_DECREASE);
         when(ledgerMapper.createLedgerEntryFromCorrectionRequestDto(any(), any(), any())).thenReturn(expectedEntry);
+
         ledgerService.applyCorrection(correctionRequestDto, user, currentAdmin);
+
         assertEquals(0, BigDecimal.valueOf(50).compareTo(user.getBalance()));
         verify(ledgerEntryRepository).save(argThat(ledgerEntry -> EntryType.CORRECTION_DECREASE.equals(ledgerEntry.getType())));
     }
@@ -140,11 +199,26 @@ public class LedgerServiceTest {
     void applyCorrectionDecrease_raiseInsufficientBalanceException() {
         CorrectionRequestDto correctionRequestDto = new CorrectionRequestDto();
         correctionRequestDto.setAmount(BigDecimal.valueOf(150));
+        correctionRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(150));
+        correctionRequestDto.setExchangeRate(BigDecimal.ONE);
         correctionRequestDto.setDirection(CorrectionDirection.DECREASE);
 
         assertThatThrownBy(() -> ledgerService.applyCorrection(correctionRequestDto, user, currentAdmin))
                 .isInstanceOf(InsufficientBalanceException.class);
 
+        verify(ledgerEntryRepository, never()).save(any());
+    }
+
+    @Test
+    void applyCorrection_mismatchedExchangeRate_throwsExchangeRateMismatchException() {
+        CorrectionRequestDto correctionRequestDto = new CorrectionRequestDto();
+        correctionRequestDto.setAmount(BigDecimal.valueOf(50));
+        correctionRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(50));
+        correctionRequestDto.setExchangeRate(BigDecimal.valueOf(3));
+        correctionRequestDto.setDirection(CorrectionDirection.INCREASE);
+        assertThatThrownBy(() -> ledgerService.applyCorrection(correctionRequestDto, user, currentAdmin))
+                .isInstanceOf(ExchangeRateMismatchException.class);
+        verifyNoInteractions(applicationUserRepository);
         verify(ledgerEntryRepository, never()).save(any());
     }
 
@@ -158,12 +232,15 @@ public class LedgerServiceTest {
         originalCharge.setType(EntryType.CHARGE);
         originalCharge.setSubscriberId(user.getId());
         originalCharge.setAmount(BigDecimal.valueOf(50));
+        originalCharge.setAmountInBaseCurrency(BigDecimal.valueOf(50));
         when(ledgerEntryRepository.findById(originalEntryId))
                 .thenReturn(Optional.of(originalCharge));
         when(ledgerEntryRepository.existsByOriginalEntryIdAndType(originalEntryId, EntryType.REFUND))
                 .thenReturn(false);
         RefundRequestDto refundRequestDto = new RefundRequestDto();
         refundRequestDto.setAmount(BigDecimal.valueOf(50));
+        refundRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(50));
+        refundRequestDto.setExchangeRate(BigDecimal.ONE);
         refundRequestDto.setOriginalEntryId(originalEntryId);
         LedgerEntry expectedEntry = new LedgerEntry();
         expectedEntry.setSubscriberId(user.getId());
@@ -268,7 +345,7 @@ public class LedgerServiceTest {
     }
 
     @Test
-    void applyRefund_amountExceedsOriginalCharge_throwsRefundExceedsOriginalCharge() {
+    void applyRefund_mismatchedExchangeRate_throwsExchangeRateMismatchException() {
         UUID originalEntryId = UUID.fromString("890e8403-e29b-4fd0-a726-442655aa0493");
 
         LedgerEntry originalCharge = new LedgerEntry();
@@ -276,6 +353,7 @@ public class LedgerServiceTest {
         originalCharge.setType(EntryType.CHARGE);
         originalCharge.setSubscriberId(user.getId());
         originalCharge.setAmount(BigDecimal.valueOf(50));
+        originalCharge.setAmountInBaseCurrency(BigDecimal.valueOf(50));
 
         when(ledgerEntryRepository.findById(originalEntryId))
                 .thenReturn(Optional.of(originalCharge));
@@ -283,14 +361,43 @@ public class LedgerServiceTest {
                 .thenReturn(false);
 
         RefundRequestDto refundRequestDto = new RefundRequestDto();
-        refundRequestDto.setAmount(BigDecimal.valueOf(75));
+        refundRequestDto.setAmount(BigDecimal.valueOf(50));
+        refundRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(50));
+        refundRequestDto.setExchangeRate(BigDecimal.valueOf(4));
         refundRequestDto.setOriginalEntryId(originalEntryId);
 
         assertThatThrownBy(() -> ledgerService.applyRefund(refundRequestDto, user, currentAdmin))
-                .isInstanceOf(RefundExceedsOriginalChargeException.class);
+                .isInstanceOf(ExchangeRateMismatchException.class);
 
         verifyNoInteractions(applicationUserRepository);
         verify(ledgerEntryRepository, never()).save(any());
+    }
+
+    @Test
+    void applyRefund_amountExceedsOriginalCharge_isNoLongerRestricted() {
+        UUID originalEntryId = UUID.fromString("890e8403-e29b-4fd0-a726-442655aa0493");
+        LedgerEntry originalCharge = new LedgerEntry();
+        originalCharge.setId(originalEntryId);
+        originalCharge.setType(EntryType.CHARGE);
+        originalCharge.setSubscriberId(user.getId());
+        originalCharge.setAmount(BigDecimal.valueOf(50));
+        originalCharge.setAmountInBaseCurrency(BigDecimal.valueOf(50));
+        when(ledgerEntryRepository.findById(originalEntryId))
+                .thenReturn(Optional.of(originalCharge));
+        when(ledgerEntryRepository.existsByOriginalEntryIdAndType(originalEntryId, EntryType.REFUND))
+                .thenReturn(false);
+        RefundRequestDto refundRequestDto = new RefundRequestDto();
+        refundRequestDto.setAmount(BigDecimal.valueOf(75));
+        refundRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(75));
+        refundRequestDto.setExchangeRate(BigDecimal.ONE);
+        refundRequestDto.setOriginalEntryId(originalEntryId);
+        LedgerEntry expectedEntry = new LedgerEntry();
+        expectedEntry.setSubscriberId(user.getId());
+        expectedEntry.setType(EntryType.REFUND);
+        when(ledgerMapper.createLedgerEntryFromRefundRequestDto(any(), any(), any())).thenReturn(expectedEntry);
+        ledgerService.applyRefund(refundRequestDto, user, currentAdmin);
+        assertEquals(0, BigDecimal.valueOf(175).compareTo(user.getBalance()));
+        verify(ledgerEntryRepository).save(argThat(entry -> EntryType.REFUND.equals(entry.getType())));
     }
 
     @Test
@@ -300,7 +407,9 @@ public class LedgerServiceTest {
         Page<LedgerEntry> emptyPage = new PageImpl<>(List.of());
         when(ledgerEntryRepository.search(eq(subscriberId), any(), isNull(), isNull(), isNull(), eq(pageable)))
                 .thenReturn(emptyPage);
+
         ledgerService.search(subscriberId, "some search", null, null, null, pageable);
+
         ArgumentCaptor<UUID> subscriberIdCaptor = ArgumentCaptor.forClass(UUID.class);
         verify(ledgerEntryRepository).search(subscriberIdCaptor.capture(), any(), isNull(), isNull(), isNull(), eq(pageable));
         assertThat(subscriberIdCaptor.getValue()).isEqualTo(subscriberId);

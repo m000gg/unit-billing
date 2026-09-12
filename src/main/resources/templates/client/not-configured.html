@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{client.not-configured.title}">Billing Unavailable</title>
+    <link rel="stylesheet" th:href="@{/css/client/not-configured.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="lang-picker">
+    <form action="" method="get">
+        <div class="select-wrapper">
+            <select name="lang" onchange="this.form.submit()" th:aria-label="#{client.langSwitcher.ariaLabel}">
+                <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{client.language.en}"></option>
+                <option value="fr" th:selected="${#locale.language == 'fr'}" th:text="#{client.language.fr}"></option>
+                <option value="de" th:selected="${#locale.language == 'de'}" th:text="#{client.language.de}"></option>
+                <option value="ru" th:selected="${#locale.language == 'ru'}" th:text="#{client.language.ru}"></option>
+                <option value="uk" th:selected="${#locale.language == 'uk'}" th:text="#{client.language.ukr}"></option>
+            </select>
+            <div class="select-arrow">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+        </div>
+    </form>
+</div>
+
+<main class="setup-pending">
+    <div class="setup-pending__card">
+
+        <div class="setup-pending__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <line x1="12" y1="8" x2="12" y2="13"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+
+        <p class="setup-pending__eyebrow" th:text="#{client.not-configured.eyebrow}"></p>
+        <h1 class="setup-pending__title" th:text="#{client.not-configured.title}"></h1>
+        <p class="setup-pending__body" th:text="#{client.not-configured.body}"></p>
+
+        <div class="setup-pending__status">
+            <span class="setup-pending__status-dot"></span>
+            <span th:text="#{client.not-configured.status}"></span>
+        </div>
+
+        <div class="setup-pending__actions">
+            <button type="button" class="btn-refresh" onclick="window.location.reload()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span th:text="#{client.not-configured.refresh}"></span>
+            </button>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn-secondary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span th:text="#{client.not-configured.logout}"></span>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>

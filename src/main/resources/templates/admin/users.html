@@ -39,6 +39,7 @@
                 <th th:text="#{subscribers.usersList.table.phone}">Phone number</th>
                 <th th:text="#{subscribers.usersList.table.email}">Email</th>
                 <th th:text="#{subscribers.usersList.table.address}">Full Address</th>
+                <th th:text="#{subscribers.usersList.table.currency}">Currency</th>
                 <th th:text="#{subscribers.usersList.table.balance}">Balance</th>
                 <th th:text="#{subscribers.usersList.table.viewProfile}">View profile</th>
             </tr>
@@ -58,7 +59,8 @@
                 <td th:text="${user.phone}"></td>
                 <td th:text="${user.email}"></td>
                 <td th:text="${user.country + ', ' + user.city + ', ' + user.street + ' ' + user.houseNumber + (user.apartment != null && !user.apartment.isEmpty() ? ', ' + aptLabel + ' ' + user.apartment : '') + ', ' + user.postalCode}"></td>
-                <td th:text="${user.balance + ' $'}"></td>
+                <td th:text="${user.userCurrency}"></td>
+                <td th:text="${user.balance + ' ' + user.userCurrency}"></td>
 
                 <td><a class="table-link" th:href="@{/admin/users/profile/{id}(id=${user.id})}" th:text="#{subscribers.usersList.goToProfile}">Go to profile</a></td>
             </tr>
@@ -101,6 +103,3 @@
         row.classList.add('row-fade-in');
     });
 </script>
-
-</body>
-</html>

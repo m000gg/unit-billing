@@ -16,6 +16,7 @@
         <p class="page-subtitle" th:text="#{admin.dashboard.subtitle}">Quick access to admin actions</p>
     </header>
     <section class="task-panel">
+        <h3 th:text="#{admin.dashboard.section.subscribers}">Subscribers</h3>
         <div class="grid-container">
             <a href="/admin/users/registration" class="card">
                 <div class="card-glow"></div>
@@ -27,6 +28,17 @@
                 <div class="card-glow"></div>
                 <div class="icon">🌎</div>
                 <p th:text="#{admin.dashboard.usersList}">Users List</p>
+                <span class="card-arrow">→</span>
+            </a>
+        </div>
+    </section>
+    <section class="task-panel">
+        <h3 th:text="#{admin.dashboard.section.system}">System</h3>
+        <div class="grid-container">
+            <a href="/admin/billing-configuration" class="card">
+                <div class="card-glow"></div>
+                <div class="icon">⚙️</div>
+                <p th:text="#{admin.billing.settings.title}">Billing Settings</p>
                 <span class="card-arrow">→</span>
             </a>
         </div>

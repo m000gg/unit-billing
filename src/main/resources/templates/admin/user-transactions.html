@@ -60,7 +60,7 @@
     </div>
   </form>
 
-  <div class="table-card">
+  <div class="table-card table-card-scroll">
     <table class="user-table ledger-table" id="ledgerTable">
       <thead>
       <tr>
@@ -69,6 +69,9 @@
         <th th:text="#{admin.userTransactions.table.description}">Description</th>
         <th th:text="#{admin.userTransactions.table.type}">Type</th>
         <th class="ledger-amount-col" th:text="#{admin.userTransactions.table.amount}">Amount</th>
+        <th class="ledger-amount-col" th:text="#{admin.userTransactions.table.baseAmount}">Base amount</th>
+        <th th:text="#{admin.userTransactions.table.rate}">Rate</th>
+        <th th:text="#{admin.bill.exchangeRateSource}">Rate source</th>
         <th th:text="#{admin.userTransactions.table.reference}">Reference</th>
         <th th:text="#{admin.userTransactions.table.performedBy}">Performed by</th>
         <th th:text="#{admin.userTransactions.table.action}">Action</th>
@@ -88,8 +91,20 @@
         </td>
         <td class="ledger-amount-col"
             th:classappend="${entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE' ? ' ledger-amount-negative' : ' ledger-amount-positive'}"
-            th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + '$' + #numbers.formatDecimal(entry.amount.abs(), 1, 2)}">
-          -$9.99
+            th:text="${((entry.type.name() == 'CHARGE' or entry.type.name() == 'CORRECTION_DECREASE') ? '-' : '+') + #numbers.formatDecimal(entry.amount.abs(), 1, 2) + ' ' + entry.userCurrency}">
+          -9.99 UAH
+        </td>
+        <td class="ledger-amount-col ledger-base-amount"
+            th:text="${entry.amountInBaseCurrency != null ? #numbers.formatDecimal(entry.amountInBaseCurrency, 1, 2) + ' ' + entry.baseCurrency : '—'}">
+          92.20 USD
+        </td>
+        <td class="ledger-rate"
+            th:text="${entry.exchangeRate != null ? #numbers.formatDecimal(entry.exchangeRate, 1, 6) : '—'}">
+          41.500000
+        </td>
+        <td class="ledger-rate-source"
+            th:text="${entry.exchangeRateSource != null and !entry.exchangeRateSource.isEmpty() ? entry.exchangeRateSource : '—'}">
+          manual
         </td>
         <td>
           <span th:if="${entry.originalEntryId != null}"
@@ -112,7 +127,7 @@
         </td>
       </tr>
       <tr th:if="${ledgerEntriesPage.empty}">
-        <td colspan="8" class="ledger-empty-row" th:text="#{admin.userTransactions.table.empty}">No transactions found.</td>
+        <td colspan="10" class="ledger-empty-row" th:text="#{admin.userTransactions.table.empty}">No transactions found.</td>
       </tr>
       </tbody>
     </table>

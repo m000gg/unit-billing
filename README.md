@@ -94,9 +94,10 @@ unit-billing/
 ├─ src/
 │  ├─ main/
 │  │  ├─ java/com/example/billing/
-│  │  │  ├─ configs/                         ← Spring configuration classes
+│  │  │  ├─ configs/                        ← Spring configuration classes
 │  │  │  ├─ identity/                       ← auth, roles, users
 │  │  │  ├─ subscribers/                    ← subscribers
+│  │  │  ├─ settings/                       ← billing system settings
 │  │  │  ├─ catalog/                        ← services and pricing plans
 │  │  │  ├─ subscriptions/                  ← subscriptions
 │  │  │  ├─ ledger/                         ← transactions, payments, balance calculation

@@ -13,7 +13,8 @@ INSERT INTO application_users (
     house_number,
     apartment,
     postal_code,
-    is_deleted
+    is_deleted,
+    user_currency
 ) VALUES
       (
           '550e8400-e29b-41d4-a716-446655440001',
@@ -30,7 +31,8 @@ INSERT INTO application_users (
           '100',
           '4B',
           '10001',
-          FALSE
+          FALSE,
+       'USD'
       ),
       (
           '550e8400-e29b-41d4-a716-446655440002',
@@ -47,7 +49,8 @@ INSERT INTO application_users (
           '500',
           '12A',
           '94105',
-          FALSE
+          FALSE,
+         'USD'
       ),
       (
           '550e8400-e29b-41d4-a716-446655440003',
@@ -64,5 +67,6 @@ INSERT INTO application_users (
           '221',
           'B',
           'NW1 6XE',
-          FALSE
+          FALSE,
+       'GBP'
       );
