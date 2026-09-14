@@ -8,6 +8,7 @@
     <a href="https://github.com/m000gg/unit-billing/compare/main...develop"><img src="https://img.shields.io/github/commits-since/m000gg/unit-billing/main/develop?label=commits%20since" alt="Commits since"></a>
     <a href="https://github.com/m000gg/unit-billing/issues"><img src="https://img.shields.io/github/issues/m000gg/unit-billing.svg" alt="Issues"></a>
     <a href="https://github.com/m000gg/unit-billing/network/members"><img src="https://img.shields.io/github/forks/m000gg/unit-billing.svg" alt="Forks"></a>
+    <a href="https://github.com/m000gg/unit-billing/blob/main/LICENSE"><img src="https://img.shields.io/github/license/m000gg/unit-billing.svg" alt="License"></a>
   </p>
 
 </div>
@@ -211,5 +212,5 @@ For general questions or networking, see contact links in my overview [profile](
 ---
 
 ## License
-This project uses a custom license model.
-License details will be published together with the first stable release.
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
