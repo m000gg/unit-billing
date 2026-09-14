@@ -92,8 +92,8 @@ unit-billing/
 │  ├─ domain.md                             ← terminology and critical billing rules
 │  └─ openapi.yaml                          ← HTTP contract for external API
 ├─ scripts/
-│  ├─ server_init_script.sh                ← environment setup (PostgreSQL, JDK & Maven)
-│  └─ application_start_script.sh           ← deployment to staging/prod (Maven, SCP)
+│  ├─ setup-env.sh                          ← environment setup (PostgreSQL, JDK & Maven)
+│  └─ deploy.sh                             ← deployment to staging/prod (Maven, SCP)
 ├─ src/
 │  ├─ main/
 │  │  ├─ java/com/example/billing/
