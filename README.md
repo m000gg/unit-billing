@@ -33,8 +33,8 @@
 ---
 
 ## About this project
-This project is a flexible billing and customer management platform designed to adapt to any business model. 
-The goal of the project is to simplify business operations, reduce administrative workload, and provide transparent financial and operational analytics for various use cases (such as SaaS, utility services, digital subscriptions, and ISPs). 
+This project is a flexible billing and customer management platform designed to adapt to any business model.
+The goal of the project is to simplify business operations, reduce administrative workload, and provide transparent financial and operational analytics for various use cases (such as SaaS, utility services, digital subscriptions, and ISPs).
 Additionally, it includes a dedicated client application that empowers users to easily manage their own accounts, subscriptions, and payments.
 
 ---
@@ -64,13 +64,19 @@ This project aims to provide a centralized billing and customer management platf
 
 ---
 ## Features
-* Admin Authorization: Secure admin login and basic access control.
 
-* User Registration: Streamlined sign-up process for new users.
-
-* User Profiles: Personal dashboard for viewing basic account details.
-
-* Client Self-Service: Subscribers can easily check their current balance, view invoices, and manage their personal information.
+* **Security & Access**:
+  * **Authorization**: Secure login and role-based access control across the system.
+* **Admin Application**:
+  * **Comprehensive User Management**: Full CRUD capabilities allowing administrators to seamlessly create, view, update, and deactivate subscriber profiles throughout their lifecycle.
+  * **Manual Balance Entries**: Administrators can safely adjust balances and issue manual credits/charges.
+* **Client Application**:
+  * **User Profile Overview**: A personal dashboard for subscribers to view their basic account details and status.
+* **Core Billing Capabilities**:
+  * **Transaction History**: Comprehensive auditing and history tracking for all financial operations.
+  * **Multicurrency**: Built-in support to handle transactions and account balances in multiple currencies.
+* **Localization**:
+  * **i18n Support**: Full internationalization ready for multi-language deployments.
 
 ---
 
@@ -82,15 +88,12 @@ unit-billing/
 │  ├─ adr/                                  ← architectural decision records (why important decisions were made)
 │  │  └─ 0001-flyway.md                    
 │  ├─ features/                             ← notable completed feature descriptions
-│  │  ├─ authorization.md                   
-│  │  └─ payments.md  
-│  ├─ manuals/                              ← admin and client application guides   
 │  ├─ assets/                               ← images, diagrams, and other media used in documentation
 │  ├─ domain.md                             ← terminology and critical billing rules
 │  └─ openapi.yaml                          ← HTTP contract for external API
 ├─ scripts/
-│  ├─ setup-env.sh                          ← environment setup (install PostgreSQL & JDK & Maven & Jenkins, setup PostgreSQL, create services via systemd)
-│  └─ deploy.sh                             ← deployment to staging/prod (Maven, SCP, restart services via systemctl)
+│  ├─ setup-env.sh                          ← environment setup (PostgreSQL, JDK & Maven)
+│  └─ deploy.sh                             ← deployment to staging/prod (Maven, SCP)
 ├─ src/
 │  ├─ main/
 │  │  ├─ java/com/example/billing/
@@ -106,7 +109,7 @@ unit-billing/
 │  │  │  │  └─ client/                      ← client portal endpoints/pages
 │  │  │  └─ BillingApplication.java
 │  │  └─ resources/
-│  │     ├─ db/migration/                   ← database migration scripts
+│  │     ├─ db/migration/                   ← database migration scripts (Flyway)
 │  │     ├─ templates/                      ← Thymeleaf templates (SSR)
 │  │     │  ├─ admin/                       ← HTML templates for admin panel
 │  │     │  └─ client/                      ← HTML templates for client portal
@@ -130,53 +133,47 @@ The project is currently designed as a modular monolith architecture.
 ---
 
 ## Technology Stack
-| Category | Technologies |
-|---|---|
-| Backend | Java, Spring Boot |
-| Database | PostgreSQL |
-| ORM | Hibernate / Spring Data JPA |
-| Security | Spring Security |
-| Build Tool | Maven |
-| Containerization | Docker, Docker Compose |
-| Version Control | Git, GitHub |
-| Frontend | HTML, CSS, JS |
+
+| Category           | Technologies                |
+|--------------------|-----------------------------|
+| Backend            | Java, Spring Boot           |
+| Database           | PostgreSQL                  |
+| Database Migration | Flyway                      |
+| ORM                | Hibernate / Spring Data JPA |
+| Security           | Spring Security             |
+| Build Tool         | Maven                       |
+| Version Control    | Git, GitHub                 |
+| Frontend           | HTML, CSS, JS, Thymeleaf    |
 
 ---
 ## Development Principles
 
-| Practice          | Implementation                                                                                                   |
-|-------------------|------------------------------------------------------------------------------------------------------------------|
-| **TDD**           | Critical business scenarios are secured by automated tests.                                                      |
-| **DDD-lite**      | Code structure follows business modules and a ubiquitous domain language.                                        |
-| **Documentation** | Issues/PRs track work history; `docs/adr/` stores architectural decisions; `docs/features/` tracks key features. |
-| **Database**      | Schema changes are executed via **Flyway** migrations; Hibernate is restricted to `ddl-auto=validate`.           |
-
+| Practice      | Implementation                                                                                               |
+|---------------|--------------------------------------------------------------------------------------------------------------|
+| TDD           | Critical business scenarios are secured by automated tests.                                                  |
+| DDD-lite      | Code structure follows business modules and a ubiquitous domain language.                                    |
+| Documentation | Issues/PRs track work history; docs/adr/ stores architectural decisions; docs/features/ tracks key features. |
+| Database      | Schema changes are executed via Flyway migrations; Hibernate is restricted to ddl-auto=validate.             |
 
 ---
 
 ## ⚡ Getting Started
 
 ### 1) Clone the repo
-
-```
+```bash
 git clone https://github.com/m000gg/unit-billing.git
 cd unit-billing
 ```
 
-
 ### 2) Requirements
-
 Before starting the project, make sure the following tools are installed:
-
 - Java 21+
 - Maven 3.9+
 - PostgreSQL 16+
 
 Docker is recommended for local development and database deployment.
 
-
-### 3)  Installation
-
+### 3) Installation
 To install required dependencies (Java, PostgreSQL, Maven) and set up systemd services on your server, use the provided initialization script:
 
 ```bash
@@ -184,12 +181,10 @@ chmod +x scripts/setup-env.sh
 ./scripts/setup-env.sh
 ```
 
-### 4) How to Use
+### 4) Documentation & How to Use
+For comprehensive guides, API documentation, and user manuals, please visit our official project documentation site:
 
-Once the application is running, refer to the guides below:
-
-- 📘 [Admin Application Guide](docs/manuals/admin-guide.md) — managing users, billing, and platform settings
-- 📗 [Client Application Guide](docs/manuals/client-guide.md) — end-user portal navigation and account management
+**📘 [Unit Billing Landing & Documentation](https://m000gg.github.io/unit-billing-landing/)**
 
 ---
 
@@ -212,6 +207,8 @@ The application uses Spring Boot configuration files together with environment v
 
 Open an Issue in this repo with a short description and steps to reproduce
 For general questions or networking, see contact links in my overview [profile](https://github.com/m000gg "m000gg profile").
+
+---
 
 ## License
 This project uses a custom license model.
