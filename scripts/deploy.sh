@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Copyright 2026 Vladyslav Livandovskyi
 #
@@ -14,12 +15,31 @@
 # limitations under the License.
 #
 
-spring.application.name=unit-billing
+set -euo pipefail
 
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.datasource.url=jdbc:postgresql://localhost:5432/unit-billing
-spring.flyway.locations=classpath:db/migration,classpath:db/migration-test
+sudo tee /etc/systemd/system/unitbilling.service > /dev/null << 'EOF'
+[Unit]
+Description=Unit Billing Spring Boot Application
+After=syslog.target network.target postgresql.service
 
-spring.messages.basename=i18n/admin,i18n/client,i18n/subscribers,i18n/ledger,i18n/identity,i18n/catalog,i18n/subscriptions,i18n/common, i18n/errors
-spring.messages.encoding=UTF-8
-spring.messages.fallback-to-system-locale=false
+[Service]
+User=vboxuser
+
+#ff: right path & name
+ExecStart=/usr/bin/java -jar /opt/unit-billing/app.jar
+SuccessExitStatus=143
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
+sudo systemctl daemon-reload
+
+sudo systemctl enable unitbilling
+
+
+sudo systemctl start unitbilling
