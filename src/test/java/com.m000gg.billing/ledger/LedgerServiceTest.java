@@ -20,6 +20,7 @@ import com.m000gg.billing.identity.Admin;
 import com.m000gg.billing.ledger.exception.ExchangeRateMismatchException;
 import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
 import com.m000gg.billing.ledger.exception.InvalidRefundTargetException;
+import com.m000gg.billing.ledger.exception.RefundExceedsOriginalChargeException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +42,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -247,6 +248,7 @@ public class LedgerServiceTest {
         originalCharge.setId(originalEntryId);
         originalCharge.setType(EntryType.CHARGE);
         originalCharge.setSubscriberId(user.getId());
+        originalCharge.setBaseCurrency("USD");
         originalCharge.setAmount(BigDecimal.valueOf(50));
         originalCharge.setAmountInBaseCurrency(BigDecimal.valueOf(50));
         when(ledgerEntryRepository.findById(originalEntryId))
@@ -390,7 +392,7 @@ public class LedgerServiceTest {
     }
 
     @Test
-    void applyRefund_amountExceedsOriginalCharge_isNoLongerRestricted() {
+    void applyRefund_baseAmountExceedsOriginalCharge_throwsRefundExceedsOriginalCharge() {
         UUID originalEntryId = UUID.fromString("890e8403-e29b-4fd0-a726-442655aa0493");
         LedgerEntry originalCharge = new LedgerEntry();
         originalCharge.setId(originalEntryId);
@@ -398,21 +400,45 @@ public class LedgerServiceTest {
         originalCharge.setSubscriberId(user.getId());
         originalCharge.setAmount(BigDecimal.valueOf(50));
         originalCharge.setAmountInBaseCurrency(BigDecimal.valueOf(50));
-        when(ledgerEntryRepository.findById(originalEntryId))
-                .thenReturn(Optional.of(originalCharge));
-        when(ledgerEntryRepository.existsByOriginalEntryIdAndType(originalEntryId, EntryType.REFUND))
-                .thenReturn(false);
+        when(ledgerEntryRepository.findById(originalEntryId)).thenReturn(Optional.of(originalCharge));
+        when(ledgerEntryRepository.existsByOriginalEntryIdAndType(originalEntryId, EntryType.REFUND)).thenReturn(false);
         RefundRequestDto refundRequestDto = new RefundRequestDto();
         refundRequestDto.setAmount(BigDecimal.valueOf(75));
         refundRequestDto.setAmountInBaseCurrency(BigDecimal.valueOf(75));
         refundRequestDto.setExchangeRate(BigDecimal.ONE);
         refundRequestDto.setOriginalEntryId(originalEntryId);
+
+        assertThatThrownBy(() -> ledgerService.applyRefund(refundRequestDto, user, currentAdmin))
+                .isInstanceOf(RefundExceedsOriginalChargeException.class);
+
+        verifyNoInteractions(applicationUserRepository);
+        verify(ledgerEntryRepository, never()).save(any());
+    }
+
+    @Test
+    void applyRefund_sameBaseAmountAtDifferentRate_isAllowed() {
+        UUID originalEntryId = UUID.fromString("890e8403-e29b-4fd0-a726-442655aa0493");
+        LedgerEntry originalCharge = new LedgerEntry();
+        originalCharge.setId(originalEntryId);
+        originalCharge.setType(EntryType.CHARGE);
+        originalCharge.setSubscriberId(user.getId());
+        originalCharge.setAmount(new BigDecimal("4486.00"));
+        originalCharge.setAmountInBaseCurrency(new BigDecimal("100.00"));
+        when(ledgerEntryRepository.findById(originalEntryId)).thenReturn(Optional.of(originalCharge));
+        when(ledgerEntryRepository.existsByOriginalEntryIdAndType(originalEntryId, EntryType.REFUND)).thenReturn(false);
+        RefundRequestDto refundRequestDto = new RefundRequestDto();
+        refundRequestDto.setAmount(new BigDecimal("4550.00"));
+        refundRequestDto.setAmountInBaseCurrency(new BigDecimal("100.00"));
+        refundRequestDto.setExchangeRate(new BigDecimal("45.50"));
+        refundRequestDto.setOriginalEntryId(originalEntryId);
         LedgerEntry expectedEntry = new LedgerEntry();
         expectedEntry.setSubscriberId(user.getId());
         expectedEntry.setType(EntryType.REFUND);
         when(ledgerMapper.createLedgerEntryFromRefundRequestDto(any(), any(), any())).thenReturn(expectedEntry);
+
         ledgerService.applyRefund(refundRequestDto, user, currentAdmin);
-        assertEquals(0, BigDecimal.valueOf(175).compareTo(user.getBalance()));
+
+        assertEquals(0, new BigDecimal("4650.00").compareTo(user.getBalance()));
         verify(ledgerEntryRepository).save(argThat(entry -> EntryType.REFUND.equals(entry.getType())));
     }
 

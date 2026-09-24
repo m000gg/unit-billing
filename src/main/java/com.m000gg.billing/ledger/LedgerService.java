@@ -20,6 +20,7 @@ import com.m000gg.billing.identity.Admin;
 import com.m000gg.billing.ledger.exception.ExchangeRateMismatchException;
 import com.m000gg.billing.ledger.exception.InsufficientBalanceException;
 import com.m000gg.billing.ledger.exception.InvalidRefundTargetException;
+import com.m000gg.billing.ledger.exception.RefundExceedsOriginalChargeException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import jakarta.transaction.Transactional;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Currency;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -50,13 +52,11 @@ public class LedgerService {
     private ApplicationUserRepository applicationUserRepository;
 
     private void validateExchangeRate(BigDecimal amount, BigDecimal amountInBaseCurrency, BigDecimal exchangeRate) {
-        BigDecimal expectedAmount = amountInBaseCurrency
-                .multiply(exchangeRate)
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal actualAmount = amount.setScale(2, RoundingMode.HALF_UP);
-        BigDecimal tolerance = new BigDecimal("0.01");
-        if (expectedAmount.subtract(actualAmount).abs().compareTo(tolerance) > 0) {
-            throw new ExchangeRateMismatchException(amount, amountInBaseCurrency, exchangeRate, expectedAmount);
+        BigDecimal halfCent = new BigDecimal("0.005");
+        BigDecimal expectedAmount = amountInBaseCurrency.multiply(exchangeRate);
+        BigDecimal tolerance = halfCent.multiply(exchangeRate).add(halfCent);
+        if (expectedAmount.subtract(amount).abs().compareTo(tolerance) > 0) {
+            throw new ExchangeRateMismatchException(amount, amountInBaseCurrency, exchangeRate, expectedAmount.setScale(2, RoundingMode.HALF_UP));
         }
     }
 
@@ -113,6 +113,14 @@ public class LedgerService {
                 || !originalChargeLedger.getSubscriberId().equals(user.getId()) || alreadyRefunded) {
             throw new InvalidRefundTargetException(refundRequestDto.getOriginalEntryId());
         }
+        // Refund is denominated in base currency: limit is checked against the original base amount,
+        // the exchange rate of the refund may differ from the charge.
+        BigDecimal refundBase = refundRequestDto.getAmountInBaseCurrency().setScale(2, RoundingMode.HALF_UP);
+        if (refundBase.compareTo(originalChargeLedger.getAmountInBaseCurrency()) > 0) {
+            throw new RefundExceedsOriginalChargeException(
+                    originalChargeLedger.getId(), refundBase, originalChargeLedger.getAmountInBaseCurrency());
+        }
+
         validateExchangeRate(refundRequestDto.getAmount(), refundRequestDto.getAmountInBaseCurrency(), refundRequestDto.getExchangeRate());
         LedgerEntry entry = ledgerMapper.createLedgerEntryFromRefundRequestDto(refundRequestDto, user.getId(), currentAdmin.getId());
         user.setBalance(calculateNewBalance(user.getBalance(), refundRequestDto.getAmount(), true));
