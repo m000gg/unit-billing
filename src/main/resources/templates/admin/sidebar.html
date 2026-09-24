@@ -58,6 +58,10 @@
         </button>
     </form>
 
+    <div class="sidebar-version">
+        <span th:text="'v' + ${appVersion}">v0.1.0</span>
+    </div>
+
     <script>
         document.addEventListener('click', function (event) {
             document.querySelectorAll('details.lang-dropdown[open]').forEach(function (details) {
