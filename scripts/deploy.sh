@@ -17,16 +17,14 @@
 
 set -euo pipefail
 
-sudo tee /etc/systemd/system/unitbilling.service > /dev/null << 'EOF'
+sudo tee /etc/systemd/system/unit-billing.service > /dev/null << 'EOF'
 [Unit]
 Description=Unit Billing Spring Boot Application
 After=syslog.target network.target postgresql.service
 
 [Service]
 User=vboxuser
-
-#ff: right path & name
-ExecStart=/usr/bin/java -jar /opt/unit-billing/app.jar
+ExecStart=/usr/bin/java -jar /opt/unit-billing/unit-billing.jar --spring.profiles.active=prod
 SuccessExitStatus=143
 
 Restart=always
@@ -36,10 +34,6 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-
 sudo systemctl daemon-reload
-
-sudo systemctl enable unitbilling
-
-
-sudo systemctl start unitbilling
+sudo systemctl enable unit-billing
+sudo systemctl start unit-billing
