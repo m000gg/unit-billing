@@ -54,6 +54,11 @@
     <p style="text-align: center; font-size: 13px; margin-top: 20px;">
         <a href="/forgot-password" class="forgot-link" th:text="#{login.forgotPassword}">Forgot password?</a>
     </p>
+    <div class="legal-footer">
+        <a th:href="@{/impressum}" th:text="#{login.impressum}">Impressum</a>
+        <span class="separator">&middot;</span>
+        <a th:href="@{/privacy}" th:text="#{login.privacy}">Privacy Policy</a>
+    </div>
 </div>
 
 </body>
