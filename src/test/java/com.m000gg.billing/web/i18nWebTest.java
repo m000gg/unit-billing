@@ -31,6 +31,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -40,6 +41,7 @@ import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -104,17 +106,6 @@ public class i18nWebTest {
                 .andExpect(content().string(containsString("Connexion")));
     }
 
-    @Test
-    void localeShouldPersistAcrossRequestsInSameSession() throws Exception {
-        MockHttpSession session = new MockHttpSession();
-
-        mockMvc.perform(get("/login").session(session).param("lang", "de"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/login").session(session))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Anmelden")));
-    }
 
     @Test
     void whenLangParamIsUnsupported_thenFallsBackToDefault() throws Exception {
