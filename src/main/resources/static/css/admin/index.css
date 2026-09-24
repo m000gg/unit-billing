@@ -401,3 +401,17 @@ body {
     color: var(--text-secondary);
     margin: 0 0 16px;
 }
+
+.sidebar-version {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.sidebar-version span {
+    font-family: var(--font-mono, "JetBrains Mono", monospace);
+    font-size: 9px;
+    color: var(--ink-faint, #8A8F99);
+    letter-spacing: 0.05em;
+    user-select: none;
+    opacity: 0.6;
+}

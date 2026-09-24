@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright 2026 Vladyslav Livandovskyi
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html>
+<html lang="en" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{impressum.title}">Impressum / Legal Notice</title>
+    <link rel="stylesheet" th:href="@{/css/privacy.css}">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar__inner">
+        <button class="btn-back" onclick="if(history.length > 1) { history.back(); } else { window.location.href = '/'; }">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span th:text="#{common.back}">Back</span>
+        </button>
+
+        <div class="brand">
+            <div class="brand__mark">UB</div>
+            Unit Billing
+        </div>
+
+        <div style="flex:1"></div>
+        <div class="lang-switcher">
+            <a th:href="@{''(lang='ru')}" class="lang-option" th:classappend="${#locale.language == 'ru'} ? 'lang-option--active'">RU</a>
+            <a th:href="@{''(lang='uk')}" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'lang-option--active'">UKR</a>
+            <a th:href="@{''(lang='en')}" class="lang-option" th:classappend="${#locale.language == 'en'} ? 'lang-option--active'">EN</a>
+            <a th:href="@{''(lang='de')}" class="lang-option" th:classappend="${#locale.language == 'de'} ? 'lang-option--active'">DE</a>
+            <a th:href="@{''(lang='fr')}" class="lang-option" th:classappend="${#locale.language == 'fr'} ? 'lang-option--active'">FR</a>
+        </div>
+    </div>
+</header>
+
+<main class="page">
+    <div class="legal-doc">
+        <h1 th:text="#{impressum.title}">Impressum / Legal Notice</h1>
+
+        <h2 th:text="#{impressum.info.title}">Information pursuant to § 5 DDG</h2>
+        <p>
+            <strong th:text="${legalName}">Your Name</strong><br>
+            <span th:text="${legalAddress}">Musterstraße 1</span><br>
+            <span th:text="${legalCity}">52062 Aachen</span><br>
+            <span th:text="${legalCountry}">Germany</span>
+        </p>
+
+        <h2 th:text="#{impressum.contact.title}">Contact</h2>
+
+        <p>
+            <span th:text="#{client.profile.field.phone}">Phone</span>: <span th:text="${legalPhone}">+49 123 456789</span><br>
+            <span th:text="#{client.profile.field.email}">Email</span>: <a th:href="'mailto:' + ${legalEmail}" th:text="${legalEmail}">test@proton.me</a>
+        </p>
+
+        <h2 th:text="#{impressum.liability.content.title}">Liability for Content</h2>
+        <p th:text="#{impressum.liability.content.text}">As a service provider, we are responsible...</p>
+
+        <h2 th:text="#{impressum.liability.links.title}">Liability for Links</h2>
+        <p th:text="#{impressum.liability.links.text}">Our offer contains links to external websites...</p>
+
+        <h2 th:text="#{impressum.copyright.title}">Copyright</h2>
+        <p th:text="#{impressum.copyright.text}">The content and works created by the site operators...</p>
+    </div>
+</main>
+
+</body>
+</html>
