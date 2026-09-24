@@ -616,34 +616,101 @@ a {
         right: -40px;
     }
 }
-/* ---------- Site Footer ---------- */
-.site-footer {
-    width: 100%;
-    padding: 32px 20px;
-    margin-top: auto;
-    border-top: 1px solid var(--line, #E4E4DF);
-    background: transparent;
-}
-
-.site-footer__inner {
+.btn-back {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    margin-left: -12px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.btn-back:hover {
+    color: var(--ink);
+    background: var(--bg);
+}
+
+.btn-back svg {
+    transition: transform 0.2s ease;
+}
+
+.btn-back:hover svg {
+    transform: translateX(-3px);
+}
+
+/* ---------- Legal Document Styling ---------- */
+
+.legal-doc {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 48px 56px;
+    max-width: 840px;
+    margin: 0 auto;
+}
+
+.legal-doc h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 0 0 12px;
+    color: var(--ink);
+}
+
+.legal-doc__meta {
+    font-family: var(--font-mono);
     font-size: 13px;
-    color: var(--ink-faint, #8A8F99);
+    color: var(--ink-faint);
+    margin: 0 0 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
 }
 
-.site-footer__inner a {
-    color: var(--ink-faint, #8A8F99);
-    text-decoration: none;
-    transition: color 0.2s ease;
+.legal-doc h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 32px 0 16px;
+    color: var(--ink);
 }
 
-.site-footer__inner a:hover {
-    color: var(--ink, #14171F);
+.legal-doc p {
+    margin: 0 0 16px;
+    color: var(--ink-soft);
+    font-size: 15px;
+    line-height: 1.6;
 }
 
-.site-footer__separator {
-    opacity: 0.5;
+.legal-doc ul {
+    margin: 0 0 24px;
+    padding-left: 24px;
+    color: var(--ink-soft);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.legal-doc li {
+    margin-bottom: 8px;
+}
+
+.legal-doc strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* Responsive constraints for document */
+@media (max-width: 640px) {
+    .legal-doc {
+        padding: 32px 24px;
+    }
 }
