@@ -57,6 +57,7 @@
 
         <form th:action="@{/admin/users/{id}/bill(id=${user?.id} ?: 0)}" th:object="${billRequest}"
               method="post" id="billForm" onsubmit="return confirmBill(event)" novalidate>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <input type="hidden" th:field="*{userCurrency}">
             <input type="hidden" th:field="*{baseCurrency}">
