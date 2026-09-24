@@ -193,6 +193,7 @@
             th:action="@{/admin/users/profile/delete/{id}(id=${user.id})}" method="post"
             class="delete-account-form"
             th:attr="data-confirm=#{admin.userProfile.deleteConfirm}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <button type="submit" class="btn-danger" th:text="#{admin.userProfile.delete}">Delete account</button>
       </form>
     </div>
