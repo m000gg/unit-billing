@@ -57,11 +57,12 @@ pipeline {
                 sshagent(credentials: ['prod-ssh-key']) {
                     sh '''
                         scp -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes \
-                            target/unit-billing-*.jar "$PROD_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
+                            target/unit-billing-*.jar "$PROD_HOST:/tmp/$SERVICE_NAME.jar.new"
 
                         ssh -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes "$PROD_HOST" \
                             "sudo systemctl stop '$SERVICE_NAME' || true && \
-                             sudo mv '/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
+                             sudo mv '/tmp/$SERVICE_NAME.jar.new' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
+                             sudo chown '$SERVICE_USER:$SERVICE_USER' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
                              sudo systemctl start '$SERVICE_NAME' && \
                              sudo systemctl status '$SERVICE_NAME' --no-pager"
                     '''

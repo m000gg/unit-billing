@@ -25,6 +25,8 @@ DB_NAME="${DB_NAME:-unit-billing}"
 DB_USER="${DB_USER:-unitbillingadmin}"
 : "${DB_PASS:?DB_PASS must be set}"
 : "${CERTBOT_EMAIL:?CERTBOT_EMAIL must be set}"
+: "${INITIAL_ADMIN_EMAIL:?INITIAL_ADMIN_EMAIL must be set}"
+: "${INITIAL_ADMIN_PASSWORD:?INITIAL_ADMIN_PASSWORD must be set}"
 
 log() { echo "=== $* ==="; }
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
@@ -110,6 +112,8 @@ After=syslog.target network.target postgresql.service
 
 [Service]
 User=${SERVICE_USER}
+Environment="INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}"
+Environment="INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}"
 ExecStart=/usr/bin/java -jar ${APP_DIR}/${SERVICE_NAME}.jar --spring.profiles.active=prod
 SuccessExitStatus=143
 
