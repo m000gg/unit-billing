@@ -18,6 +18,7 @@
 <html lang="en" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="#{impressum.title}">Impressum / Legal Notice</title>
     <link rel="stylesheet" th:href="@{/css/privacy.css}">
 </head>
@@ -40,11 +41,11 @@
 
         <div style="flex:1"></div>
         <div class="lang-switcher">
-            <a th:href="@{''(lang='ru')}" class="lang-option" th:classappend="${#locale.language == 'ru'} ? 'lang-option--active'">RU</a>
-            <a th:href="@{''(lang='uk')}" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'lang-option--active'">UKR</a>
             <a th:href="@{''(lang='en')}" class="lang-option" th:classappend="${#locale.language == 'en'} ? 'lang-option--active'">EN</a>
             <a th:href="@{''(lang='de')}" class="lang-option" th:classappend="${#locale.language == 'de'} ? 'lang-option--active'">DE</a>
             <a th:href="@{''(lang='fr')}" class="lang-option" th:classappend="${#locale.language == 'fr'} ? 'lang-option--active'">FR</a>
+            <a th:href="@{''(lang='uk')}" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'lang-option--active'">UKR</a>
+            <a th:href="@{''(lang='ru')}" class="lang-option" th:classappend="${#locale.language == 'ru'} ? 'lang-option--active'">RU</a>
         </div>
     </div>
 </header>
@@ -75,7 +76,10 @@
         <p th:text="#{impressum.liability.links.text}">Our offer contains links to external websites...</p>
 
         <h2 th:text="#{impressum.copyright.title}">Copyright</h2>
-        <p th:text="#{impressum.copyright.text}">The content and works created by the site operators...</p>
+        <p><strong>&copy; 2026 m000gg</strong></p>
+        <p th:text="#{impressum.copyright.text}">
+            The content and works created by the site operator on these pages are subject to German copyright law...
+        </p>
     </div>
 </main>
 
