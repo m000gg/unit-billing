@@ -58,8 +58,20 @@
         </button>
     </form>
 
-    <div class="sidebar-version">
-        <span th:text="'v' + ${appVersion}">v0.1.0</span>
+    <div class="sidebar-meta">
+        <div class="sidebar-meta__status" title="System Operational">
+            <span class="status-dot status-dot--online"></span>
+            <span class="env-badge"
+                  th:with="env=${@environment.getProperty('spring.profiles.active', 'dev')}"
+                  th:classappend="'env-badge--' + ${#strings.toLowerCase(env)}"
+                  th:text="${#strings.toUpperCase(env)}">
+            DEV
+        </span>
+        </div>
+        <div class="sidebar-meta__info">
+            <span class="sidebar-meta__version" th:text="'v' + ${@buildProperties.version}">v0.1.0</span>
+            <span class="sidebar-meta__time" th:if="${@buildProperties.time != null}" th:text="${#temporals.format(@buildProperties.time, 'dd MMM yyyy')}">25 Sep 2026</span>
+        </div>
     </div>
 
     <script>
