@@ -53,6 +53,12 @@ a {
     text-decoration: none;
 }
 
+.legal-doc a {
+    color: var(--accent-strong);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
@@ -511,8 +517,20 @@ a {
 
 /* ---------- Language Switcher ---------- */
 .lang-switcher {
-    position: relative;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.lang-option {
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 4px;
+}
+.lang-option:hover,
+.lang-option--active {
+    color: var(--accent-strong);
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .lang-switcher__btn {

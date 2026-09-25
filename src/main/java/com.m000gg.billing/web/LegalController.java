@@ -18,28 +18,30 @@ package com.m000gg.billing.web;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.ui.Model;
 
 @Controller
+@Validated
 public class LegalController {
 
-    @Value("${unitbilling.legal.name:Default Name}")
+    @Value("${unitbilling.legal.name}")
     private String legalName;
 
-    @Value("${unitbilling.legal.address:Default Address}")
+    @Value("${unitbilling.legal.address}")
     private String legalAddress;
 
-    @Value("${unitbilling.legal.city:Default City}")
+    @Value("${unitbilling.legal.city}")
     private String legalCity;
 
-    @Value("${unitbilling.legal.country:Default Country}")
+    @Value("${unitbilling.legal.country}")
     private String legalCountry;
 
-    @Value("${unitbilling.legal.email:admin@example.com}")
+    @Value("${unitbilling.legal.email}")
     private String legalEmail;
 
-    @Value("${unitbilling.legal.phone:+0 000 000 0000}")
+    @Value("${unitbilling.legal.phone}")
     private String legalPhone;
 
     @GetMapping("/privacy")
