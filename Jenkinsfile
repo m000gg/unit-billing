@@ -6,6 +6,7 @@ pipeline {
         APP_PORT     = "8080"
         // Jenkins "Secret text" credential, value like: opc@1.2.3.4
         PROD_HOST    = credentials('prod-host')
+        KNOWN_HOSTS  = credentials('prod-known-hosts')
     }
 
     stages {
@@ -55,14 +56,14 @@ pipeline {
                 echo '=== Deploy to PROD (remote via SCP + SSH) ==='
                 sshagent(credentials: ['prod-ssh-key']) {
                     sh '''
-                        scp -o StrictHostKeyChecking=no target/unit-billing-*.jar "$PROD_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
+                        scp -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes \
+                            target/unit-billing-*.jar "$PROD_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
 
-                        ssh -o StrictHostKeyChecking=no "$PROD_HOST" "
-                            sudo systemctl stop $SERVICE_NAME || true
-                            mv /opt/$SERVICE_NAME/$SERVICE_NAME.jar.new /opt/$SERVICE_NAME/$SERVICE_NAME.jar
-                            sudo systemctl start $SERVICE_NAME
-                            sudo systemctl status $SERVICE_NAME --no-pager
-                        "
+                        ssh -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes "$PROD_HOST" \
+                            "sudo systemctl stop '$SERVICE_NAME' || true && \
+                             sudo mv '/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
+                             sudo systemctl start '$SERVICE_NAME' && \
+                             sudo systemctl status '$SERVICE_NAME' --no-pager"
                     '''
                 }
             }
