@@ -61,7 +61,7 @@
     <div class="sidebar-meta">
         <div class="sidebar-meta__status">
         <span class="env-badge"
-              th:with="env=${@environment.getProperty('spring.profiles.active', 'dev')}"
+              th:with="env=${@environment.getProperty('spring.profiles.active', 'default')}"
               th:classappend="'env-badge--' + ${#strings.toLowerCase(env)}"
               th:text="${#strings.toUpperCase(env)}">
             DEV
