@@ -1,0 +1,107 @@
+/*
+ * Copyright 2026 Vladyslav Livandovskyi
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ---------- Currency hero ---------- */
+
+.currency-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 32px 36px;
+    margin-bottom: 32px;
+    overflow: hidden;
+}
+
+.currency-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 100% 0%, rgba(91, 108, 249, 0.08), transparent 55%);
+    pointer-events: none;
+}
+
+.currency-hero__label {
+    position: relative;
+    z-index: 1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin: 0 0 10px;
+}
+
+.currency-hero__value {
+    position: relative;
+    z-index: 1;
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin: 0 0 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.currency-hero__hint {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    max-width: 420px;
+}
+
+.currency-hero__icon {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--accent-soft), #f4f2ff);
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--accent);
+}
+
+/* ---------- Section heading for the info grid ---------- */
+
+.section-heading {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    margin: 0 0 14px;
+}
+
+@media (max-width: 640px) {
+    .currency-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,175 @@
+/*
+ * Copyright 2026 Vladyslav Livandovskyi
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.m000gg.billing.ledger;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(name = "ledger_entries")
+public class LedgerEntry {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false)
+    private UUID subscriberId;
+
+    @Column(name = "original_entry_id")
+    private UUID originalEntryId;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EntryType type;
+
+    @Column(nullable = false)
+    private Instant createdAt;
+
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    private EntrySource source;
+
+    private UUID performedByAdmin;
+
+    private String userCurrency;
+
+    private String baseCurrency;
+
+    @Size(max = 50)
+    private String exchangeRateSource;
+
+    private BigDecimal amountInBaseCurrency;
+
+    private BigDecimal exchangeRate;
+
+    public EntrySource getSource() {
+        return source;
+    }
+    public void setSource(EntrySource source) {
+        this.source = source;
+    }
+    public UUID getPerformedByAdmin() {
+        return performedByAdmin;
+    }
+    public void setPerformedByAdmin(UUID performedByAdmin) {
+        this.performedByAdmin = performedByAdmin;
+    }
+    public UUID getOriginalEntryId() {
+        return originalEntryId;
+    }
+    public void setOriginalEntryId(UUID originalEntryId) {
+        this.originalEntryId = originalEntryId;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getSubscriberId() {
+        return subscriberId;
+    }
+
+    public void setSubscriberId(UUID subscriberId) {
+        this.subscriberId = subscriberId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public EntryType getType() {
+        return type;
+    }
+
+    public void setType(EntryType type) {
+        this.type = type;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getUserCurrency() {
+        return userCurrency;
+    }
+
+    public void setUserCurrency(String userCurrency) {
+        this.userCurrency = userCurrency;
+    }
+
+    public String getBaseCurrency() {
+        return baseCurrency;
+    }
+
+    public void setBaseCurrency(String baseCurrency) {
+        this.baseCurrency = baseCurrency;
+    }
+
+    public String getExchangeRateSource() {
+        return exchangeRateSource;
+    }
+
+    public void setExchangeRateSource(String exchangeRateSource) {
+        this.exchangeRateSource = exchangeRateSource;
+    }
+
+    public BigDecimal getAmountInBaseCurrency() {
+        return amountInBaseCurrency;
+    }
+
+    public void setAmountInBaseCurrency(BigDecimal amountInBaseCurrency) {
+        this.amountInBaseCurrency = amountInBaseCurrency;
+    }
+
+    public BigDecimal getExchangeRate() {
+        return exchangeRate;
+    }
+
+    public void setExchangeRate(BigDecimal exchangeRate) {
+        this.exchangeRate = exchangeRate;
+    }
+}
+

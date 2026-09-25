@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright 2026 Vladyslav Livandovskyi
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="#{contact.title}">Contact</title>
+    <link rel="stylesheet" th:href="@{/css/forgotpass.css}">
+</head>
+<body>
+
+<div class="container">
+    <div class="custom-card">
+        <div class="card-header-flex mb-4">
+            <h2 class="m-0" th:text="#{contact.title}">Contact</h2>
+            <div class="lang-switcher">
+                <a th:href="@{''(lang='en')}" class="lang-option" th:classappend="${#locale.language == 'en'} ? 'lang-option--active'">EN</a>
+                <a th:href="@{''(lang='de')}" class="lang-option" th:classappend="${#locale.language == 'de'} ? 'lang-option--active'">DE</a>
+                <a th:href="@{''(lang='fr')}" class="lang-option" th:classappend="${#locale.language == 'fr'} ? 'lang-option--active'">FR</a>
+                <a th:href="@{''(lang='uk')}" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'lang-option--active'">UKR</a>
+                <a th:href="@{''(lang='ru')}" class="lang-option" th:classappend="${#locale.language == 'ru'} ? 'lang-option--active'">RU</a>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="contact-body">
+            <h5 th:text="#{contact.direct}">Direct Contact</h5>
+
+            <p>
+                <span class="text-muted" th:text="#{contact.email.general}">General Inquiries Email:</span><br>
+                <strong>info@unitbilling.com</strong>
+            </p>
+
+            <p>
+                <span class="text-muted" th:text="#{contact.email.support}">Technical Support Email:</span><br>
+                <strong>support@unitbilling.com</strong>
+            </p>
+
+            <p>
+                <span class="text-muted" th:text="#{contact.phone}">Phone Number:</span><br>
+                <strong>+49157770456</strong>
+            </p>
+
+            <p class="mt-4 mb-4">
+                <span class="text-muted" th:text="#{contact.forgot_password}">If you forgot your password, please contact the administrator at:</span><br>
+                <strong>admin@unitbilling.com</strong>
+            </p>
+
+            <a href="/login" class="btn-back" th:text="#{contact.back_to_login}">← Back to Login</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
