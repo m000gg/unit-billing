@@ -20,12 +20,10 @@ import com.m000gg.billing.subscribers.exception.ApplicationUserNotFoundException
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
@@ -38,14 +36,6 @@ public class GlobalExceptionHandler {
 
     public GlobalExceptionHandler(MessageSource messageSource) {
         this.messageSource = messageSource;
-    }
-
-    @Value("${unitbilling.app.version:dev}")
-    private String appVersion;
-
-    @ModelAttribute("appVersion")
-    public String getAppVersion() {
-        return appVersion;
     }
 
     @ExceptionHandler(ApplicationUserNotFoundException.class)
