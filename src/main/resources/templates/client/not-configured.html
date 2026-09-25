@@ -30,10 +30,10 @@
         <div class="select-wrapper">
             <select name="lang" onchange="this.form.submit()" th:aria-label="#{client.langSwitcher.ariaLabel}">
                 <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{client.language.en}"></option>
-                <option value="fr" th:selected="${#locale.language == 'fr'}" th:text="#{client.language.fr}"></option>
                 <option value="de" th:selected="${#locale.language == 'de'}" th:text="#{client.language.de}"></option>
-                <option value="ru" th:selected="${#locale.language == 'ru'}" th:text="#{client.language.ru}"></option>
+                <option value="fr" th:selected="${#locale.language == 'fr'}" th:text="#{client.language.fr}"></option>
                 <option value="uk" th:selected="${#locale.language == 'uk'}" th:text="#{client.language.ukr}"></option>
+                <option value="ru" th:selected="${#locale.language == 'ru'}" th:text="#{client.language.ru}"></option>
             </select>
             <div class="select-arrow">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
