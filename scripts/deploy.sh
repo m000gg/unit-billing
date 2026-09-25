@@ -14,26 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 set -euo pipefail
 
-sudo tee /etc/systemd/system/unit-billing.service > /dev/null << 'EOF'
-[Unit]
-Description=Unit Billing Spring Boot Application
-After=syslog.target network.target postgresql.service
+SERVICE_NAME="unit-billing"
+SERVICE_USER="unitbilling"
+APP_DIR="/opt/unit-billing"
 
-[Service]
-User=vboxuser
-ExecStart=/usr/bin/java -jar /opt/unit-billing/unit-billing.jar --spring.profiles.active=prod
-SuccessExitStatus=143
+log() { echo -e "\n=== $* ==="; }
+trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 
-Restart=always
-RestartSec=10
+if [ ! -f "${APP_DIR}/${SERVICE_NAME}.jar.new" ]; then
+    echo "ERROR: ${APP_DIR}/${SERVICE_NAME}.jar.new not found — did Jenkins scp the artifact?" >&2
+    exit 1
+fi
 
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable unit-billing
-sudo systemctl start unit-billing
+log "Deploying new jar"
+sudo systemctl stop "$SERVICE_NAME"
+sudo mv "${APP_DIR}/${SERVICE_NAME}.jar.new" "${APP_DIR}/${SERVICE_NAME}.jar"
+sudo chown "$SERVICE_USER:$SERVICE_USER" "${APP_DIR}/${SERVICE_NAME}.jar"
+sudo systemctl start "$SERVICE_NAME"
+sudo systemctl status "$SERVICE_NAME" --no-pager
