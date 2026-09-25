@@ -133,7 +133,8 @@ public class ApplicationUserManagementService {
             return Optional.empty();
         }
         String email = authentication.getName();
-        return applicationUserRepository.findByEmail(email);
+        return applicationUserRepository.findByEmail(email)
+                .filter(user -> !Boolean.TRUE.equals(user.getDeleted()));
     }
 
     public AccountOverviewViewModel getUserInformationForMainPage(ApplicationUser applicationUser) {
