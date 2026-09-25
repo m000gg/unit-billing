@@ -1,0 +1,101 @@
+<!--
+  ~ Copyright 2026 Vladyslav Livandovskyi
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html>
+<html lang="en" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="#{privacy.title}">Privacy Policy</title>
+  <link rel="stylesheet" th:href="@{/css/privacy.css}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <button class="btn-back" onclick="if(history.length > 1) { history.back(); } else { window.location.href = '/'; }">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      <span th:text="#{common.back}">Back</span>
+    </button>
+
+    <div class="brand">
+      <div class="brand__mark">UB</div>
+      Unit Billing
+    </div>
+
+    <div style="flex:1"></div>
+
+    <div class="lang-switcher">
+      <a th:href="@{''(lang='en')}" class="lang-option" th:classappend="${#locale.language == 'en'} ? 'lang-option--active'">EN</a>
+      <a th:href="@{''(lang='de')}" class="lang-option" th:classappend="${#locale.language == 'de'} ? 'lang-option--active'">DE</a>
+      <a th:href="@{''(lang='fr')}" class="lang-option" th:classappend="${#locale.language == 'fr'} ? 'lang-option--active'">FR</a>
+      <a th:href="@{''(lang='uk')}" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'lang-option--active'">UKR</a>
+      <a th:href="@{''(lang='ru')}" class="lang-option" th:classappend="${#locale.language == 'ru'} ? 'lang-option--active'">RU</a>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="legal-doc">
+    <h1 th:text="#{privacy.title}">Privacy Policy</h1>
+    <p class="legal-doc__meta" th:text="#{privacy.lastUpdated}">Last Updated: September 2026</p>
+
+    <h2 th:text="#{privacy.intro.title}">1. Introduction</h2>
+    <p th:text="#{privacy.intro.text}">Welcome to Unit Billing...</p>
+
+    <h2 th:text="#{privacy.controller.title}">2. Data Controller</h2>
+    <p th:text="#{privacy.controller.text}">For the purposes of the GDPR...</p>
+
+    <p>
+      <strong th:text="${legalName}">Your Name</strong><br>
+      <span th:text="${legalAddress}">Musterstraße 1</span><br>
+      <span th:text="${legalCity}">11111 Berlin</span><br>
+      <span th:text="${legalCountry}">Germany</span><br>
+      <span th:text="#{client.profile.field.email}">Email</span>: <a th:href="'mailto:' + ${legalEmail}" th:text="${legalEmail}">testmail@proton.me</a>
+    </p>
+
+    <h2 th:text="#{privacy.data.title}">3. Data We Collect</h2>
+    <p th:text="#{privacy.data.text}">We may collect the following data:</p>
+    <ul>
+      <li th:utext="#{privacy.data.li1}"><strong>Identity Data:</strong> includes first name...</li>
+      <li th:utext="#{privacy.data.li2}"><strong>Contact Data:</strong> includes email...</li>
+      <li th:utext="#{privacy.data.li3}"><strong>Technical Data:</strong> includes IP address...</li>
+    </ul>
+
+    <h2 th:text="#{privacy.usage.title}">4. How We Use Your Data</h2>
+    <p th:text="#{privacy.usage.text}">We use your data in the following circumstances:</p>
+    <ul>
+      <li th:text="#{privacy.usage.li1}">Where we need to perform the contract...</li>
+      <li th:text="#{privacy.usage.li2}">Where it is necessary for our legitimate interests...</li>
+      <li th:text="#{privacy.usage.li3}">Where we need to comply with a legal obligation...</li>
+    </ul>
+
+    <h2 th:text="#{privacy.rights.title}">5. Your Legal Rights</h2>
+    <p th:text="#{privacy.rights.text1}">You have the right to:</p>
+    <ul>
+      <li th:text="#{privacy.rights.li1}">Request access to your personal data.</li>
+      <li th:text="#{privacy.rights.li2}">Request correction of your personal data.</li>
+      <li th:text="#{privacy.rights.li3}">Request erasure of your personal data.</li>
+    </ul>
+    <p th:text="#{privacy.rights.text2}">Please contact us to exercise these rights.</p>
+  </div>
+</main>
+
+</body>
+</html>

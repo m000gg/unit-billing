@@ -260,3 +260,34 @@ body {
         width: 100%;
     }
 }
+/* ---------- Site Footer ---------- */
+.site-footer {
+    width: 100%;
+    padding: 32px 20px;
+    margin-top: auto;
+    border-top: 1px solid var(--line, #E4E4DF);
+    background: transparent;
+}
+
+.site-footer__inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--ink-faint, #8A8F99);
+}
+
+.site-footer__inner a {
+    color: var(--ink-faint, #8A8F99);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.site-footer__inner a:hover {
+    color: var(--ink, #14171F);
+}
+
+.site-footer__separator {
+    opacity: 0.5;
+}
