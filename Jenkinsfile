@@ -62,7 +62,7 @@ pipeline {
                         ssh -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes "$PROD_HOST" \
                             "sudo systemctl stop '$SERVICE_NAME' || true && \
                              sudo mv '/tmp/$SERVICE_NAME.jar.new' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
-                             sudo chown '$SERVICE_USER:$SERVICE_USER' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
+                             sudo chown 'unitbilling:unitbilling' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
                              sudo systemctl start '$SERVICE_NAME' && \
                              sudo systemctl status '$SERVICE_NAME' --no-pager"
                     '''
