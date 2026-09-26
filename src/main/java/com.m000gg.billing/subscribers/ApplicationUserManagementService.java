@@ -17,6 +17,7 @@
 package com.m000gg.billing.subscribers;
 
 
+import com.m000gg.billing.identity.AdminRepository;
 import com.m000gg.billing.settings.exception.InvalidCurrencyException;
 import com.m000gg.billing.subscribers.exception.ApplicationUserNotFoundException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
@@ -54,6 +55,9 @@ public class ApplicationUserManagementService {
     @Autowired
     private CustomPasswordGenerator customPasswordGenerator;
 
+    @Autowired
+    private AdminRepository adminRepository;
+
     private static final Set<String> VALID_CURRENCIES = Currency.getAvailableCurrencies()
             .stream()
             .map(Currency::getCurrencyCode)
@@ -65,7 +69,7 @@ public class ApplicationUserManagementService {
         ApplicationUser newApplicationUser = new ApplicationUser();
 
         String email = applicationUserRegisterDto.getEmail();
-        if (applicationUserRepository.existsByEmail(email)) {
+        if (applicationUserRepository.existsByEmail(email) || adminRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException(email);
         }
         String userCurrency = applicationUserRegisterDto.getUserCurrency();
@@ -104,8 +108,8 @@ public class ApplicationUserManagementService {
     public void editApplicationUserProfile(UUID id, ApplicationUserEditDto dataToChange) {
         ApplicationUser user = findApplicationUserById(id);
 
-        if (!user.getEmail().equals(dataToChange.getEmail())
-                && applicationUserRepository.existsByEmail(dataToChange.getEmail())) {
+        if (!user.getEmail().equals(dataToChange.getEmail()) && (applicationUserRepository.existsByEmail(dataToChange.getEmail())
+                || adminRepository.existsByEmail(dataToChange.getEmail()))) {
             throw new EmailAlreadyTakenException(dataToChange.getEmail());
         }
 
