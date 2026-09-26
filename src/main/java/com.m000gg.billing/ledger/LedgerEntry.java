@@ -61,8 +61,10 @@ public class LedgerEntry {
     @Size(max = 50)
     private String exchangeRateSource;
 
+    @Column(name = "amount_in_base_currency", nullable = false, precision = 19, scale = 4)
     private BigDecimal amountInBaseCurrency;
 
+    @Column(name = "exchange_rate", nullable = false, precision = 19, scale = 6)
     private BigDecimal exchangeRate;
 
     public EntrySource getSource() {
