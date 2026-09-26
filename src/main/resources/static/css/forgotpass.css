@@ -115,7 +115,7 @@ strong {
     color: #4a54e1;
 }
 
-.lang-option.active {
+.lang-option--active {
     background-color: #5c67f2;
     color: #fff;
 }
