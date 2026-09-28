@@ -94,7 +94,6 @@ unit-billing/
 │  └─ openapi.yaml                          ← HTTP contract for external API
 ├─ scripts/
 │  ├─ setup-env.sh                          ← environment setup (PostgreSQL, JDK & Maven)
-│  └─ deploy.sh                             ← deployment to staging/prod (Maven, SCP)
 ├─ src/
 │  ├─ main/
 │  │  ├─ java/com/example/billing/

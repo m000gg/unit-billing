@@ -127,4 +127,4 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE_NAME}
 
-echo "=== Done. Server ${DOMAIN} fully ready (infra + service unit). Next: run deploy.sh via Jenkins. ==="
+echo "=== Done. Server ${DOMAIN} fully ready (infra + service unit). Next: trigger the Jenkins deployment pipeline. ==="
