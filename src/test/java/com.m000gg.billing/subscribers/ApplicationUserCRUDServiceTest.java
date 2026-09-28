@@ -16,6 +16,7 @@
 
 package com.m000gg.billing.subscribers;
 
+import com.m000gg.billing.identity.AdminRepository;
 import com.m000gg.billing.settings.exception.InvalidCurrencyException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,9 @@ public class ApplicationUserCRUDServiceTest {
 
     @Mock
     private ApplicationUserMapper applicationUserMapper;
+
+    @Mock
+    private AdminRepository adminRepository;
 
     @Test
     public void registerApplicationUser_successful() {
