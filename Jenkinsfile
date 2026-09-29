@@ -1,12 +1,17 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(
+                name: 'DEPLOY_TARGET',
+                choices: ['NONE', 'TEST', 'PROD'],
+                description: 'Deployment target. Select NONE to build, test, and package without deploying.'
+        )
+    }
+
     environment {
         SERVICE_NAME = "unit-billing"
         APP_PORT     = "8080"
-        // Jenkins "Secret text" credential, value like: opc@1.2.3.4
-        PROD_HOST    = credentials('prod-host')
-        KNOWN_HOSTS  = credentials('prod-known-hosts')
     }
 
     stages {
@@ -35,38 +40,25 @@ pipeline {
 
         stage('Deploy to Test') {
             when {
-                branch 'develop'
+                expression {
+                    params.DEPLOY_TARGET == 'TEST'
+                }
             }
             steps {
-                echo '=== Deploy to TEST (local — Jenkins runs on this VM) ==='
-                sh '''
-                    sudo systemctl stop "$SERVICE_NAME" || true
-                    cp target/unit-billing-*.jar "/opt/$SERVICE_NAME/$SERVICE_NAME.jar"
-                    sudo systemctl start "$SERVICE_NAME"
-                    sudo systemctl status "$SERVICE_NAME" --no-pager
-                '''
+                echo '=== Deploy to TEST (remote via SCP + SSH) ==='
+                deploy('test-host', 'test-known-hosts', 'test-ssh-key')
             }
         }
 
         stage('Deploy to Prod') {
             when {
-                branch 'main'
+                expression {
+                    params.DEPLOY_TARGET == 'PROD'
+                }
             }
             steps {
                 echo '=== Deploy to PROD (remote via SCP + SSH) ==='
-                sshagent(credentials: ['prod-ssh-key']) {
-                    sh '''
-                        scp -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes \
-                            target/unit-billing-*.jar "$PROD_HOST:/tmp/$SERVICE_NAME.jar.new"
-
-                        ssh -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes "$PROD_HOST" \
-                            "sudo systemctl stop '$SERVICE_NAME' || true && \
-                             sudo mv '/tmp/$SERVICE_NAME.jar.new' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
-                             sudo chown 'unitbilling:unitbilling' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
-                             sudo systemctl start '$SERVICE_NAME' && \
-                             sudo systemctl status '$SERVICE_NAME' --no-pager"
-                    '''
-                }
+                deploy('prod-host', 'prod-known-hosts', 'prod-ssh-key')
             }
         }
     }
@@ -77,6 +69,27 @@ pipeline {
         }
         failure {
             echo 'Build failed. Please check the logs for details.'
+        }
+    }
+}
+
+def deploy(String hostCredentialId, String knownHostsCredentialId, String sshCredentialId) {
+    withCredentials([
+            string(credentialsId: hostCredentialId, variable: 'DEPLOY_HOST'),
+            file(credentialsId: knownHostsCredentialId, variable: 'KNOWN_HOSTS')
+    ]) {
+        sshagent(credentials: [sshCredentialId]) {
+            sh '''
+                scp -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes \
+                    target/unit-billing-*.jar "$DEPLOY_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
+
+                ssh -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes "$DEPLOY_HOST" \
+                    "sudo systemctl stop '$SERVICE_NAME' && \
+                     sudo mv '/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
+                     sudo chown 'unitbilling:unitbilling' '/opt/$SERVICE_NAME/$SERVICE_NAME.jar' && \
+                     sudo systemctl start '$SERVICE_NAME' && \
+                     sudo systemctl status '$SERVICE_NAME' --no-pager"
+            '''
         }
     }
 }
