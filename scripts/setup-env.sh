@@ -20,11 +20,10 @@ set -euo pipefail
 # ---------- Config ----------
 POSTGRES_VERSION="${POSTGRES_VERSION:-18}"
 JAVA_VERSION="${JAVA_VERSION:-21}"
-DOMAIN="${DOMAIN:-unit-billing.xyz}"
+NGINX_VM_IP="${NGINX_VM_IP:?NGINX_VM_IP must be set}"
 DB_NAME="${DB_NAME:-unit-billing}"
 DB_USER="${DB_USER:-unitbillingadmin}"
 : "${DB_PASS:?DB_PASS must be set}"
-: "${CERTBOT_EMAIL:?CERTBOT_EMAIL must be set}"
 : "${INITIAL_ADMIN_EMAIL:?INITIAL_ADMIN_EMAIL must be set}"
 : "${INITIAL_ADMIN_PASSWORD:?INITIAL_ADMIN_PASSWORD must be set}"
 
@@ -57,44 +56,15 @@ sudo systemctl restart postgresql
 echo "=== 5. Install Java (OpenJDK ${JAVA_VERSION}) ==="
 sudo apt install -y openjdk-${JAVA_VERSION}-jdk
 
-echo "=== 6. Nginx reverse proxy (monolith on :8080) ==="
-sudo apt-get install -y nginx
-
-sudo tee /etc/nginx/sites-available/unit-billing > /dev/null <<NGINX
-server {
-    listen 80;
-    server_name ${DOMAIN};
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-NGINX
-
-sudo ln -sf /etc/nginx/sites-available/unit-billing /etc/nginx/sites-enabled/unit-billing
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t
-sudo systemctl restart nginx
-sudo systemctl enable nginx
-
-echo "=== 7. Firewall (ufw) ==="
+echo "=== 6. Firewall (ufw): SSH only, web ports are opened by setup-https.sh ==="
 sudo apt-get install -y ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw allow 8080/tcp
+sudo ufw allow from "$NGINX_VM_IP" to any port 8080 proto tcp
 sudo ufw --force enable
 
-echo "=== 8. Installing Certbot & SSL ==="
-sudo apt-get install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}" --redirect
-
-echo "=== 9. Provisioning app user, directory, env file and systemd service ==="
+echo "=== 7. Provisioning app user, directory, env file and systemd service ==="
 SERVICE_USER="unitbilling"
 APP_DIR="/opt/unit-billing"
 SERVICE_NAME="unit-billing"
@@ -137,7 +107,7 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE_NAME}
 
-echo "=== 10. Provisioning CI/CD deploy user (visudo) ==="
+echo "=== 8. Provisioning CI/CD deploy user (visudo) ==="
 DEPLOY_USER="deployer"
 
 if ! id -u "$DEPLOY_USER" >/dev/null 2>&1; then
@@ -152,4 +122,4 @@ EOF
 
 sudo chmod 0440 "/etc/sudoers.d/${DEPLOY_USER}-deploy"
 
-echo "=== Done. Server ${DOMAIN} fully ready (infra + service unit). Next: setup Jenkins SSH key and run deploy.sh ==="
+echo "=== Done. Environment ready (Postgres, Java, service unit, deploy user). Next: run setup-https.sh, then set up Jenkins SSH key and run deploy.sh ==="
