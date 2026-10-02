@@ -20,6 +20,7 @@ set -euo pipefail
 # ---------- Config ----------
 POSTGRES_VERSION="${POSTGRES_VERSION:-18}"
 JAVA_VERSION="${JAVA_VERSION:-21}"
+NGINX_VM_IP="${NGINX_VM_IP:?NGINX_VM_IP must be set}"
 DB_NAME="${DB_NAME:-unit-billing}"
 DB_USER="${DB_USER:-unitbillingadmin}"
 : "${DB_PASS:?DB_PASS must be set}"
@@ -60,7 +61,7 @@ sudo apt-get install -y ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow OpenSSH
-sudo ufw allow 8080/tcp
+sudo ufw allow from "$NGINX_VM_IP" to any port 8080 proto tcp
 sudo ufw --force enable
 
 echo "=== 7. Provisioning app user, directory, env file and systemd service ==="
