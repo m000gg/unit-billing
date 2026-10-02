@@ -20,6 +20,7 @@ set -euo pipefail
 # ---------- Config ----------
 DOMAIN="${DOMAIN:-unit-billing.xyz}"
 : "${CERTBOT_EMAIL:?CERTBOT_EMAIL must be set}"
+APP_UPSTREAM_IP="${APP_UPSTREAM_IP:-10.0.0.5}"
 
 log() { echo "=== $* ==="; }
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
@@ -33,7 +34,7 @@ server {
     server_name ${DOMAIN};
 
     location / {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://${APP_UPSTREAM_IP}:8080;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
