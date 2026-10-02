@@ -93,17 +93,27 @@ echo "=== 8. Installing Certbot & SSL ==="
 sudo apt-get install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}" --redirect
 
-echo "=== 9. Provisioning app user, directory and systemd service ==="
+echo "=== 9. Provisioning app user, directory, env file and systemd service ==="
 SERVICE_USER="unitbilling"
 APP_DIR="/opt/unit-billing"
 SERVICE_NAME="unit-billing"
+ENV_FILE="${APP_DIR}/.env"
 
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
     sudo useradd --system --no-create-home --shell /usr/sbin/nologin "$SERVICE_USER"
 fi
 
 sudo mkdir -p "$APP_DIR"
-sudo chown "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
+
+sudo tee "$ENV_FILE" > /dev/null <<EOF
+SPRING_DATASOURCE_USERNAME=${DB_USER}
+SPRING_DATASOURCE_PASSWORD=${DB_PASS}
+INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
+INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+EOF
+
+sudo chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
+sudo chmod 600 "$ENV_FILE"
 
 sudo tee /etc/systemd/system/${SERVICE_NAME}.service > /dev/null <<EOF
 [Unit]
@@ -112,8 +122,7 @@ After=syslog.target network.target postgresql.service
 
 [Service]
 User=${SERVICE_USER}
-Environment="INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}"
-Environment="INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}"
+EnvironmentFile=${ENV_FILE}
 ExecStart=/usr/bin/java -jar ${APP_DIR}/${SERVICE_NAME}.jar --spring.profiles.active=prod
 SuccessExitStatus=143
 
@@ -127,4 +136,19 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE_NAME}
 
-echo "=== Done. Server ${DOMAIN} fully ready (infra + service unit). Next: run deploy.sh via Jenkins. ==="
+echo "=== 10. Provisioning CI/CD deploy user (visudo) ==="
+DEPLOY_USER="deployer"
+
+if ! id -u "$DEPLOY_USER" >/dev/null 2>&1; then
+    sudo useradd -m -s /bin/bash "$DEPLOY_USER"
+fi
+
+sudo usermod -aG "$SERVICE_USER" "$DEPLOY_USER"
+
+sudo tee "/etc/sudoers.d/${DEPLOY_USER}-deploy" > /dev/null <<EOF
+${DEPLOY_USER} ALL=(ALL) NOPASSWD: /bin/systemctl stop ${SERVICE_NAME}, /bin/mv ${APP_DIR}/${SERVICE_NAME}.jar.new ${APP_DIR}/${SERVICE_NAME}.jar, /bin/chown ${SERVICE_USER}:${SERVICE_USER} ${APP_DIR}/${SERVICE_NAME}.jar, /bin/systemctl start ${SERVICE_NAME}, /bin/systemctl status ${SERVICE_NAME} --no-pager
+EOF
+
+sudo chmod 0440 "/etc/sudoers.d/${DEPLOY_USER}-deploy"
+
+echo "=== Done. Server ${DOMAIN} fully ready (infra + service unit). Next: setup Jenkins SSH key and run deploy.sh ==="
