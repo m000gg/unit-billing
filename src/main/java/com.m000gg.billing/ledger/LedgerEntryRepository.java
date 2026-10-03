@@ -1,0 +1,63 @@
+/*
+ * Copyright 2026 Vladyslav Livandovskyi
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.m000gg.billing.ledger;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, UUID> {
+
+    @Query("""
+        SELECT c FROM LedgerEntry c
+        WHERE c.subscriberId = :subscriberId
+          AND c.type = com.m000gg.billing.ledger.EntryType.CHARGE
+          AND NOT EXISTS (
+              SELECT r FROM LedgerEntry r
+              WHERE r.type = com.m000gg.billing.ledger.EntryType.REFUND
+                AND r.originalEntryId = c.id
+          )
+        ORDER BY c.createdAt DESC
+        """)
+    List<LedgerEntry> findRefundableCharges(@Param("subscriberId") UUID subscriberId);
+
+    boolean existsByOriginalEntryIdAndType(UUID originalEntryId, EntryType type);
+    List<LedgerEntry> findBySubscriberIdOrderByCreatedAtDesc(UUID subscriberId);
+    List<LedgerEntry> findTop5BySubscriberIdOrderByCreatedAtDesc(UUID subscriberId);
+
+    @Query("""
+    SELECT l FROM LedgerEntry l
+    WHERE l.subscriberId = :subscriberId
+      AND (:search IS NULL OR :search = '' OR LOWER(l.description) LIKE LOWER(CONCAT('%', :search, '%')))
+      AND (CAST(:type AS string) IS NULL OR l.type = :type)
+      AND (CAST(:dateFrom AS timestamp) IS NULL OR l.createdAt >= :dateFrom)
+      AND (CAST(:dateTo AS timestamp) IS NULL OR l.createdAt <= :dateTo)
+    """)
+    Page<LedgerEntry> search(@Param("subscriberId") UUID subscriberId,
+                             @Param("search") String search,
+                             @Param("type") EntryType type,
+                             @Param("dateFrom") Instant dateFrom,
+                             @Param("dateTo") Instant dateTo,
+                             Pageable pageable);
+
+}
