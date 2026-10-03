@@ -16,12 +16,22 @@
 #
 set -euo pipefail
 
-# ---------- Config (must match setup-https.sh) ----------
-DOMAIN="${DOMAIN:-unit-billing.xyz}"
-SITE_NAME="unit-billing"
+# ---------- Config (Interactive) ----------
+echo "=== Configuration ==="
+echo "Press ENTER to accept the default values in brackets."
+
+read -r -p "Domain name [unit-billing.xyz]: " input_domain
+DOMAIN="${input_domain:-unit-billing.xyz}"
+
+read -r -p "Nginx site name [unit-billing] (for /etc/nginx/sites-available/... & /etc/nginx/sites-enabled/...): " input_sitename
+SITE_NAME="${input_sitename:-unit-billing}"
+
+read -r -p "Dry run (1 for yes, 0 for no) [0]: " input_dryrun
+DRY_RUN="${input_dryrun:-0}"
+echo "---------------------------"
+
 SITE_AVAILABLE="/etc/nginx/sites-available/${SITE_NAME}"
 SITE_ENABLED="/etc/nginx/sites-enabled/${SITE_NAME}"
-DRY_RUN="${DRY_RUN:-0}"
 
 log() { echo "=== $* ==="; }
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
