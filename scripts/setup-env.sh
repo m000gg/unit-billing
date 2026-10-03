@@ -17,15 +17,48 @@
 
 set -euo pipefail
 
-# ---------- Config ----------
-POSTGRES_VERSION="${POSTGRES_VERSION:-18}"
-JAVA_VERSION="${JAVA_VERSION:-21}"
-NGINX_VM_IP="${NGINX_VM_IP:?NGINX_VM_IP must be set}"
-DB_NAME="${DB_NAME:-unit-billing}"
-DB_USER="${DB_USER:-unitbillingadmin}"
-: "${DB_PASS:?DB_PASS must be set}"
-: "${INITIAL_ADMIN_EMAIL:?INITIAL_ADMIN_EMAIL must be set}"
-: "${INITIAL_ADMIN_PASSWORD:?INITIAL_ADMIN_PASSWORD must be set}"
+# ---------- Config (Interactive) ----------
+echo "=== Configuration ==="
+echo "Press ENTER to accept the default values in brackets."
+
+read -r -p "PostgreSQL version [18]: " input_pg
+POSTGRES_VERSION="${input_pg:-18}"
+
+read -r -p "Java version [21]: " input_java
+JAVA_VERSION="${input_java:-21}"
+
+read -r -p "Nginx VM IP (Required): " input_nginx_ip
+NGINX_VM_IP="${input_nginx_ip:?NGINX_VM_IP must be set}"
+
+read -r -p "Database Name [unit-billing]: " input_dbname
+DB_NAME="${input_dbname:-unit-billing}"
+
+read -r -p "Database User [unitbillingadmin]: " input_dbuser
+DB_USER="${input_dbuser:-unitbillingadmin}"
+
+read -r -s -p "Database Password (Required): " input_dbpass
+echo ""
+DB_PASS="${input_dbpass:?DB_PASS must be set}"
+
+read -r -p "Initial Admin Email (Required): " input_admin_email
+INITIAL_ADMIN_EMAIL="${input_admin_email:?INITIAL_ADMIN_EMAIL must be set}"
+
+read -r -s -p "Initial Admin Password (Required): " input_admin_pass
+echo ""
+INITIAL_ADMIN_PASSWORD="${input_admin_pass:?INITIAL_ADMIN_PASSWORD must be set}"
+
+read -r -p "Service user [unitbilling]: " input_suser
+SERVICE_USER="${input_suser:-unitbilling}"
+
+read -r -p "Deploy user [deployer]: " input_duser
+DEPLOY_USER="${input_duser:-deployer}"
+
+read -r -p "App directory [/opt/unit-billing]: " input_appdir
+APP_DIR="${input_appdir:-/opt/unit-billing}"
+
+read -r -p "Service name [unit-billing]: " input_sname
+SERVICE_NAME="${input_sname:-unit-billing}"
+echo "---------------------------"
 
 log() { echo "=== $* ==="; }
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
@@ -65,9 +98,6 @@ sudo ufw allow from "$NGINX_VM_IP" to any port 8080 proto tcp
 sudo ufw --force enable
 
 echo "=== 7. Provisioning app user, directory, env file and systemd service ==="
-SERVICE_USER="unitbilling"
-APP_DIR="/opt/unit-billing"
-SERVICE_NAME="unit-billing"
 ENV_FILE="${APP_DIR}/.env"
 
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
@@ -84,6 +114,7 @@ INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
 EOF
 
 sudo chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
+sudo chmod 775 "$APP_DIR"
 sudo chmod 600 "$ENV_FILE"
 
 sudo tee /etc/systemd/system/${SERVICE_NAME}.service > /dev/null <<EOF
@@ -108,18 +139,26 @@ sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE_NAME}
 
 echo "=== 8. Provisioning CI/CD deploy user (visudo) ==="
-DEPLOY_USER="deployer"
-
 if ! id -u "$DEPLOY_USER" >/dev/null 2>&1; then
     sudo useradd -m -s /bin/bash "$DEPLOY_USER"
 fi
 
 sudo usermod -aG "$SERVICE_USER" "$DEPLOY_USER"
 
-sudo tee "/etc/sudoers.d/${DEPLOY_USER}-deploy" > /dev/null <<EOF
-${DEPLOY_USER} ALL=(ALL) NOPASSWD: /bin/systemctl stop ${SERVICE_NAME}, /bin/mv ${APP_DIR}/${SERVICE_NAME}.jar.new ${APP_DIR}/${SERVICE_NAME}.jar, /bin/chown ${SERVICE_USER}.${SERVICE_USER} ${APP_DIR}/${SERVICE_NAME}.jar, /bin/systemctl start ${SERVICE_NAME}, /bin/systemctl status ${SERVICE_NAME} --no-pager
+SUDOERS_FILE="/etc/sudoers.d/${DEPLOY_USER}-deploy"
+SUDOERS_TMP="$(mktemp)"
+
+cat > "$SUDOERS_TMP" <<EOF
+${DEPLOY_USER} ALL=(root) NOPASSWD: /bin/systemctl stop ${SERVICE_NAME}, /bin/mv ${APP_DIR}/${SERVICE_NAME}.jar.new ${APP_DIR}/${SERVICE_NAME}.jar, /bin/chown ${SERVICE_USER}\:${SERVICE_USER} ${APP_DIR}/${SERVICE_NAME}.jar, /bin/systemctl start ${SERVICE_NAME}, /bin/systemctl status ${SERVICE_NAME} --no-pager
 EOF
 
-sudo chmod 0440 "/etc/sudoers.d/${DEPLOY_USER}-deploy"
+if ! sudo visudo -cf "$SUDOERS_TMP"; then
+    rm -f "$SUDOERS_TMP"
+    echo "Invalid sudoers, aborting" >&2
+    exit 1
+fi
+
+sudo install -m 0440 -o root -g root "$SUDOERS_TMP" "$SUDOERS_FILE"
+rm -f "$SUDOERS_TMP"
 
 echo "=== Done. Environment ready (Postgres, Java, service unit, deploy user). Next: run setup-https.sh, then set up Jenkins SSH key and run deploy.sh ==="

@@ -20,13 +20,28 @@
 #
 set -euo pipefail
 
-# ---------- Config (must match setup-env.sh) ----------
-POSTGRES_VERSION="${POSTGRES_VERSION:-18}"
-JAVA_VERSION="${JAVA_VERSION:-21}"
-SERVICE_USER="unitbilling"
-DEPLOY_USER="deployer"
-APP_DIR="/opt/unit-billing"
-SERVICE_NAME="unit-billing"
+# ---------- Config (Interactive) ----------
+echo "=== Configuration ==="
+echo "Press ENTER to accept the default values in brackets."
+
+read -r -p "PostgreSQL version [18]: " input_pg
+POSTGRES_VERSION="${input_pg:-18}"
+
+read -r -p "Java version [21]: " input_java
+JAVA_VERSION="${input_java:-21}"
+
+read -r -p "Service user [unitbilling]: " input_suser
+SERVICE_USER="${input_suser:-unitbilling}"
+
+read -r -p "Deploy user [deployer]: " input_duser
+DEPLOY_USER="${input_duser:-deployer}"
+
+read -r -p "App directory [/opt/unit-billing]: " input_appdir
+APP_DIR="${input_appdir:-/opt/unit-billing}"
+
+read -r -p "Service name [unit-billing]: " input_sname
+SERVICE_NAME="${input_sname:-unit-billing}"
+echo "---------------------------"
 
 log() { echo "=== $* ==="; }
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
