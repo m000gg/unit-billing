@@ -17,10 +17,22 @@
 
 set -euo pipefail
 
-# ---------- Config ----------
-DOMAIN="${DOMAIN:-unit-billing.xyz}"
-: "${CERTBOT_EMAIL:?CERTBOT_EMAIL must be set}"
-APP_UPSTREAM_IP="${APP_UPSTREAM_IP:-10.0.0.5}"
+# ---------- Config (Interactive) ----------
+echo "=== Configuration ==="
+echo "Press ENTER to accept the default values in brackets."
+
+read -r -p "Domain name [unit-billing.xyz]: " input_domain
+DOMAIN="${input_domain:-unit-billing.xyz}"
+
+read -r -p "Nginx site name [unit-billing]: " input_sitename
+SITE_NAME="${input_sitename:-unit-billing}"
+
+read -r -p "Certbot Email (Required): " input_email
+CERTBOT_EMAIL="${input_email:?CERTBOT_EMAIL must be set}"
+
+read -r -p "App Upstream IP [10.0.0.5]: " input_upstream
+APP_UPSTREAM_IP="${input_upstream:-10.0.0.5}"
+echo "---------------------------"
 
 log() { echo "=== $* ==="; }
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
@@ -28,7 +40,7 @@ trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 echo "=== 1. Nginx reverse proxy (monolith on :8080) ==="
 sudo apt-get install -y nginx
 
-sudo tee /etc/nginx/sites-available/unit-billing > /dev/null <<NGINX
+sudo tee /etc/nginx/sites-available/${SITE_NAME} > /dev/null <<NGINX
 server {
     listen 80;
     server_name ${DOMAIN};
@@ -43,7 +55,7 @@ server {
 }
 NGINX
 
-sudo ln -sf /etc/nginx/sites-available/unit-billing /etc/nginx/sites-enabled/unit-billing
+sudo ln -sf /etc/nginx/sites-available/${SITE_NAME} /etc/nginx/sites-enabled/${SITE_NAME}
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
