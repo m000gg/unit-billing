@@ -38,7 +38,6 @@ if [[ "${FORCE:-0}" != "1" && "$DRY_RUN" != "1" ]]; then
     echo "This will remove for domain '${DOMAIN}' ONLY:"
     echo "  - ${SITE_AVAILABLE} and its symlink in sites-enabled"
     echo "  - the Let's Encrypt certificate '${DOMAIN}'"
-    [[ "${REMOVE_FW_RULE:-0}" == "1" ]] && echo "  - ufw rule 'Nginx Full'"
     read -r -p "Type 'yes' to continue: " answer
     [[ "$answer" == "yes" ]] || { echo "Aborted."; exit 1; }
 fi
@@ -90,13 +89,6 @@ if sudo test -f "/etc/letsencrypt/renewal/${DOMAIN}.conf"; then
     fi
 else
     echo "Nothing to do: no certbot certificate named '${DOMAIN}'."
-fi
-
-echo "=== 3. Firewall (ufw): 'Nginx Full' rule ==="
-if [[ "${REMOVE_FW_RULE:-0}" == "1" ]]; then
-    run sudo ufw delete allow 'Nginx Full' || true
-else
-    echo "Skipped (other sites on this host likely need 80/443). Set REMOVE_FW_RULE=1 to delete it."
 fi
 
 echo "=== Done. Removed only the '${DOMAIN}' site and certificate. nginx, certbot and everything else untouched. ==="
