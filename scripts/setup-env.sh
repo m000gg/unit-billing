@@ -145,10 +145,20 @@ fi
 
 sudo usermod -aG "$SERVICE_USER" "$DEPLOY_USER"
 
-sudo tee "/etc/sudoers.d/${DEPLOY_USER}-deploy" > /dev/null <<EOF
-${DEPLOY_USER} ALL=(ALL) NOPASSWD: /bin/systemctl stop ${SERVICE_NAME}, /bin/mv ${APP_DIR}/${SERVICE_NAME}.jar.new ${APP_DIR}/${SERVICE_NAME}.jar, /bin/chown * ${APP_DIR}/${SERVICE_NAME}.jar, /bin/systemctl start ${SERVICE_NAME}, /bin/systemctl status ${SERVICE_NAME} --no-pager
+SUDOERS_FILE="/etc/sudoers.d/${DEPLOY_USER}-deploy"
+SUDOERS_TMP="$(mktemp)"
+
+cat > "$SUDOERS_TMP" <<EOF
+${DEPLOY_USER} ALL=(root) NOPASSWD: /bin/systemctl stop ${SERVICE_NAME}, /bin/mv ${APP_DIR}/${SERVICE_NAME}.jar.new ${APP_DIR}/${SERVICE_NAME}.jar, /bin/chown ${SERVICE_USER}\:${SERVICE_USER} ${APP_DIR}/${SERVICE_NAME}.jar, /bin/systemctl start ${SERVICE_NAME}, /bin/systemctl status ${SERVICE_NAME} --no-pager
 EOF
 
-sudo chmod 0440 "/etc/sudoers.d/${DEPLOY_USER}-deploy"
+if ! sudo visudo -cf "$SUDOERS_TMP"; then
+    rm -f "$SUDOERS_TMP"
+    echo "Invalid sudoers, aborting" >&2
+    exit 1
+fi
+
+sudo install -m 0440 -o root -g root "$SUDOERS_TMP" "$SUDOERS_FILE"
+rm -f "$SUDOERS_TMP"
 
 echo "=== Done. Environment ready (Postgres, Java, service unit, deploy user). Next: run setup-https.sh, then set up Jenkins SSH key and run deploy.sh ==="
