@@ -117,7 +117,7 @@ fi
 sudo usermod -aG "$SERVICE_USER" "$DEPLOY_USER"
 
 sudo tee "/etc/sudoers.d/${DEPLOY_USER}-deploy" > /dev/null <<EOF
-${DEPLOY_USER} ALL=(ALL) NOPASSWD: /bin/systemctl stop ${SERVICE_NAME}, /bin/mv ${APP_DIR}/${SERVICE_NAME}.jar.new ${APP_DIR}/${SERVICE_NAME}.jar, /bin/chown ${SERVICE_USER}:${SERVICE_USER} ${APP_DIR}/${SERVICE_NAME}.jar, /bin/systemctl start ${SERVICE_NAME}, /bin/systemctl status ${SERVICE_NAME} --no-pager
+${DEPLOY_USER} ALL=(ALL) NOPASSWD: /bin/systemctl stop ${SERVICE_NAME}, /bin/mv ${APP_DIR}/${SERVICE_NAME}.jar.new ${APP_DIR}/${SERVICE_NAME}.jar, /bin/chown ${SERVICE_USER}.${SERVICE_USER} ${APP_DIR}/${SERVICE_NAME}.jar, /bin/systemctl start ${SERVICE_NAME}, /bin/systemctl status ${SERVICE_NAME} --no-pager
 EOF
 
 sudo chmod 0440 "/etc/sudoers.d/${DEPLOY_USER}-deploy"
