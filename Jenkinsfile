@@ -2,7 +2,6 @@ pipeline {
     agent {
         docker {
             image 'maven:3.9.9-eclipse-temurin-21'
-            args '-v $HOME/.m2:/root/.m2'
         }
     }
 
@@ -17,6 +16,7 @@ pipeline {
     environment {
         SERVICE_NAME = "unit-billing"
         APP_PORT     = "8080"
+        MAVEN_ARGS   = "-Dmaven.repo.local=${WORKSPACE}/.m2/repository"
     }
 
     stages {
