@@ -1,5 +1,15 @@
+def dockerGid = ''
+node {
+    dockerGid = sh(script: "stat -c '%g' /var/run/docker.sock", returnStdout: true).trim()
+}
+
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.9.9-eclipse-temurin-21'
+            args "--user 0:0 -v /var/run/docker.sock:/var/run/docker.sock --group-add ${dockerGid} -v maven-repository:/root/.m2"
+        }
+    }
 
     parameters {
         choice(
@@ -12,6 +22,7 @@ pipeline {
     environment {
         SERVICE_NAME = "unit-billing"
         APP_PORT     = "8080"
+        MAVEN_ARGS   = "-Dmaven.repo.local=${WORKSPACE}/.m2/repository"
     }
 
     stages {
