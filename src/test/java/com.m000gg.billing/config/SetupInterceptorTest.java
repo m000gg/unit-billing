@@ -136,4 +136,28 @@ class SetupInterceptorTest {
         GrantedAuthority authority = new SimpleGrantedAuthority(role);
         doReturn(Collections.singletonList(authority)).when(authentication).getAuthorities();
     }
+
+    @Test
+    void shouldAllowUserAccess_ToPrivacyPage_WhenBaseCurrencyNotConfigured() throws Exception {
+        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
+        when(request.getRequestURI()).thenReturn("/privacy");
+        mockUserRole("ROLE_USER");
+
+        boolean result = setupInterceptor.preHandle(request, response, new Object());
+
+        assertTrue(result);
+        verify(response, never()).sendRedirect(anyString());
+    }
+
+    @Test
+    void shouldAllowUserAccess_ToImpressumPage_WhenBaseCurrencyNotConfigured() throws Exception {
+        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
+        when(request.getRequestURI()).thenReturn("/impressum");
+        mockUserRole("ROLE_USER");
+
+        boolean result = setupInterceptor.preHandle(request, response, new Object());
+
+        assertTrue(result);
+        verify(response, never()).sendRedirect(anyString());
+    }
 }

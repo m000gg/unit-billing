@@ -279,7 +279,7 @@ body {
 }
 
 .site-footer__inner a {
-    color: var(--ink-faint, #8A8F99);
+    color: var(--ink-soft, #5B606B);
     text-decoration: none;
     transition: color 0.2s ease;
 }

@@ -32,6 +32,11 @@ public class SetupInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        String uri = request.getRequestURI();
+        if (uri.equals("/privacy") || uri.equals("/impressum") || uri.equals("/client/billing-not-configured")) {
+            return true;
+        }
+
         if (systemSettingService.isBaseCurrencyConfigured()) {
             return true;
         }
