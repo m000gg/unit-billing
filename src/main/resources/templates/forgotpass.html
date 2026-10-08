@@ -15,7 +15,7 @@
   -->
 
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -59,7 +59,7 @@
 
             <p class="mt-4 mb-4">
                 <span class="text-muted" th:text="#{contact.forgot_password}">If you forgot your password, please contact the administrator at:</span><br>
-                <strong>admin@unitbilling.com</strong>
+                <strong th:text="${@environment.getProperty('unitbilling.legal.email')}">admin@unitbilling.com</strong>
             </p>
 
             <a href="/login" class="btn-back" th:text="#{contact.back_to_login}">← Back to Login</a>
