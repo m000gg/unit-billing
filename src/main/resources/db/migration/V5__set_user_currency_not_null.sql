@@ -1,0 +1,1 @@
+ALTER TABLE application_users ALTER COLUMN user_currency SET NOT NULL;
