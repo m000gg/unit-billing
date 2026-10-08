@@ -57,11 +57,10 @@ class MessagePropertiesCoverageTest {
             Set<String> referenceKeys = keysByLocale.getOrDefault("en", Set.of());
             for (String locale : LOCALES) {
                 if (locale.equals("en")) continue;
-                Set<String> missing = new HashSet<>(referenceKeys);
-                missing.removeAll(keysByLocale.getOrDefault(locale, Set.of()));
-                assertThat(missing)
-                        .withFailMessage("Basename '%s', locale '%s' missing keys: %s", basename, locale, missing)
-                        .isEmpty();
+                Set<String> localeKeys = keysByLocale.getOrDefault(locale, Set.of());
+                assertThat(localeKeys)
+                        .withFailMessage("Basename '%s', locale '%s' has different keys: expected %s, actual %s", basename, locale, referenceKeys, localeKeys)
+                        .containsExactlyInAnyOrderElementsOf(referenceKeys);
             }
         }
     }

@@ -45,8 +45,8 @@
             <input id="username" type="email" name="username" autocomplete="username" required autofocus>
         </div>
         <div class="form-group">
-            <label th:text="#{login.password}">Password</label>
-            <input type="password" name="password" autocomplete="current-password" required>
+            <label for="password" th:text="#{login.password}">Password</label>
+            <input id="password" type="password" name="password" autocomplete="current-password" required>
         </div>
         <button type="submit" th:text="#{login.submit}">Sign In</button>
     </form>
