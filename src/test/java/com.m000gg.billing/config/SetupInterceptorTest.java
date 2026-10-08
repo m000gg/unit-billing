@@ -66,14 +66,16 @@ class SetupInterceptorTest {
 
     @Test
     void shouldAllowAccess_WhenBaseCurrencyIsConfigured() throws Exception {
+        when(request.getRequestURI()).thenReturn("/dashboard");
         when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(true);
         boolean result = setupInterceptor.preHandle(request, response, new Object());
         assertTrue(result);
-        verifyNoInteractions(request, response, securityContext);
+        verifyNoInteractions(response, securityContext);
     }
 
     @Test
     void shouldAllowAccess_WhenNotAuthenticated() throws Exception {
+        when(request.getRequestURI()).thenReturn("/dashboard");
         when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         when(securityContext.getAuthentication()).thenReturn(null);
 
@@ -84,8 +86,8 @@ class SetupInterceptorTest {
 
     @Test
     void shouldRedirectAdmin_ToSetupPage_WhenBaseCurrencyNotConfigured() throws Exception {
-        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         when(request.getRequestURI()).thenReturn("/admin/dashboard");
+        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         mockUserRole("ROLE_ADMIN");
 
         boolean result = setupInterceptor.preHandle(request, response, new Object());
@@ -96,8 +98,8 @@ class SetupInterceptorTest {
 
     @Test
     void shouldAllowAdminAccess_ToSetupPage_WhenBaseCurrencyNotConfigured() throws Exception {
-        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         when(request.getRequestURI()).thenReturn("/admin/billing-setup");
+        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         mockUserRole("ROLE_ADMIN");
 
         boolean result = setupInterceptor.preHandle(request, response, new Object());
@@ -108,8 +110,8 @@ class SetupInterceptorTest {
 
     @Test
     void shouldRedirectUser_ToNotConfiguredPage_WhenBaseCurrencyNotConfigured() throws Exception {
-        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         when(request.getRequestURI()).thenReturn("/client/profile");
+        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         mockUserRole("ROLE_USER");
 
         boolean result = setupInterceptor.preHandle(request, response, new Object());
@@ -120,9 +122,27 @@ class SetupInterceptorTest {
 
     @Test
     void shouldAllowUserAccess_ToNotConfiguredPage_WhenBaseCurrencyNotConfigured() throws Exception {
-        when(systemSettingService.isBaseCurrencyConfigured()).thenReturn(false);
         when(request.getRequestURI()).thenReturn("/client/billing-not-configured");
-        mockUserRole("ROLE_USER");
+
+        boolean result = setupInterceptor.preHandle(request, response, new Object());
+
+        assertTrue(result);
+        verify(response, never()).sendRedirect(anyString());
+    }
+
+    @Test
+    void shouldAllowUserAccess_ToPrivacyPage_WhenBaseCurrencyNotConfigured() throws Exception {
+        when(request.getRequestURI()).thenReturn("/privacy");
+
+        boolean result = setupInterceptor.preHandle(request, response, new Object());
+
+        assertTrue(result);
+        verify(response, never()).sendRedirect(anyString());
+    }
+
+    @Test
+    void shouldAllowUserAccess_ToImpressumPage_WhenBaseCurrencyNotConfigured() throws Exception {
+        when(request.getRequestURI()).thenReturn("/impressum");
 
         boolean result = setupInterceptor.preHandle(request, response, new Object());
 
