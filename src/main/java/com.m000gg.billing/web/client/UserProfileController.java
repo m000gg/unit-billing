@@ -38,7 +38,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
-
 @Controller
 public class UserProfileController {
 
@@ -61,7 +60,10 @@ public class UserProfileController {
             return "redirect:/login";
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        int safePage = Math.max(0, page);
+        int safeSize = Math.max(1, Math.min(50, size));
+
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by("createdAt").descending());
         ApplicationUser user = userOptional.get();
         AccountOverviewViewModel accountOverviewViewModel = applicationUserManagementService.getUserInformationForMainPage(user);
 
