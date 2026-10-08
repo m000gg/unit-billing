@@ -17,42 +17,42 @@
 package com.m000gg.billing.subscribers;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 
 public class ApplicationUserRegisterDto {
-    @NotEmpty(message = "{subscribers.validation.firstName.required}")
+    @NotBlank(message = "{subscribers.validation.firstName.required}")
     private String firstName;
 
-    @NotEmpty(message = "{subscribers.validation.lastName.required}")
+    @NotBlank(message = "{subscribers.validation.lastName.required}")
     private String lastName;
 
-    @NotEmpty(message = "{subscribers.validation.email.required}")
+    @NotBlank(message = "{subscribers.validation.email.required}")
     @Email(message = "{subscribers.validation.email.invalid}")
     private String email;
 
-    @NotEmpty(message = "{subscribers.validation.phone.required}")
+    @NotBlank(message = "{subscribers.validation.phone.required}")
     private String phone;
 
-    @NotEmpty(message = "{subscribers.validation.country.required}")
+    @NotBlank(message = "{subscribers.validation.country.required}")
     private String country;
 
-    @NotEmpty(message = "{subscribers.validation.city.required}")
+    @NotBlank(message = "{subscribers.validation.city.required}")
     private String city;
 
     private String region;
 
-    @NotEmpty(message = "{subscribers.validation.street.required}")
+    @NotBlank(message = "{subscribers.validation.street.required}")
     private String street;
 
-    @NotEmpty(message = "{subscribers.validation.houseNumber.required}")
+    @NotBlank(message = "{subscribers.validation.houseNumber.required}")
     private String houseNumber;
 
     private String apartment;
 
-    @NotEmpty(message = "{subscribers.validation.postalCode.required}")
+    @NotBlank(message = "{subscribers.validation.postalCode.required}")
     private String postalCode;
 
-    @NotEmpty(message = "{subscribers.validation.currency.required}")
+    @NotBlank(message = "{subscribers.validation.currency.required}")
     private String userCurrency;
 
     public String getFirstName() { return firstName; }
