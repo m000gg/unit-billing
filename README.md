@@ -23,6 +23,7 @@
 * *[Features](#features)*
 * *[Project Structure](#project-structure)*
 * *[Architecture Overview](#architecture-overview)*
+* *[Plugins](#plugins)*
 * *[Technology Stack](#technology-stack)*
 * *[Development Principles](#development-principles)*
 * *[Getting Started](#-getting-started)*
@@ -87,51 +88,84 @@ This project aims to provide a centralized billing and customer management platf
 unit-billing/
 ├─ docs/
 │  ├─ adr/                                  ← architectural decision records (why important decisions were made)
-│  │  └─ 0001-flyway.md                    
+│  │  ├─ 0001-flyway.md
+│  │  └─ ...
 │  ├─ features/                             ← notable completed feature descriptions
+│  ├─ plugins/                              ← plugin system documentation
+│  │  └─ developer-guide.md                 ← plugin development guide (how to implement a plugin)
 │  ├─ assets/                               ← images, diagrams, and other media used in documentation
 │  ├─ domain.md                             ← terminology and critical billing rules
 │  └─ openapi.yaml                          ← HTTP contract for external API
 ├─ scripts/
 │  ├─ setup-env.sh                          ← environment setup (PostgreSQL, JDK & Maven)
 │  └─ deploy.sh                             ← deployment to staging/prod (Maven, SCP)
-├─ src/
-│  ├─ main/
-│  │  ├─ java/com/example/billing/
-│  │  │  ├─ configs/                        ← Spring configuration classes
-│  │  │  ├─ identity/                       ← auth, roles, users
-│  │  │  ├─ subscribers/                    ← subscribers
-│  │  │  ├─ settings/                       ← billing system settings
-│  │  │  ├─ catalog/                        ← services and pricing plans
-│  │  │  ├─ subscriptions/                  ← subscriptions
-│  │  │  ├─ ledger/                         ← transactions, payments, balance calculation
-│  │  │  ├─ web/
-│  │  │  │  ├─ admin/                       ← admin endpoints/pages
-│  │  │  │  └─ client/                      ← client portal endpoints/pages
-│  │  │  └─ BillingApplication.java
-│  │  └─ resources/
-│  │     ├─ db/migration/                   ← database migration scripts (Flyway)
-│  │     ├─ templates/                      ← Thymeleaf templates (SSR)
-│  │     │  ├─ admin/                       ← HTML templates for admin panel
-│  │     │  └─ client/                      ← HTML templates for client portal
-│  │     ├─ static/                         ← static assets (CSS/JS/images)
-│  │     │  ├─ admin/                       ← static assets for admin panel
-│  │     │  └─ client/                      ← static assets for client portal
-│  │     ├─ application.yml                 ← common properties for all environments
-│  │     ├─ application-staging.yml         ← non-secret staging overrides
-│  │     └─ application-prod.yml            ← non-secret production overrides
-│  └─ test/                                 ← unit and integration tests
+├─ unit-billing-plugin-api/                 ← public contract for plugins (plain jar, no Spring/JPA)
+│  ├─ pom.xml
+│  └─ src/main/java/com/m000gg/plugin/api/  ← plugin API interfaces and extension points
+├─ unit-billing-core/                       ← the billing application (core)
+│  ├─ pom.xml                               ← application dependencies, executable jar packaging
+│  └─ src/
+│     ├─ main/
+│     │  ├─ java/com/example/billing/
+│     │  │  ├─ configs/                     ← Spring configuration classes
+│     │  │  ├─ identity/                    ← auth, roles, users
+│     │  │  ├─ subscribers/                 ← subscribers
+│     │  │  ├─ settings/                    ← billing system settings
+│     │  │  ├─ catalog/                     ← services and pricing plans
+│     │  │  ├─ subscriptions/               ← subscriptions
+│     │  │  ├─ ledger/                      ← transactions, payments, balance calculation
+│     │  │  ├─ web/
+│     │  │  │  ├─ admin/                    ← admin endpoints/pages
+│     │  │  │  └─ client/                   ← client portal endpoints/pages
+│     │  │  └─ BillingApplication.java
+│     │  └─ resources/
+│     │     ├─ db/migration/                ← database migration scripts (Flyway)
+│     │     ├─ templates/                   ← Thymeleaf templates (SSR)
+│     │     │  ├─ admin/                    ← HTML templates for admin panel
+│     │     │  └─ client/                   ← HTML templates for client portal
+│     │     ├─ static/                      ← static assets (CSS/JS/images)
+│     │     │  ├─ admin/                    ← static assets for admin panel
+│     │     │  └─ client/                   ← static assets for client portal
+│     │     ├─ application.yml              ← common properties for all environments
+│     │     ├─ application-staging.yml      ← non-secret staging overrides
+│     │     └─ application-prod.yml         ← non-secret production overrides
+│     └─ test/                              ← unit and integration tests
 ├─ Jenkinsfile                              ← CI/CD pipeline definition
-├─ pom.xml                                  ← Maven build configuration and dependencies
-└─ README.md                                ← project description and instructions            
+├─ pom.xml                                  ← parent POM (modules, shared Spring Boot parent and Java version)
+└─ README.md                                ← project description and instructions
 ```
 
 ---
 
 ## Architecture Overview
-The project is currently designed as a modular monolith architecture.
+The project is currently designed as a modular monolith architecture,
+split into two Maven modules: `unit-billing-core` (the application) and
+`unit-billing-plugin-api` (the public contract for plugins).
 
 ---
+
+## Plugins
+
+Unit Billing is being prepared for extension through plugins that live
+**outside** this repository and are delivered as jars. The idea behind the
+design:
+
+* A plugin depends **only** on `unit-billing-plugin-api`. Core entities,
+  repositories and services are not on its classpath, so a plugin cannot
+  reach the database layer directly.
+* Data from the core will be exposed to plugins through explicit interfaces
+  declared in the API module, not through the persistence layer.
+* Core and plugins are built, released and deployed independently.
+
+### Official plugins
+Official plugins are developed in a separate repository:
+**[m000gg/unit-billing-plugins](https://github.com/m000gg/unit-billing-plugins)**
+
+### Learn more
+* 📐 [ADR0009 — Multi-Module Split and Plugin API Boundary](docs/adr/0009-multi-module-and-plugin-api.md)
+* 📘 [Plugin Developer Guide](docs/plugins/developer-guide.md)
+
+--- 
 
 ## Technology Stack
 
@@ -182,7 +216,15 @@ chmod +x scripts/setup-env.sh
 ./scripts/setup-env.sh
 ```
 
-### 4) Documentation & How to Use
+### 4) Build
+Run from the repository root:
+
+```bash
+mvn clean verify
+java -jar unit-billing-core/target/unit-billing-<version>.jar
+```
+
+### 5) Documentation & How to Use
 For comprehensive guides, API documentation, and user manuals, please visit our official project documentation site:
 
 **📘 [Unit Billing Landing & Documentation](https://m000gg.github.io/unit-billing-landing/)**
