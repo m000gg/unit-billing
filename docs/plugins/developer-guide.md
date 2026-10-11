@@ -53,7 +53,7 @@ The API is not published to a remote repository yet. To compile a plugin
 locally, install it from the unit-billing repository root:
 
 ```bash
-mvn -pl unit-billing-plugin-api install
+mvn -pl unit-billing-plugin-api -am install
 ```
 
 ---
