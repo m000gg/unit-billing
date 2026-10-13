@@ -112,7 +112,7 @@ unit-billing/                  ← parent POM
 └─ unit-billing-core/          ← the application
 ```
 
-See [ADR0009](../adr/0009-multi-module-and-plugin-api.md) for the reasoning behind the split.
+See [ADR0009](../adr/0009-multi-module-and-plugins.md) for the reasoning behind the split.
 
 ### Data models
 No new data models. Database schema and Flyway migrations are unchanged.

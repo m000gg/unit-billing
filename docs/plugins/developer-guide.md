@@ -30,7 +30,7 @@ unit-billing through the public contract in `unit-billing-plugin-api`.
 A plugin never sees the application internals (entities, repositories,
 services), only the API module.
 
-See [ADR0009](../adr/0009-multi-module-and-plugin-api.md) for the reasoning
+See [ADR0009](../adr/0009-multi-module-and-plugins.md) for the reasoning
 behind this boundary.
 
 ---
