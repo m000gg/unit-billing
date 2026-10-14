@@ -14,10 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Reverts EVERYTHING done by setup-env.sh. DESTRUCTIVE: the database,
-# the application directory (jar + .env), users and firewall rules are
-# removed permanently.
-#
 set -euo pipefail
 
 # ---------- Config (Interactive) ----------
