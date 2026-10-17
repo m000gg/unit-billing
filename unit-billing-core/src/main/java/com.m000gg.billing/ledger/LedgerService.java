@@ -83,7 +83,8 @@ public class LedgerService {
                 entry.getAmount(),
                 entry.getUserCurrency(),
                 user.getBalance(),
-                entry.getCreatedAt());
+                entry.getCreatedAt(),
+                entry.getDescription());
         eventPublisher.publishEvent(balanceChanged);
 
     }
