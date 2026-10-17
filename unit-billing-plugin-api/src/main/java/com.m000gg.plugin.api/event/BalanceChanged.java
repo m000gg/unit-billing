@@ -27,5 +27,6 @@ public record BalanceChanged(UUID ledgerId,
                              BigDecimal amountInUserCurrency,
                              String userCurrency,
                              BigDecimal balanceAfterTransaction,
-                             Instant transactionTime) {
+                             Instant transactionTime,
+                             String description) {
 }
