@@ -1,9 +1,12 @@
 # ADR0009 — Multi-Module Split and Plugin API Boundary
 
 ## Changelog
-| Version | Date       | Description                                                                                                  | Status   | Authors                             |
-|---------|------------|--------------------------------------------------------------------------------------------------------------|----------|-------------------------------------|
-| 1.0     | 2026-10-10 | Initial decision: split into `unit-billing-plugin-api` + `unit-billing-core`, plugins depend on the API only | Proposed | [m000gg](https://github.com/m000gg) |
+
+| Version  | Date       | Description                                                                                                  | Status   | Authors                             |
+|----------|------------|--------------------------------------------------------------------------------------------------------------|----------|-------------------------------------|
+| 1.0      | 2026-10-10 | Initial decision: split into `unit-billing-plugin-api` + `unit-billing-core`; plugins depend on the API only | Proposed | [m000gg](https://github.com/m000gg) |
+| 1.1      | 2026-10-13 | Update the decision to reflect the implemented API, plugin loader, and balance-change extension point        | Proposed | [m000gg](https://github.com/m000gg) |
+
 
 ---
 
@@ -11,154 +14,177 @@
 
 ## Decision
 
-The repository becomes a Maven multi-module project with a parent POM and two
-modules:
+The repository is a Maven multi-module project with a parent POM and two modules:
 
-- **`unit-billing-plugin-api`**: an intentionally empty plain jar (no Spring,
-  no JPA, no dependencies) that reserves the boundary for the future public
-  plugin contract. Planned extension-point interfaces and immutable DTOs will
-  use the base package `com.m000gg.plugin.api`.
-- **`unit-billing-core`**: the existing application (all current packages),
-  depending on `unit-billing-plugin-api`. It is the only module with
-  `spring-boot-maven-plugin` (`repackage`), so the executable jar is still
-  produced as `unit-billing-<version>.jar`.
+- **`unit-billing-plugin-api`** defines the public contract shared by the core application and plugins. It contains interfaces and immutable event/query value types under `com.m000gg.plugin.api`. It must remain independent of Spring, JPA, and core implementation classes.
+- **`unit-billing-core`** contains the application and the host-side plugin infrastructure. It depends on the API module and implements the API capabilities exposed to plugins.
 
-Plugins live in **a separate project** and are delivered as jars. A plugin
-depends **only** on `unit-billing-plugin-api` (scope `provided`). It has no
-compile-time access to core entities, repositories or services. Data from the
-core is exposed to plugins exclusively through interfaces declared in the API
-module (a facade returning DTOs), implemented inside core, which delegates to
-existing domain services. The facade contains no business logic of its own.
+Plugins are built and delivered as JARs from a separate project. A plugin depends on `unit-billing-plugin-api` only, with scope `provided`; the API is supplied by the host at runtime and must not be bundled inside the plugin JAR. Plugin-owned runtime libraries may be packaged with the plugin.
 
-Out of scope for this ADR (to be decided separately when the first real
-plugin requires it): the runtime plugin loader and classloader strategy,
-plugin manifest and API version checks, permissions and audit, plugin
-key-value storage, publishing the API artifact to a remote Maven repository.
+The initial extension contract includes:
+
+- `Plugin` for plugin identity and lifecycle (`getId`, `onEnable`, `onDisable`);
+- `PluginContext` for host-provided settings, user lookup, and balance-change subscriptions;
+- `BalanceChanged` and its associated enums as an immutable event contract;
+- `PluginSettings`, `UserDirectory`, and `UserContact` as small API types.
+
+The core currently discovers a plugin implementation from a JAR using `ServiceLoader` and a dedicated `URLClassLoader`. It forwards balance-change events to registered handlers after the ledger transaction commits.
+
+This implementation is a prototype, not a complete plugin platform. The current manager loads one JAR from a hard-coded path. A configurable plugin directory, multi-plugin management, API compatibility checks, permissions, audit, hot reload, and plugin administration UI are out of scope for this decision and remain future work.
 
 ## Context
 
-The platform needs to be extended with features that should not live in core:
-user notifications (open source), a payment-method integration (private) and
-possibly a dashboard. These have different release cycles, different
-licensing and, in one case, must stay private, so they cannot be part of
-this repository.
+The platform needs optional integrations that should not live in the core application: user notifications, payment-provider integrations, and potentially other extensions. These integrations may have different release cycles and licences. In particular, some plugins may need to remain private while the core remains open source.
 
-The solution needed to:
+The design needs to:
 
-- Give plugin authors a stable, minimal contract without exposing the
-  internals of core (entities, repositories, services), so core can be
-  refactored without breaking plugins.
-- Make it **impossible by construction** (not by convention) for a plugin to
-  reach the database layer: if a class is not on the plugin's classpath, it
-  cannot be used.
-- Keep the existing application behaving exactly as before: same jar name,
-  same startup, same tests.
-- Let a plugin compile against the contract without pulling in Spring or
-  the core application.
+- give plugin authors a narrow contract without exposing core entities, repositories, or services;
+- allow the core to evolve its implementation without requiring plugins to use its internal packages;
+- allow plugins to be built and delivered independently;
+- expose useful core capabilities through explicit interfaces and data types;
+- preserve the existing application as an executable Spring Boot application;
+- make the API available at plugin compile time without adding Spring or core dependencies to the plugin API.
 
-Four decisions had genuine alternatives:
+The first implementation now provides a concrete example of the boundary. `EmailNotifierPlugin` implements the API, reads settings from `PluginContext`, registers a `BalanceChanged` handler, and looks up the user’s email through `UserDirectory`. It does not access core entities or repositories directly.
 
-1. **Where does the plugin contract live**: a separate module, a package
-   inside the single existing module, or plugins depending on the whole core?
-2. **How do plugins get data from the core**: a facade with DTOs, exposed
-   repositories/entities, or direct database access?
-3. **How are plugins delivered**: separate project built to jars, or modules
-   inside this repository compiled into the core?
-4. **What does the API module contain**: interfaces and records only, or
-   also shared helper/implementation code?
+The current code also has important limits. `PluginManager` loads one JAR from an absolute, machine-specific path. The API version is not checked by the loader. Plugin code runs in the same JVM and process as the application; a class loader is not a security sandbox.
+
+Four decisions need to remain explicit:
+
+1. **Where does the plugin contract live?** In a separate module, in a package inside the core module, or in the entire core artifact?
+2. **How do plugins obtain data and capabilities?** Through narrow API interfaces and value types, through core entities and repositories, or through direct database access?
+3. **How are plugins delivered and discovered?** As separate JARs, as modules compiled into the core, or through an external process/protocol?
+4. **What belongs in the API module?** Public interfaces and immutable value types only, or shared helper implementations as well?
 
 ## Options
 
 ### Where the plugin contract lives
-1. (SELECTED) Separate Maven module `unit-billing-plugin-api`
-2. Dedicated package inside the single existing module
+
+1. (SELECTED) Separate Maven module, `unit-billing-plugin-api`
+2. Dedicated package inside the single application module
 3. Plugins depend on the whole core artifact
 
-### How plugins get data from the core
-1. (SELECTED) Facade interface in the API module, implemented in core, DTOs only
-2. Expose repositories/entities to plugins
+### How plugins obtain data and capabilities
+
+1. (SELECTED) Narrow API interfaces and immutable value types, implemented by the core
+2. Expose core repositories and entities to plugins
 3. Give plugins direct database access
 
-### How plugins are delivered
-1. (SELECTED) Separate project, delivered as jars
-2. Plugin modules inside this repository, compiled into the core
+### How plugins are delivered and discovered
+
+1. (SELECTED) Separate plugin project producing JARs, discovered by the host through Java `ServiceLoader`
+2. Plugin modules inside this repository, compiled into the core application
+3. Plugins run as separate processes and communicate with the core through a remote protocol
 
 ### What the API module contains
-1. (SELECTED) Interfaces, records and enums only, no logic, no framework dependencies
-2. Interfaces plus shared helper/utility implementations
+
+1. (SELECTED) Interfaces, records, and enums only; no business logic or framework dependencies
+2. Interfaces plus shared helper and utility implementations
 
 ## Consequences
 
 ### Where the plugin contract lives
 
 #### Option 1 (SELECTED): Separate Maven module
-| Pro                                                                                                                                                     | Con                                                                                                                                                                                     |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| A plugin can depend on the API jar alone, so core classes are physically absent from its classpath; the boundary is enforced by the build, not by habit | Two POMs to maintain; the build must always run from the repository root (reactor), otherwise `unit-billing-core` cannot resolve the API module                                         |
-| The API is a separate artifact and can be published without exposing core classes                                                                       | Once published, every public type in the API is a promise: removing or changing it breaks existing plugins, so API evolution needs discipline (semver, `default` methods for new hooks) |
-| Keeps Spring/JPA out of the contract by construction                                                                                                    | The API module must be made available to the plugin project (local `mvn install` for now, a remote Maven repository later)                                                              |
 
-#### Option 2: Package inside the single module
-| Pro                                                                 | Con                                                                                                                                                                                           |
-|---------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| No build changes at all                                             | A plugin would have to depend on the whole application jar to see the contract, giving it access to everything else on the classpath; "don't use that package" is a convention, not a barrier |
-| Nothing to publish separately                                       | Core and contract versions are forever tied together                                                                                                                                          |
+| Pro                                                                                                              | Con                                                                                                                               |
+|------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| A plugin can depend on the API JAR alone; core implementation classes are not required on its compile classpath. | Two POMs and an API artifact version must be maintained.                                                                          |
+| The core can refactor entities, repositories, and services without exposing them as plugin contracts.            | The API must be installed locally or published to a Maven repository before an independent plugin project can compile against it. |
+| Spring and JPA can be kept out of the public contract.                                                           | Once plugins depend on a public API type, changing it can require plugin migrations or rebuilds.                                  |
+
+#### Option 2: Package inside the application module
+
+| Pro                                               | Con                                                                                                                                                   |
+|---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| No additional Maven module or artifact is needed. | A plugin generally needs the whole application artifact to compile against the API, making the boundary dependent on convention rather than the build. |
+| Nothing needs to be published separately.         | Core and API releases become tightly coupled.                                                                                                         |
 
 #### Option 3: Plugins depend on the whole core
-| Pro                                | Con                                                                                                                                                                         |
-|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Plugins can use anything in core   | Every internal class becomes a de-facto public API; any refactoring of core can break plugins, and a plugin can bypass domain rules (e.g. write ledger rows directly)       |
 
-### How plugins get data from the core
+| Pro                                                             | Con                                                                                                                           |
+|-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| Plugins can directly use all existing application capabilities. | Core internals become de-facto public API; refactoring can break plugins, and plugins can bypass domain rules or audit paths. |
 
-#### Option 1 (SELECTED): Facade + DTOs
-| Pro                                                                                                                                 | Con                                                                                                                                                                       |
-|-------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Business rules (e.g. what "net profit" means) stay in one place, so admin UI, client portal and plugins all produce the same number | Every capability a plugin needs must be added to the facade explicitly (interface method, DTO, thin implementation), which is slower than "just query it"                 |
-| Core can change its entities and queries freely; only the facade mapping is affected                                                | The facade is a new surface that must stay free of business logic (delegate to services and map to DTOs) or it becomes a second, divergent implementation of domain rules |
-| Each exposed method is an explicit, reviewable decision                                                                             |                                                                                                                                                                           |
+### How plugins obtain data and capabilities
 
-#### Option 2: Expose repositories/entities
-| Pro                                           | Con                                                                                                                                 |
-|-----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| Plugins can query anything with no extra code | JPA entities leak into every plugin; schema changes break plugins; plugins can read or modify data bypassing domain rules and audit |
+#### Option 1 (SELECTED): Narrow API interfaces and value types
+
+| Pro                                                                                   | Con                                                                           |
+|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Every exposed capability is an explicit decision that can be reviewed and documented. | A capability must be added to the API before a plugin can use it.             |
+| Core entities, persistence schema, and service implementations remain internal.       | The API can grow as new plugin use cases are added and must be kept coherent. |
+| Plugins receive immutable event data and small results such as `UserContact`.         | Core adapters must map internal data into API types.                          |
+
+#### Option 2: Expose repositories and entities
+
+| Pro                                                                | Con                                                                                                    |
+|--------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| Plugins can query data without a new API method for each use case. | Entity and schema changes can break plugins; plugins may bypass validation, business rules, and audit. |
 
 #### Option 3: Direct database access
-| Pro                     | Con                                                                                                                                       |
-|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| Maximum flexibility     | Plugins couple to the table schema and Flyway migrations, and bypass all application-level validation; no way to restrict or audit access |
 
-### How plugins are delivered
+| Pro                                             | Con                                                                                                         |
+|-------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| Provides maximum flexibility to plugin authors. | Couples plugins to database tables and migrations and bypasses application-level rules and access controls. |
 
-#### Option 1 (SELECTED): Separate project, delivered as jars
-| Pro                                                                                                                              | Con                                                                                                                                                     |
-|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Plugins can have their own repository, licence and release cycle (an open-source notifications plugin, a private payment plugin) | Core and plugins are deployed independently, so an API version mismatch is possible at runtime and will need a compatibility check in the future loader |
-| Core stays free of plugin-specific code and dependencies                                                                         | Requires a runtime loader and a defined plugin directory, which are not part of this decision                                                           |
+### How plugins are delivered and discovered
 
-#### Option 2: Modules inside this repository
-| Pro                                          | Con                                                                                                                                                       |
-|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Single build, no version mismatch possible   | A private plugin (payment) cannot live in an open-source repository; every plugin change requires a core release; core dependencies grow with each plugin |
+#### Option 1 (SELECTED): Separate JARs discovered with `ServiceLoader`
+
+| Pro                                                                                        | Con                                                                                                          |
+|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| Plugins can have independent repositories, licences, dependencies, and release cycles.     | The host and plugin can have incompatible API versions; the current loader does not yet check compatibility. |
+| Optional integration libraries need not become core dependencies.                          | The current implementation loads only one JAR from a hard-coded path.                                        |
+| Java's service-provider mechanism offers a standard way to find a `Plugin` implementation. | A class loader does not isolate privileges or make plugin code safe to run.                                  |
+| Plugin-owned runtime libraries can travel with the plugin JAR.                             | The plugin JAR must preserve its service descriptor and package dependencies correctly.                      |
+
+#### Option 2: Plugin modules inside this repository
+
+| Pro                                                                     | Con                                                                                                 |
+|-------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| A single Maven reactor build can compile the host and plugins together. | Private plugins cannot be developed and released independently from an open-source core repository. |
+| Host and plugin API versions are aligned during the build.              | Every integration adds dependencies and release work to the core project.                           |
+
+#### Option 3: External plugin processes
+
+| Pro                                                               | Con                                                                                                       |
+|-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| Process boundaries provide stronger isolation than class loaders. | Requires a protocol, deployment model, authentication, observability, and inter-process failure handling. |
+| Plugins can use different runtimes and release independently.     | Adds substantial operational complexity and latency for the current requirements.                         |
 
 ### What the API module contains
 
-#### Option 1 (SELECTED): Interfaces, records and enums only
-| Pro                                                                                                | Con                                                                                                    |
-|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| No transitive dependencies for plugin authors; nothing to keep binary-compatible beyond signatures | Plugin authors who want shared helpers must write them themselves                                      |
-| Easy to document completely (Javadoc on every public type)                                         |                                                                                                        |
+#### Option 1 (SELECTED): Interfaces and immutable value types
+
+| Pro                                                              | Con                                                                                             |
+|------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| Keeps the API small and free of transitive runtime dependencies. | Plugin authors who want shared helpers must implement them themselves or use their own library. |
+| Makes the public contract easier to document and version.        | More capabilities require deliberate API design and implementation in the core.                 |
 
 #### Option 2: Interfaces plus helper implementations
-| Pro                                      | Con                                                                                                                          |
-|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| Less boilerplate for plugin authors      | Implementation code becomes part of the public contract and drags in dependencies; harder to evolve without breaking plugins |
 
-*Note: classloader/API separation protects against accidental coupling and
-poor architecture, **not against malicious code**. A plugin running in the
-same JVM can still access the file system, the network and reflection (the
-Java `SecurityManager` is no longer available). This is acceptable while all
-plugins are written by the project's own team. If third-party plugins ever
-become a use case, an out-of-process plugin model should be evaluated
-instead, and this ADR revisited. Flagged here rather than solved now, since
-no such use case exists today.*
+| Pro                                  | Con                                                                               |
+|--------------------------------------|-----------------------------------------------------------------------------------|
+| Can reduce repeated code in plugins. | Helper behavior and its dependencies become part of the compatibility commitment. |
+
+### Current implementation consequences
+
+The first event integration demonstrates that the boundary works end-to-end for a balance-change notification:
+
+1. `LedgerService` publishes `BalanceChanged`.
+2. Spring delivers it to a transactional listener after commit.
+3. The listener invokes handlers registered through `PluginContext`.
+4. The email plugin looks up a user contact through the API and sends a message.
+
+The current implementation is intentionally limited:
+
+- `PluginManager` loads one JAR using an absolute path;
+- there is no plugin directory scan or administration UI;
+- the loader does not enforce API version compatibility;
+- plugin handlers run synchronously in the listener thread;
+- event delivery is in-process and is not a durable queue;
+- returning early from `onEnable` does not currently report a distinct failed/idle state to the manager;
+- plugins run with the privileges of the application process.
+
+These limitations should be addressed before treating the mechanism as a production plugin platform. At minimum, production use needs a configurable plugin location, per-plugin lifecycle and health reporting, a compatibility policy, and explicit operational documentation. If plugin authors outside the trusted project team become a requirement, evaluate an out-of-process model rather than treating a class loader as a sandbox.
