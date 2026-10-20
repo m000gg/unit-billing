@@ -35,6 +35,9 @@ DEPLOY_USER="${input_duser:-deployer}"
 read -r -p "App directory [/opt/unit-billing]: " input_appdir
 APP_DIR="${input_appdir:-/opt/unit-billing}"
 
+read -r -p "Plugin directory [${APP_DIR}/plugins]: " input_plugin_dir
+PLUGIN_DIR="${input_plugin_dir:-${APP_DIR}/plugins}"
+
 read -r -p "Service name [unit-billing]: " input_sname
 SERVICE_NAME="${input_sname:-unit-billing}"
 echo "---------------------------"
@@ -44,7 +47,7 @@ trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 if [[ "${FORCE:-0}" != "1" ]]; then
     echo "This will permanently delete: PostgreSQL ${POSTGRES_VERSION} with ALL data,"
-    echo "Java ${JAVA_VERSION}, ${APP_DIR}, users '${SERVICE_USER}' and '${DEPLOY_USER}'"
+    echo "Java ${JAVA_VERSION}, ${APP_DIR}, ${PLUGIN_DIR}, users '${SERVICE_USER}' and '${DEPLOY_USER}'"
     echo "(incl. /home/${DEPLOY_USER}), the systemd unit, the sudoers file and ufw."
     read -r -p "Type 'yes' to continue: " answer
     [[ "$answer" == "yes" ]] || { echo "Aborted."; exit 1; }
@@ -67,6 +70,7 @@ sudo systemctl daemon-reload
 sudo systemctl reset-failed "${SERVICE_NAME}" 2>/dev/null || true
 
 sudo rm -rf "$APP_DIR"
+sudo rm -rf "$PLUGIN_DIR"
 
 if id -u "$SERVICE_USER" >/dev/null 2>&1; then
     sudo userdel "$SERVICE_USER" || true
