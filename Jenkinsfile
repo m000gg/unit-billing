@@ -22,6 +22,7 @@ pipeline {
     environment {
         SERVICE_NAME = "unit-billing"
         APP_PORT     = "8080"
+        APP_JAR_GLOB = "unit-billing-core/target/unit-billing-*.jar"
         MAVEN_ARGS   = "-Dmaven.repo.local=${WORKSPACE}/.m2/repository"
     }
 
@@ -29,14 +30,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo '=== Compiling unit-billing ==='
+                echo '=== Compiling unit-billing (all modules) ==='
                 sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo '=== Running unit tests ==='
+                echo '=== Running unit tests (all modules) ==='
                 sh 'mvn test'
             }
         }
@@ -45,7 +46,7 @@ pipeline {
             steps {
                 echo '=== Packaging executable JAR ==='
                 sh 'mvn package -DskipTests'
-                echo 'Artifact built in target/unit-billing-<version>.jar'
+                echo 'Artifact built in unit-billing-core/target/unit-billing-<version>.jar'
             }
         }
 
@@ -92,7 +93,7 @@ def deploy(String hostCredentialId, String knownHostsCredentialId, String sshCre
         sshagent(credentials: [sshCredentialId]) {
             sh '''
                 scp -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes \
-                    target/unit-billing-*.jar "$DEPLOY_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
+                    $APP_JAR_GLOB "$DEPLOY_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
 
                 ssh -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes "$DEPLOY_HOST" \
                     "sudo systemctl stop '$SERVICE_NAME' && \
