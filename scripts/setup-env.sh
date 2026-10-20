@@ -56,6 +56,9 @@ DEPLOY_USER="${input_duser:-deployer}"
 read -r -p "App directory [/opt/unit-billing]: " input_appdir
 APP_DIR="${input_appdir:-/opt/unit-billing}"
 
+read -r -p "Plugin directory [${APP_DIR}/plugins]: " input_plugin_dir
+PLUGIN_DIR="${input_plugin_dir:-${APP_DIR}/plugins}"
+
 read -r -p "Service name [unit-billing]: " input_sname
 SERVICE_NAME="${input_sname:-unit-billing}"
 echo "---------------------------"
@@ -111,6 +114,7 @@ SPRING_DATASOURCE_USERNAME=${DB_USER}
 SPRING_DATASOURCE_PASSWORD=${DB_PASS}
 INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
 INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+UNITBILLING_CONFIGURATION_PLUGINS_DIRECTORY=${PLUGIN_DIR}
 EOF
 
 sudo chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
