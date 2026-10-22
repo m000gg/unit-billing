@@ -23,6 +23,11 @@ import com.m000gg.plugin.api.query.user.UserDirectory;
 import java.util.function.Consumer;
 
 public interface PluginContext {
+    /**
+     * The listener is invoked asynchronously after the balance transaction commits.
+     * Events are delivered in order for each plugin.
+     * Listener failures do not affect the completed transaction or other plugins.
+     */
     void onBalanceChanged(Consumer<BalanceChanged> handler);
 
     UserDirectory users();
