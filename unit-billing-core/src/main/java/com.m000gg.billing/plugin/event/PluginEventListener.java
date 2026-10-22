@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.function.Consumer;
 
 @Slf4j
 @Component
@@ -35,14 +34,10 @@ public class PluginEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void listenBalanceChanged(BalanceChanged event) {
         log.info("Balance changed: {}", event);
-        for (Consumer<BalanceChanged> handler : pluginManager.balanceChangedHandlers()) {
-            try {
-                handler.accept(event);
-            } catch (Exception | LinkageError e) {
-                log.error("Plugin handler failed", e);
-            }
-
+        try {
+            pluginManager.dispatchBalanceChanged(event);
+        } catch (Exception | LinkageError e) {
+            log.error("Failed to dispatch balance event to plugins", e);
         }
-
     }
 }
