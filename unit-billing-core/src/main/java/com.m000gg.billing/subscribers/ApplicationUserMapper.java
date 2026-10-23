@@ -69,6 +69,7 @@ public class ApplicationUserMapper {
         newApplicationUser.setBalance(BigDecimal.ZERO);
         newApplicationUser.setPassword(encodedPassword);
         newApplicationUser.setUserCurrency(applicationUserRegisterDto.getUserCurrency());
+        newApplicationUser.setPreferredLanguage(applicationUserRegisterDto.getPreferredLanguage());
     }
 
     public AccountOverviewViewModel accountViewModelFromUser(ApplicationUser currentUser, AccountOverviewViewModel accountOverviewViewModel) {
@@ -86,6 +87,7 @@ public class ApplicationUserMapper {
         accountOverviewViewModel.setPostalCode(currentUser.getPostalCode());
         accountOverviewViewModel.setPhone(currentUser.getPhone());
         accountOverviewViewModel.setUserCurrency(currentUser.getUserCurrency());
+        accountOverviewViewModel.setPreferredLanguage(currentUser.getPreferredLanguage());
         return accountOverviewViewModel;
     }
 }

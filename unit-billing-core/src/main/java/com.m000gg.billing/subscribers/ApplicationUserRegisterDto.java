@@ -55,6 +55,9 @@ public class ApplicationUserRegisterDto {
     @NotBlank(message = "{subscribers.validation.currency.required}")
     private String userCurrency;
 
+    @NotBlank(message = "{subscribers.validation.preferred.language.required}")
+    private String preferredLanguage;
+
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
@@ -93,6 +96,14 @@ public class ApplicationUserRegisterDto {
     }
     public void setUserCurrency(String userCurrency) {
         this.userCurrency = userCurrency;
+    }
+
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
     }
 }
 
