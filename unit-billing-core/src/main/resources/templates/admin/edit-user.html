@@ -76,7 +76,18 @@
                         <input type="text" th:field="*{userCurrency}" class="input-readonly" readonly tabindex="-1">
                         <span class="field-hint" th:text="#{admin.userEdit.currency.hint}">Currency cannot be changed after registration.</span>
                     </div>
-                    <div class="form-group"></div>
+
+                    <div class="form-group">
+                        <label for="preferredLanguage" th:text="#{admin.userRegistration.preferredLanguage}">Preferred language</label>
+                        <select id="preferredLanguage" th:field="*{preferredLanguage}" required>
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="fr">Français</option>
+                            <option value="uk">Українська</option>
+                            <option value="ru">Русский</option>
+                        </select>
+                        <span class="field-error" th:if="${#fields.hasErrors('preferredLanguage')}" th:errors="*{preferredLanguage}"></span>
+                    </div>
                 </div>
             </div>
 

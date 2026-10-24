@@ -35,6 +35,7 @@ public class ApplicationUserMapper {
         entity.setHouseNumber(dto.getHouseNumber());
         entity.setApartment(dto.getApartment());
         entity.setPostalCode(dto.getPostalCode());
+        entity.setPreferredLanguage(dto.getPreferredLanguage());
     }
 
     public ApplicationUserEditDto toDto(ApplicationUser entity) {
@@ -51,6 +52,7 @@ public class ApplicationUserMapper {
         dto.setApartment(entity.getApartment());
         dto.setPostalCode(entity.getPostalCode());
         dto.setUserCurrency(entity.getUserCurrency());
+        dto.setPreferredLanguage(entity.getPreferredLanguage());
         return dto;
     }
 
