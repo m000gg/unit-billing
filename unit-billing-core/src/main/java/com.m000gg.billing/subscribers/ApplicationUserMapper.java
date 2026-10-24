@@ -92,4 +92,9 @@ public class ApplicationUserMapper {
         accountOverviewViewModel.setPreferredLanguage(currentUser.getPreferredLanguage());
         return accountOverviewViewModel;
     }
+
+    public ApplicationUser updateUserPreferredLangFromUpdateDto(PreferredLanguageUpdateDto dto, ApplicationUser applicationUser){
+        applicationUser.setPreferredLanguage(dto.getPreferredLanguage());
+        return applicationUser;
+    }
 }

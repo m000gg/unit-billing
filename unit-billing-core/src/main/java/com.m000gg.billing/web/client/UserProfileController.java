@@ -22,6 +22,8 @@ import com.m000gg.billing.ledger.LedgerService;
 import com.m000gg.billing.subscribers.AccountOverviewViewModel;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserManagementService;
+import com.m000gg.billing.subscribers.PreferredLanguageUpdateDto;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,8 +32,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -71,12 +77,40 @@ public class UserProfileController {
         Instant dateTo = date != null ? date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().minusNanos(1) : null;
 
         Page<LedgerEntryUserViewModel> ledgerEntriesPage = ledgerService.search(user.getId(), search, type, dateFrom, dateTo, pageable);
-
+        if (!model.containsAttribute("preferredLanguageUpdateDto")) {
+            PreferredLanguageUpdateDto dto = new PreferredLanguageUpdateDto();
+            dto.setPreferredLanguage(user.getPreferredLanguage());
+            model.addAttribute("preferredLanguageUpdateDto", dto);
+        }
         model.addAttribute("ledgerEntriesPage", ledgerEntriesPage);
         model.addAttribute("search", search);
         model.addAttribute("type", type);
         model.addAttribute("date", date);
         model.addAttribute("userProfileViewModel", accountOverviewViewModel);
         return "client/profile";
+    }
+
+    @PostMapping("/client/profile/preferred-language")
+    public String updatePreferredLanguage(@Valid @ModelAttribute("preferredLanguageUpdateDto") PreferredLanguageUpdateDto dto, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        Optional<ApplicationUser> userOptional =
+                applicationUserManagementService.getCurrentUser();
+
+        if (userOptional.isEmpty()) {
+            return "redirect:/login";
+        }
+
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("preferredLanguageUpdateDto", dto);
+            redirectAttributes.addFlashAttribute(
+                    BindingResult.MODEL_KEY_PREFIX + "preferredLanguageUpdateDto",
+                    bindingResult
+            );
+            return "redirect:/client/profile";
+        }
+
+        applicationUserManagementService
+                .updatePreferredLanguageFromUserProfile(dto, userOptional.get());
+
+        return "redirect:/client/profile";
     }
 }
