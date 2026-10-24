@@ -86,6 +86,23 @@
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="data-group">
+          <label th:text="#{admin.userRegistration.preferredLanguage}">Preferred language</label>
+          <div class="data-value language-value">
+            <th:block th:switch="${user.preferredLanguage != null ? #strings.toLowerCase(user.preferredLanguage) : ''}">
+              <span th:case="'ru'">Русский</span>
+              <span th:case="'en'">English</span>
+              <span th:case="'de'">Deutsch</span>
+              <span th:case="'uk'">Українська</span>
+              <span th:case="'fr'">Français</span>
+              <span th:case="*" th:text="${user.preferredLanguage != null and !user.preferredLanguage.isEmpty() ? user.preferredLanguage : '—'}"></span>
+            </th:block>
+          </div>
+        </div>
+        <div class="data-group"></div>
+      </div>
+
       <div class="data-group data-group-full">
         <label th:text="#{admin.userProfile.address}">Address</label>
         <div class="data-value"

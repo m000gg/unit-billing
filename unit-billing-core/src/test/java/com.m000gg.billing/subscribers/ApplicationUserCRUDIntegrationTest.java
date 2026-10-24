@@ -99,6 +99,7 @@ public class ApplicationUserCRUDIntegrationTest {
                         .param("street", "Hauptstrasse")
                         .param("houseNumber", "12")
                         .param("postalCode", "09111")
+                        .param("preferredLanguage", "en")
                         .param("userCurrency", "USD"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/user-registration"))

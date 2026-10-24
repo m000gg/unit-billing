@@ -191,6 +191,46 @@
                 <p class="info-value balance-value" th:text="${userProfileViewModel.userCurrency + ' ' + #numbers.formatDecimal(userProfileViewModel.balance, 1, 2)}">USD 0.00</p>
             </div>
         </div>
+
+        <form class="profile-language-form"
+              method="post"
+              th:action="@{/client/profile/preferred-language}"
+              th:object="${preferredLanguageUpdateDto}">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}" />
+
+            <div class="profile-language-form__field">
+                <label class="info-label"
+                       for="preferredLanguage"
+                       th:text="#{client.profile.field.preferredLanguage}">
+                    Preferred language
+                </label>
+
+                <select id="preferredLanguage"
+                        th:field="*{preferredLanguage}"
+                        th:errorclass="is-invalid"
+                        required>
+                    <option value="en">English</option>
+                    <option value="de">Deutsch</option>
+                    <option value="fr">Français</option>
+                    <option value="uk">Українська</option>
+                    <option value="ru">Русский</option>
+                </select>
+
+                <span class="profile-language-form__error"
+                      th:if="${#fields.hasErrors('preferredLanguage')}"
+                      th:errors="*{preferredLanguage}"></span>
+            </div>
+
+            <button class="profile-language-form__submit"
+                    type="submit"
+                    th:text="#{client.profile.action.savePreferredLanguage}">
+                Save language
+            </button>
+        </form>
+
     </section>
 
     <section class="profile-section">

@@ -23,6 +23,7 @@ import com.m000gg.billing.subscribers.exception.ApplicationUserNotFoundException
 import com.m000gg.billing.subscribers.exception.EmailAlreadyExistsException;
 import com.m000gg.billing.subscribers.exception.EmailAlreadyTakenException;
 import com.m000gg.billing.subscribers.exception.UserAlreadyDeletedException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -144,5 +145,13 @@ public class ApplicationUserManagementService {
     public AccountOverviewViewModel getUserInformationForMainPage(ApplicationUser applicationUser) {
         AccountOverviewViewModel accountOverviewViewModel = new AccountOverviewViewModel();
         return applicationUserMapper.accountViewModelFromUser(applicationUser, accountOverviewViewModel);
+    }
+
+    @Transactional
+    public void updatePreferredLanguageFromUserProfile(PreferredLanguageUpdateDto dto, ApplicationUser currentUser) {
+        ApplicationUser user = applicationUserRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        user.setPreferredLanguage(dto.getPreferredLanguage());
     }
 }

@@ -34,6 +34,7 @@ public class AccountOverviewViewModel {
     private Date createdAt;
     private String phone;
     private String userCurrency;
+    private String preferredLanguage;
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
@@ -118,5 +119,11 @@ public class AccountOverviewViewModel {
     }
     public void setUserCurrency(String userCurrency) {
         this.userCurrency = userCurrency;
+    }
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
     }
 }

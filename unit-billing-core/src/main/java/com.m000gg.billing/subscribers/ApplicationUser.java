@@ -75,6 +75,9 @@ public class ApplicationUser {
     @Column(name = "user_currency", length = 3, nullable = false)
     private String userCurrency;
 
+    @Column(name = "preferred_language", nullable = false, length = 2)
+    private String preferredLanguage = "en";;
+
     public UUID getId() {
         return id;
     }
@@ -209,5 +212,13 @@ public class ApplicationUser {
 
     public void setUserCurrency(String userCurrency) {
         this.userCurrency = userCurrency;
+    }
+
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
     }
 }

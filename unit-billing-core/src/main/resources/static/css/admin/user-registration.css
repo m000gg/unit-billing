@@ -239,3 +239,34 @@
     border-color: #f6c8c8;
     background: #fef7f7;
 }
+/* ---------- Form Inputs & Selects ---------- */
+
+.form-group input,
+.form-group select {
+    box-sizing: border-box;
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fbfbfd;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(91, 108, 249, 0.12);
+}
+
+.form-group input.is-invalid,
+.form-group input:has(+ .field-error),
+.form-group select.is-invalid,
+.form-group select:has(+ .field-error) {
+    border-color: #f6c8c8;
+    background: #fef7f7;
+}

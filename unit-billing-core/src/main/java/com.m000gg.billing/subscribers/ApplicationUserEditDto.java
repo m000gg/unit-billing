@@ -54,6 +54,8 @@ public class ApplicationUserEditDto {
 
     private String userCurrency;
 
+    private String preferredLanguage;
+
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
@@ -92,5 +94,12 @@ public class ApplicationUserEditDto {
     }
     public void setUserCurrency(String userCurrency) {
         this.userCurrency = userCurrency;
+    }
+
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
     }
 }

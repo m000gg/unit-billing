@@ -35,6 +35,7 @@ public class ApplicationUserMapper {
         entity.setHouseNumber(dto.getHouseNumber());
         entity.setApartment(dto.getApartment());
         entity.setPostalCode(dto.getPostalCode());
+        entity.setPreferredLanguage(dto.getPreferredLanguage());
     }
 
     public ApplicationUserEditDto toDto(ApplicationUser entity) {
@@ -51,6 +52,7 @@ public class ApplicationUserMapper {
         dto.setApartment(entity.getApartment());
         dto.setPostalCode(entity.getPostalCode());
         dto.setUserCurrency(entity.getUserCurrency());
+        dto.setPreferredLanguage(entity.getPreferredLanguage());
         return dto;
     }
 
@@ -69,6 +71,7 @@ public class ApplicationUserMapper {
         newApplicationUser.setBalance(BigDecimal.ZERO);
         newApplicationUser.setPassword(encodedPassword);
         newApplicationUser.setUserCurrency(applicationUserRegisterDto.getUserCurrency());
+        newApplicationUser.setPreferredLanguage(applicationUserRegisterDto.getPreferredLanguage());
     }
 
     public AccountOverviewViewModel accountViewModelFromUser(ApplicationUser currentUser, AccountOverviewViewModel accountOverviewViewModel) {
@@ -86,6 +89,12 @@ public class ApplicationUserMapper {
         accountOverviewViewModel.setPostalCode(currentUser.getPostalCode());
         accountOverviewViewModel.setPhone(currentUser.getPhone());
         accountOverviewViewModel.setUserCurrency(currentUser.getUserCurrency());
+        accountOverviewViewModel.setPreferredLanguage(currentUser.getPreferredLanguage());
         return accountOverviewViewModel;
+    }
+
+    public ApplicationUser updateUserPreferredLangFromUpdateDto(PreferredLanguageUpdateDto dto, ApplicationUser applicationUser){
+        applicationUser.setPreferredLanguage(dto.getPreferredLanguage());
+        return applicationUser;
     }
 }
