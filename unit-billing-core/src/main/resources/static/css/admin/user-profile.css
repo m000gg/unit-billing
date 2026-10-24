@@ -773,3 +773,23 @@
 .btn-view-ledger:hover .btn-view-ledger-arrow {
     transform: translateX(3px);
 }
+
+/* ---------- Language field specific styles ---------- */
+.language-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lang-icon {
+    font-size: 15px;
+    opacity: 0.65;
+    filter: grayscale(100%);
+    transition: filter 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.data-value:hover .lang-icon {
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.1);
+}
