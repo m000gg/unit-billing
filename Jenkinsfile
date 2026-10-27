@@ -6,7 +6,7 @@ node {
 pipeline {
     agent {
         docker {
-            image 'maven:3.9.9-eclipse-temurin-21'
+            image 'maven:3.10.0-sapmachine-25'
             args "--user 0:0 -v /var/run/docker.sock:/var/run/docker.sock --group-add ${dockerGid} -v maven-repository:/root/.m2"
         }
     }
