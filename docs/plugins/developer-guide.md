@@ -228,7 +228,7 @@ The event contains:
 - amount, currency, and resulting balance;
 - the transaction time.
 
-The host dispatches this event after the transaction commits. Callbacks currently run synchronously and sequentially. Keep them short, set network timeouts, and handle integration failures inside the plugin. A slow callback may delay event processing.
+Callbacks are queued after commit and run asynchronously on a single worker per plugin, in registration order. A slow callback delays later callbacks for that plugin, and a full bounded queue rejects new events.
 
 This is in-process event delivery, not a durable queue. The current implementation does not guarantee retry, persistence, or exactly-once processing.
 

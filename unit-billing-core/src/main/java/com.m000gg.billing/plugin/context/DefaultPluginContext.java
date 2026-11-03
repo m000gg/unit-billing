@@ -38,7 +38,6 @@ public class DefaultPluginContext implements PluginContext {
 
     @Override
     public void onBalanceChanged(Consumer<BalanceChanged> handler) {
-        balanceChangedHandlers.add(handler);
         balanceChangedHandlers.add(java.util.Objects.requireNonNull(handler, "handler must not be null"));
     }
 

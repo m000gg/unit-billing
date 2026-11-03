@@ -210,7 +210,7 @@ public class PluginManager {
                     for (Consumer<BalanceChanged> handler : handlers) {
                         try {
                             handler.accept(event);
-                        } catch (Exception | LinkageError e) {
+                        } catch (Exception | LinkageError | ServiceConfigurationError e) {
                             log.error(
                                     "Balance change handler failed in plugin '{}'",
                                     runningPlugin.id(),

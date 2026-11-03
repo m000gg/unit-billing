@@ -24,8 +24,8 @@ echo "Press ENTER to accept the default values in brackets."
 read -r -p "PostgreSQL version [18]: " input_pg
 POSTGRES_VERSION="${input_pg:-18}"
 
-read -r -p "Java version [21]: " input_java
-JAVA_VERSION="${input_java:-21}"
+read -r -p "Java version [25]: " input_java
+JAVA_VERSION="${input_java:-25}"
 
 read -r -p "Nginx VM IP (Required): " input_nginx_ip
 NGINX_VM_IP="${input_nginx_ip:?NGINX_VM_IP must be set}"

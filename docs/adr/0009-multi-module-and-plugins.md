@@ -179,10 +179,10 @@ The first event integration demonstrates that the boundary works end-to-end for 
 
 The current implementation is intentionally limited:
 
-- `PluginManager` loads one JAR using an absolute path;
-- there is no plugin directory scan or administration UI;
+- `PluginManager` scans the configured plugin directory and loads each JAR;
+- there is no plugin administration UI or runtime hot reload;
 - the loader does not enforce API version compatibility;
-- plugin handlers run synchronously in the listener thread;
+- plugin handlers run asynchronously on a single worker per plugin;
 - event delivery is in-process and is not a durable queue;
 - returning early from `onEnable` does not currently report a distinct failed/idle state to the manager;
 - plugins run with the privileges of the application process.
