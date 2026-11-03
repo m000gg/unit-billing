@@ -33,11 +33,11 @@ public class PluginEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void listenBalanceChanged(BalanceChanged event) {
-        log.info("Balance changed: {}", event);
+        log.debug("Dispatching BalanceChanged for ledger entry {}", event.ledgerId());
         try {
             pluginManager.dispatchBalanceChanged(event);
-        } catch (Exception | LinkageError e) {
-            log.error("Failed to dispatch balance event to plugins", e);
+        } catch (Exception | LinkageError | java.util.ServiceConfigurationError e) {
+            log.error("Failed to dispatch balance event to plugins (ledger entry {})", event.ledgerId(), e);
         }
     }
 }

@@ -188,11 +188,11 @@ Package a plain JAR, not a Spring Boot executable JAR. Include the plugin's requ
 
 ## 6. Run it with the current host
 
-The current host prototype loads one plugin JAR from a path hard-coded in `PluginManager`. To run a plugin with this implementation, the JAR must be placed at the path configured there.
+Place plugin JARs in the directory configured by `unitbilling.configuration.plugins.directory` (default: `./plugins`, relative to the host's working directory). Override it with the `UNITBILLING_CONFIGURATION_PLUGINS_DIRECTORY` environment variable when starting the host.
 
-There is no configurable plugin directory yet. Placing a JAR in an arbitrary `plugins/` folder will not make the host discover it. The hard-coded path is a development limitation and should be replaced before this is used as a deployment workflow.
+At startup, `PluginManager` scans this directory and attempts to enable one `Plugin` implementation per JAR. Each enabled plugin must have a unique ID. Restart the host after adding, replacing, or removing JARs; runtime hot-loading is not supported.
 
-Check the host logs for loading and lifecycle errors. The host calls `onDisable` for the loaded plugin during application shutdown.
+Check the host logs for loading and lifecycle errors. The host calls `onDisable` for each enabled plugin during application shutdown.
 
 ## Available API capabilities
 
