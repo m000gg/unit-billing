@@ -246,15 +246,21 @@ public class PluginManager {
         }
     }
 
+    private final ConcurrentMap<String, RunningPlugin> stuckPlugins = new ConcurrentHashMap<>();
+
     private void stopPlugin(RunningPlugin runningPlugin) {
         runningPlugins.remove(runningPlugin.id(), runningPlugin);
 
-        try {
-            shutdownWorker(
-                    runningPlugin.id(),
-                    runningPlugin.balanceEventWorker()
+        if (!shutdownWorker(runningPlugin.id(), runningPlugin.balanceEventWorker())) {
+            stuckPlugins.put(runningPlugin.id(), runningPlugin);
+            log.error(
+                    "Plugin '{}' worker is stuck; skipping onDisable() and keeping class loader open",
+                    runningPlugin.id()
             );
+            return;
+        }
 
+        try {
             runningPlugin.loadedPlugin().plugin().onDisable();
             log.info("Plugin '{}' disabled", runningPlugin.id());
         } catch (Exception | LinkageError | ServiceConfigurationError e) {
@@ -264,37 +270,49 @@ public class PluginManager {
         }
     }
 
-    private void shutdownWorker(
+    /**
+     * Stops plugin worker.
+     *
+     * @return true, if worker definitely stopped;
+     *         false,if is still can do plugin code
+     */
+    private boolean shutdownWorker(
             String pluginId,
             ThreadPoolExecutor worker
     ) {
         worker.shutdown();
 
         try {
-            if (!worker.awaitTermination(
+            if (worker.awaitTermination(
                     WORKER_SHUTDOWN_TIMEOUT_SECONDS,
                     TimeUnit.SECONDS
             )) {
-                int pendingTasks = worker.shutdownNow().size();
-
-                log.warn(
-                        "Worker for plugin '{}' did not stop in time; "
-                                + "interrupted it and cancelled {} queued task(s)",
-                        pluginId,
-                        pendingTasks
-                );
-
-                if (!worker.awaitTermination(1, TimeUnit.SECONDS)) {
-                    log.error(
-                            "Worker for plugin '{}' is still running after interruption",
-                            pluginId
-                    );
-                }
+                return true;
             }
+
+            int pendingTasks = worker.shutdownNow().size();
+
+            log.warn(
+                    "Worker for plugin '{}' did not stop in time; "
+                            + "interrupted it and cancelled {} queued task(s)",
+                    pluginId,
+                    pendingTasks
+            );
+
+            if (worker.awaitTermination(1, TimeUnit.SECONDS)) {
+                return true;
+            }
+
+            log.error(
+                    "Worker for plugin '{}' is still running after interruption",
+                    pluginId
+            );
+            return false;
         } catch (InterruptedException e) {
             worker.shutdownNow();
             Thread.currentThread().interrupt();
             log.warn("Interrupted while stopping worker for plugin '{}'", pluginId, e);
+            return false;
         }
     }
 
