@@ -5,3 +5,4 @@ gen/
 
 target
 src/main/resources/application-prod.properties
+.DS_Store
