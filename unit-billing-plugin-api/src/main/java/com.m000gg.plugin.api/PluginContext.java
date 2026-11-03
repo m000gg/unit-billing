@@ -23,6 +23,12 @@ import com.m000gg.plugin.api.query.user.UserDirectory;
 import java.util.function.Consumer;
 
 public interface PluginContext {
+    /**
+     * Registers an asynchronous listener that receives immutable snapshots of
+     * committed balance changes. Events are delivered in order for each plugin,
+     * and listener failures do not affect the completed transaction or other
+     * plugins. Callbacks must not be used for synchronous financial decisions.
+     */
     void onBalanceChanged(Consumer<BalanceChanged> handler);
 
     UserDirectory users();

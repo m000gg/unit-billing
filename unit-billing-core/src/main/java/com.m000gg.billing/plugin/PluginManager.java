@@ -34,8 +34,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -43,8 +42,13 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class PluginManager {
 
+    private static final long WORKER_SHUTDOWN_TIMEOUT_SECONDS = 5;
+
     @Value("${unitbilling.configuration.plugins.directory}")
     private String pluginDirectory;
+
+    @Value("${unitbilling.configuration.plugins.event-queue-capacity:256}")
+    private int eventQueueCapacity;
 
     private final UserDirectory userDirectory;
     private final PluginProperties pluginProperties;
@@ -57,6 +61,11 @@ public class PluginManager {
     void startPlugins() {
         if (pluginDirectory == null || pluginDirectory.isBlank()) {
             log.error("Plugin directory is not configured");
+            return;
+        }
+
+        if (eventQueueCapacity < 1) {
+            log.error("Plugin event queue capacity must be greater than zero");
             return;
         }
 
@@ -74,7 +83,7 @@ public class PluginManager {
             return;
         }
 
-        File[] jarFiles = directory.listFiles((File file) ->
+        File[] jarFiles = directory.listFiles(file ->
                 file.isFile()
                         && file.getName().toLowerCase(Locale.ROOT).endsWith(".jar"));
 
@@ -111,6 +120,7 @@ public class PluginManager {
 
     private RunningPlugin startPlugin(Path jarPath) throws IOException {
         PluginLoader.LoadedPlugin loaded = pluginLoader.load(jarPath);
+        ThreadPoolExecutor eventWorker = null;
         boolean enableAttempted = false;
 
         try {
@@ -129,6 +139,8 @@ public class PluginManager {
                 );
             }
 
+            eventWorker = createBalanceEventWorker(pluginId);
+
             Map<String, String> values = pluginProperties.getPlugins()
                     .getOrDefault(pluginId, Map.of());
 
@@ -141,14 +153,86 @@ public class PluginManager {
 
             log.info("Plugin '{}' enabled from {}", pluginId, jarPath);
 
-            return new RunningPlugin(pluginId, jarPath, loaded, context);
+            return new RunningPlugin(
+                    pluginId,
+                    jarPath,
+                    loaded,
+                    context,
+                    eventWorker
+            );
         } catch (RuntimeException | LinkageError | ServiceConfigurationError e) {
+            if (eventWorker != null) {
+                shutdownWorker(loaded.plugin().getId(), eventWorker);
+            }
+
             if (enableAttempted) {
                 disableAfterFailedStart(loaded.plugin(), jarPath);
             }
 
             closeQuietly(loaded);
             throw e;
+        }
+    }
+
+    private ThreadPoolExecutor createBalanceEventWorker(String pluginId) {
+        ThreadFactory threadFactory = task -> {
+            Thread thread = new Thread(
+                    task,
+                    "plugin-" + pluginId + "-balance-events"
+            );
+            thread.setDaemon(true);
+            return thread;
+        };
+
+        return new ThreadPoolExecutor(
+                1,
+                1,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(eventQueueCapacity),
+                threadFactory,
+                new ThreadPoolExecutor.AbortPolicy()
+        );
+    }
+
+    public void dispatchBalanceChanged(BalanceChanged event) {
+        for (RunningPlugin runningPlugin : runningPlugins.values()) {
+            List<Consumer<BalanceChanged>> handlers =
+                    runningPlugin.defaultPluginContext()
+                            .getBalanceChangedHandlers();
+
+            if (handlers.isEmpty()) {
+                continue;
+            }
+
+            try {
+                runningPlugin.balanceEventWorker().execute(() -> {
+                    for (Consumer<BalanceChanged> handler : handlers) {
+                        try {
+                            handler.accept(event);
+                        } catch (Exception | LinkageError e) {
+                            log.error(
+                                    "Balance change handler failed in plugin '{}'",
+                                    runningPlugin.id(),
+                                    e
+                            );
+                        }
+                    }
+                });
+            } catch (RejectedExecutionException e) {
+                if (runningPlugin.balanceEventWorker().isShutdown()) {
+                    log.debug(
+                            "Event was not queued because plugin '{}' is stopping",
+                            runningPlugin.id()
+                    );
+                } else {
+                    log.error(
+                            "Balance event queue is full for plugin '{}'; rejecting ledgerId={}",
+                            runningPlugin.id(),
+                            event.ledgerId()
+                    );
+                }
+            }
         }
     }
 
@@ -162,7 +246,20 @@ public class PluginManager {
         }
     }
 
+    private final ConcurrentMap<String, RunningPlugin> stuckPlugins = new ConcurrentHashMap<>();
+
     private void stopPlugin(RunningPlugin runningPlugin) {
+        runningPlugins.remove(runningPlugin.id(), runningPlugin);
+
+        if (!shutdownWorker(runningPlugin.id(), runningPlugin.balanceEventWorker())) {
+            stuckPlugins.put(runningPlugin.id(), runningPlugin);
+            log.error(
+                    "Plugin '{}' worker is stuck; skipping onDisable() and keeping class loader open",
+                    runningPlugin.id()
+            );
+            return;
+        }
+
         try {
             runningPlugin.loadedPlugin().plugin().onDisable();
             log.info("Plugin '{}' disabled", runningPlugin.id());
@@ -170,7 +267,52 @@ public class PluginManager {
             log.error("Plugin '{}' failed on disable", runningPlugin.id(), e);
         } finally {
             closeQuietly(runningPlugin.loadedPlugin());
-            runningPlugins.remove(runningPlugin.id(), runningPlugin);
+        }
+    }
+
+    /**
+     * Stops plugin worker.
+     *
+     * @return true, if worker definitely stopped;
+     *         false,if is still can do plugin code
+     */
+    private boolean shutdownWorker(
+            String pluginId,
+            ThreadPoolExecutor worker
+    ) {
+        worker.shutdown();
+
+        try {
+            if (worker.awaitTermination(
+                    WORKER_SHUTDOWN_TIMEOUT_SECONDS,
+                    TimeUnit.SECONDS
+            )) {
+                return true;
+            }
+
+            int pendingTasks = worker.shutdownNow().size();
+
+            log.warn(
+                    "Worker for plugin '{}' did not stop in time; "
+                            + "interrupted it and cancelled {} queued task(s)",
+                    pluginId,
+                    pendingTasks
+            );
+
+            if (worker.awaitTermination(1, TimeUnit.SECONDS)) {
+                return true;
+            }
+
+            log.error(
+                    "Worker for plugin '{}' is still running after interruption",
+                    pluginId
+            );
+            return false;
+        } catch (InterruptedException e) {
+            worker.shutdownNow();
+            Thread.currentThread().interrupt();
+            log.warn("Interrupted while stopping worker for plugin '{}'", pluginId, e);
+            return false;
         }
     }
 
@@ -183,16 +325,6 @@ public class PluginManager {
         } catch (Exception | LinkageError | ServiceConfigurationError e) {
             log.error("Plugin cleanup failed after startup error: {}", jarPath, e);
         }
-    }
-
-    public List<Consumer<BalanceChanged>> balanceChangedHandlers() {
-        return runningPlugins.values()
-                .stream()
-                .flatMap(runningPlugin ->
-                        runningPlugin.defaultPluginContext()
-                                .getBalanceChangedHandlers()
-                                .stream())
-                .toList();
     }
 
     private void closeQuietly(PluginLoader.LoadedPlugin plugin) {
