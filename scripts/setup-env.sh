@@ -24,8 +24,8 @@ echo "Press ENTER to accept the default values in brackets."
 read -r -p "PostgreSQL version [18]: " input_pg
 POSTGRES_VERSION="${input_pg:-18}"
 
-read -r -p "Java version [21]: " input_java
-JAVA_VERSION="${input_java:-21}"
+read -r -p "Java version [25]: " input_java
+JAVA_VERSION="${input_java:-25}"
 
 read -r -p "Nginx VM IP (Required): " input_nginx_ip
 NGINX_VM_IP="${input_nginx_ip:?NGINX_VM_IP must be set}"
@@ -55,6 +55,9 @@ DEPLOY_USER="${input_duser:-deployer}"
 
 read -r -p "App directory [/opt/unit-billing]: " input_appdir
 APP_DIR="${input_appdir:-/opt/unit-billing}"
+
+read -r -p "Plugin directory [${APP_DIR}/plugins]: " input_plugin_dir
+PLUGIN_DIR="${input_plugin_dir:-${APP_DIR}/plugins}"
 
 read -r -p "Service name [unit-billing]: " input_sname
 SERVICE_NAME="${input_sname:-unit-billing}"
@@ -111,8 +114,10 @@ SPRING_DATASOURCE_USERNAME=${DB_USER}
 SPRING_DATASOURCE_PASSWORD=${DB_PASS}
 INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
 INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+UNITBILLING_CONFIGURATION_PLUGINS_DIRECTORY=${PLUGIN_DIR}
 EOF
 
+sudo install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 775 "$PLUGIN_DIR"
 sudo chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
 sudo chmod 775 "$APP_DIR"
 sudo chmod 600 "$ENV_FILE"

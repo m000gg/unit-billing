@@ -6,7 +6,7 @@ node {
 pipeline {
     agent {
         docker {
-            image 'maven:3.9.9-eclipse-temurin-21'
+            image 'maven:3.10.0-sapmachine-25'
             args "--user 0:0 -v /var/run/docker.sock:/var/run/docker.sock --group-add ${dockerGid} -v maven-repository:/root/.m2"
         }
     }
@@ -22,6 +22,7 @@ pipeline {
     environment {
         SERVICE_NAME = "unit-billing"
         APP_PORT     = "8080"
+        APP_JAR_GLOB = "unit-billing-core/target/unit-billing-*.jar"
         MAVEN_ARGS   = "-Dmaven.repo.local=${WORKSPACE}/.m2/repository"
     }
 
@@ -29,14 +30,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo '=== Compiling unit-billing ==='
+                echo '=== Compiling unit-billing (all modules) ==='
                 sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo '=== Running unit tests ==='
+                echo '=== Running unit tests (all modules) ==='
                 sh 'mvn test'
             }
         }
@@ -45,7 +46,7 @@ pipeline {
             steps {
                 echo '=== Packaging executable JAR ==='
                 sh 'mvn package -DskipTests'
-                echo 'Artifact built in target/unit-billing-<version>.jar'
+                echo 'Artifact built in unit-billing-core/target/unit-billing-<version>.jar'
             }
         }
 
@@ -57,7 +58,7 @@ pipeline {
             }
             steps {
                 echo '=== Deploy to TEST (remote via SCP + SSH) ==='
-                deploy('test-host', 'test-known-hosts', 'test-ssh-key')
+                deploy('test', 'test-host', 'test-known-hosts', 'test-ssh-key')
             }
         }
 
@@ -69,7 +70,7 @@ pipeline {
             }
             steps {
                 echo '=== Deploy to PROD (remote via SCP + SSH) ==='
-                deploy('prod-host', 'prod-known-hosts', 'prod-ssh-key')
+                deploy('prod', 'prod-host', 'prod-known-hosts', 'prod-ssh-key')
             }
         }
     }
@@ -84,15 +85,20 @@ pipeline {
     }
 }
 
-def deploy(String hostCredentialId, String knownHostsCredentialId, String sshCredentialId) {
+def deploy(String profile, String hostCredentialId, String knownHostsCredentialId, String sshCredentialId) {
     withCredentials([
             string(credentialsId: hostCredentialId, variable: 'DEPLOY_HOST'),
             file(credentialsId: knownHostsCredentialId, variable: 'KNOWN_HOSTS')
     ]) {
         sshagent(credentials: [sshCredentialId]) {
+            sh """
+                echo "=== Running Flyway Repair for profile: ${profile} ==="
+                mvn flyway:repair -pl unit-billing-core -Dspring.profiles.active=${profile} || true
+            """
+
             sh '''
                 scp -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes \
-                    target/unit-billing-*.jar "$DEPLOY_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
+                    $APP_JAR_GLOB "$DEPLOY_HOST:/opt/$SERVICE_NAME/$SERVICE_NAME.jar.new"
 
                 ssh -o UserKnownHostsFile="$KNOWN_HOSTS" -o StrictHostKeyChecking=yes "$DEPLOY_HOST" \
                     "sudo systemctl stop '$SERVICE_NAME' && \

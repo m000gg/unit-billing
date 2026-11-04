@@ -17,6 +17,7 @@
 package com.m000gg.billing.ledger;
 
 import com.m000gg.billing.identity.Admin;
+import com.m000gg.plugin.api.event.BalanceChangeType;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -150,5 +151,24 @@ public class LedgerMapper {
         LedgerEntryAdminViewModel viewModel = createLedgerEntryAdminViewModelFromLedgerEntry(ledgerEntry);
         viewModel.setRefundable(refundable);
         return viewModel;
+    }
+
+    public BalanceChangeType createBalanceChangeTypeFromLedgerEntryType(EntryType entryType) {
+        if (entryType == null) {
+            return null;
+        }
+        switch (entryType) {
+            case PAYMENT:
+                return BalanceChangeType.TOP_UP;
+            case CHARGE:
+                return BalanceChangeType.CHARGE;
+            case REFUND:
+                return BalanceChangeType.REFUND;
+            case CORRECTION_INCREASE:
+            case CORRECTION_DECREASE:
+                return BalanceChangeType.CORRECTION;
+            default:
+                throw new IllegalArgumentException("Unknown EntryType: " + entryType);
+        }
     }
 }

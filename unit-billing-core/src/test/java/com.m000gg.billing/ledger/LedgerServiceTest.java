@@ -34,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -63,6 +64,9 @@ public class LedgerServiceTest {
 
     @Mock
     private LedgerMapper ledgerMapper;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     private ApplicationUser user;
     private Admin currentAdmin;
