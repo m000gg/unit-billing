@@ -50,6 +50,13 @@ pipeline {
             }
         }
 
+        stage('Install') {
+            steps {
+                echo '=== Installing artifacts to local Maven repository ==='
+                sh 'mvn clean install -DskipTests'
+            }
+        }
+
         stage('Deploy to Test') {
             when {
                 expression {
