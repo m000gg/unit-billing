@@ -16,6 +16,7 @@
 
 package com.m000gg.plugin.api;
 
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
@@ -44,4 +45,6 @@ public interface PluginContext {
      * The registration is automatically removed when the plugin is stopped.
      */
     void registerExchangeRateProvider(ExchangeRateProvider provider);
+
+    BalanceCharger balanceCharger();
 }
