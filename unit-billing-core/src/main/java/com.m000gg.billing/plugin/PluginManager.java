@@ -19,6 +19,7 @@ package com.m000gg.billing.plugin;
 import com.m000gg.billing.plugin.context.DefaultPluginContext;
 import com.m000gg.billing.plugin.context.DefaultPluginSettings;
 import com.m000gg.plugin.api.Plugin;
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
@@ -52,6 +53,7 @@ public class PluginManager {
 
     private final UserDirectory userDirectory;
     private final PluginProperties pluginProperties;
+    private final BalanceCharger balanceCharger;
     private final PluginLoader pluginLoader = new PluginLoader();
 
     private final ConcurrentMap<String, RunningPlugin> runningPlugins =
@@ -145,8 +147,7 @@ public class PluginManager {
                     .getOrDefault(pluginId, Map.of());
 
             PluginSettings settings = new DefaultPluginSettings(values);
-            DefaultPluginContext context =
-                    new DefaultPluginContext(userDirectory, settings);
+            DefaultPluginContext context = new DefaultPluginContext(userDirectory, settings, balanceCharger);
 
             enableAttempted = true;
             plugin.onEnable(context);
