@@ -50,7 +50,7 @@ class PluginManagerTest {
 
     @Test
     void startPluginsReturnsWhenDirectoryIsNotConfigured() {
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
 
         assertDoesNotThrow(manager::startPlugins);
     }
@@ -58,7 +58,7 @@ class PluginManagerTest {
     @Test
     void startPluginsDoesNotCreateDirectoryWhenQueueCapacityIsInvalid() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 0);
 
@@ -70,7 +70,7 @@ class PluginManagerTest {
     @Test
     void startPluginsCreatesConfiguredDirectoryWhenNoJarsArePresent() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 1);
 
@@ -81,9 +81,13 @@ class PluginManagerTest {
 
     @Test
     void dispatchBalanceChangedDoesNothingWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
 
         assertDoesNotThrow(() -> manager.dispatchBalanceChanged(null));
+    }
+
+    private static PluginManager newEmptyManager() {
+        return new PluginManager(null, null, null, null, null);
     }
 
     @Test
@@ -170,9 +174,7 @@ class PluginManagerTest {
                 },
                 registry
         );
-        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
-        setField(manager, "pluginDirectory", pluginDirectory.toString());
-        setField(manager, "eventQueueCapacity", 4);
+        PluginManager manager = newManagerWithDir(pluginDirectory, directory, registry);
 
         manager.startPlugins();
 
@@ -347,7 +349,7 @@ class PluginManagerTest {
             ExchangeRateDirectory directory,
             PluginExchangeRateRegistry registry
     ) throws ReflectiveOperationException {
-        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
+        PluginManager manager = new PluginManager(null, new PluginProperties(), null, directory, registry);
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 4);
         return manager;
