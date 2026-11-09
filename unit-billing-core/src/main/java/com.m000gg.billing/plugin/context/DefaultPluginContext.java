@@ -23,6 +23,7 @@ import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
 import com.m000gg.plugin.api.spi.fx.ExchangeRateProvider;
+import com.m000gg.plugin.api.ui.PluginUi;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +41,7 @@ public class DefaultPluginContext implements PluginContext {
     private final ExchangeRateDirectory exchangeRateDirectory;
     private final PluginExchangeRateRegistry exchangeRateRegistry;
     private final AtomicBoolean active = new AtomicBoolean(true);
+    private final DefaultPluginUi pluginUi = new DefaultPluginUi();
 
     public DefaultPluginContext(
             String pluginId,
@@ -103,5 +105,14 @@ public class DefaultPluginContext implements PluginContext {
     @Override
     public BalanceCharger balanceCharger() {
         return balanceCharger;
+    }
+
+    @Override
+    public PluginUi ui() {
+        return pluginUi;
+    }
+
+    public DefaultPluginUi getPluginUi() {
+        return pluginUi;
     }
 }
