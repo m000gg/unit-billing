@@ -18,25 +18,35 @@ package com.m000gg.billing.plugin;
 
 import com.m000gg.billing.plugin.context.DefaultPluginContext;
 import com.m000gg.billing.plugin.context.DefaultPluginSettings;
+import com.m000gg.billing.plugin.context.DefaultPluginUi;
 import com.m000gg.plugin.api.Plugin;
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
+import com.m000gg.plugin.api.ui.PluginPageHandler;
+import com.m000gg.plugin.api.ui.PluginPageRequest;
+import com.m000gg.plugin.api.ui.PluginPageResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -56,8 +66,9 @@ public class PluginManager {
     private final BalanceCharger balanceCharger;
     private final PluginLoader pluginLoader = new PluginLoader();
 
-    private final ConcurrentMap<String, RunningPlugin> runningPlugins =
-            new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, RunningPlugin> runningPlugins = new ConcurrentHashMap<>();
+    private static final Pattern PLUGIN_ID_PATTERN = Pattern.compile("[a-z0-9-]+");
+    private static final String ASSET_FOLDER = "plugin-static/";
 
     @PostConstruct
     void startPlugins() {
@@ -129,11 +140,7 @@ public class PluginManager {
             Plugin plugin = loaded.plugin();
             String pluginId = plugin.getId();
 
-            if (pluginId == null || pluginId.isBlank()) {
-                throw new IllegalArgumentException(
-                        "Plugin id must not be null or blank: " + jarPath
-                );
-            }
+            validatePluginId(pluginId);
 
             if (runningPlugins.containsKey(pluginId)) {
                 throw new IllegalArgumentException(
@@ -237,6 +244,68 @@ public class PluginManager {
         }
     }
 
+    public PluginPageResponse renderPage(String pluginId, PluginArea area, PluginPageRequest request) {
+        if (stuckPlugins.containsKey(pluginId)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        RunningPlugin runningPlugin = runningPlugins.get(pluginId);
+        if (runningPlugin == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        DefaultPluginUi ui = runningPlugin.defaultPluginContext().getPluginUi();
+        PluginPageHandler handler = (area == PluginArea.ADMIN
+                ? ui.getAdminPageHandler()
+                : ui.getClientPageHandler())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        Thread thread = Thread.currentThread();
+        ClassLoader previous = thread.getContextClassLoader();
+        thread.setContextClassLoader(runningPlugin.loadedPlugin().classLoader());
+        try {
+            PluginPageResponse response = handler.handle(request);
+            if (response == null) {
+                throw new IllegalStateException("Page handler returned null");
+            }
+            return response;
+        } catch (Exception | LinkageError e) {
+            log.error("Plugin '{}' failed to render the {} page '{}'", pluginId, area, request.path(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            thread.setContextClassLoader(previous);
+        }
+    }
+
+    public Optional<byte[]> readAsset(String pluginId, String assetPath) {
+        RunningPlugin runningPlugin = runningPlugins.get(pluginId);
+        if (runningPlugin == null) {
+            return Optional.empty();
+        }
+
+        String relative = assetPath.startsWith("/") ? assetPath.substring(1) : assetPath;
+        if (relative.isEmpty() || relative.contains("..")
+                || relative.contains("\\") || relative.contains("//")) {
+            return Optional.empty();
+        }
+
+        URL url = runningPlugin.loadedPlugin().classLoader().findResource(ASSET_FOLDER + relative);
+        if (url == null) {
+            return Optional.empty();
+        }
+
+        try {
+            URLConnection connection = url.openConnection();
+            connection.setUseCaches(false);
+            try (InputStream in = connection.getInputStream()) {
+                return Optional.of(in.readAllBytes());
+            }
+        } catch (IOException e) {
+            log.warn("Could not read asset '{}' of plugin '{}'", relative, pluginId, e);
+            return Optional.empty();
+        }
+    }
+
     @PreDestroy
     void stopPlugins() {
         List<RunningPlugin> pluginsToStop =
@@ -337,6 +406,12 @@ public class PluginManager {
                     plugin.plugin().getId(),
                     e
             );
+        }
+    }
+
+    static void validatePluginId(String pluginId) {
+        if (pluginId == null || !PLUGIN_ID_PATTERN.matcher(pluginId).matches()) {
+            throw new IllegalArgumentException("Plugin id must match [a-z0-9-]+: " + pluginId);
         }
     }
 }

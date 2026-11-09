@@ -18,14 +18,14 @@ package com.m000gg.billing.plugin;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PluginManagerTest {
 
@@ -68,6 +68,23 @@ class PluginManagerTest {
         PluginManager manager = new PluginManager(null, null, null);
 
         assertDoesNotThrow(() -> manager.dispatchBalanceChanged(null));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"subscriptions", "email-notifier", "hello-ui", "p2p"})
+    void validatePluginIdAcceptsLowercaseDigitsAndHyphens(String id) {
+        assertDoesNotThrow(() -> PluginManager.validatePluginId(id));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "Subscriptions", "sub_scriptions", "sub:scriptions", "sub/scriptions", "sub scriptions"})
+    void validatePluginIdRejectsOtherValues(String id) {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(id));
+    }
+
+    @Test
+    void validatePluginIdRejectsNull() {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(null));
     }
 
     private static void setField(Object target, String fieldName, Object value)
