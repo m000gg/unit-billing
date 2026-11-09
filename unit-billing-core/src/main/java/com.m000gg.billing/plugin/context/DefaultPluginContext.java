@@ -21,6 +21,7 @@ import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
+import com.m000gg.plugin.api.ui.PluginUi;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,6 +33,8 @@ public class DefaultPluginContext implements PluginContext {
     private final UserDirectory userDirectory;
     private final PluginSettings pluginSettings;
     private final BalanceCharger balanceCharger;
+    private final DefaultPluginUi pluginUi = new DefaultPluginUi();
+
 
     public DefaultPluginContext(UserDirectory userDirectory, PluginSettings pluginSettings, BalanceCharger balanceCharger) {
         this.userDirectory = userDirectory;
@@ -61,5 +64,14 @@ public class DefaultPluginContext implements PluginContext {
     @Override
     public BalanceCharger balanceCharger() {
         return balanceCharger;
+    }
+
+    @Override
+    public PluginUi ui() {
+        return pluginUi;
+    }
+
+    public DefaultPluginUi getPluginUi() {
+        return pluginUi;
     }
 }

@@ -20,6 +20,7 @@ import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
+import com.m000gg.plugin.api.ui.PluginUi;
 
 import java.util.function.Consumer;
 
@@ -37,4 +38,6 @@ public interface PluginContext {
     PluginSettings settings();
 
     BalanceCharger balanceCharger();
+
+    PluginUi ui();
 }
