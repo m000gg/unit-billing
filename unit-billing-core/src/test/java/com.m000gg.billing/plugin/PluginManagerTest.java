@@ -23,6 +23,8 @@ import com.m000gg.plugin.api.query.fx.ExchangeRate;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
@@ -38,10 +40,7 @@ import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PluginManagerTest {
 
@@ -388,6 +387,23 @@ class PluginManagerTest {
                 }
             }
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"subscriptions", "email-notifier", "hello-ui", "p2p"})
+    void validatePluginIdAcceptsLowercaseDigitsAndHyphens(String id) {
+        assertDoesNotThrow(() -> PluginManager.validatePluginId(id));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "Subscriptions", "sub_scriptions", "sub:scriptions", "sub/scriptions", "sub scriptions"})
+    void validatePluginIdRejectsOtherValues(String id) {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(id));
+    }
+
+    @Test
+    void validatePluginIdRejectsNull() {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(null));
     }
 
     private static void setField(Object target, String fieldName, Object value)
