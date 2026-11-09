@@ -17,9 +17,11 @@
 package com.m000gg.billing.ledger;
 
 import com.m000gg.billing.identity.Admin;
+import com.m000gg.plugin.api.command.balance.ChargeRequest;
 import com.m000gg.plugin.api.event.BalanceChangeType;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -170,5 +172,22 @@ public class LedgerMapper {
             default:
                 throw new IllegalArgumentException("Unknown EntryType: " + entryType);
         }
+    }
+
+    public LedgerEntry createLedgerEntryFromChargeRequest(ChargeRequest chargeRequest, String userCurrency) {
+        LedgerEntry ledgerEntry = new LedgerEntry();
+        ledgerEntry.setAmount(chargeRequest.amount());
+        ledgerEntry.setSource(EntrySource.PLUGIN);
+        ledgerEntry.setType(EntryType.CHARGE);
+        ledgerEntry.setCreatedAt(Instant.now());
+        ledgerEntry.setDescription(chargeRequest.description());
+        ledgerEntry.setSubscriberId(chargeRequest.subscriberId());
+        ledgerEntry.setUserCurrency(userCurrency);
+        ledgerEntry.setBaseCurrency(userCurrency);
+        ledgerEntry.setExchangeRate(BigDecimal.ONE);
+        ledgerEntry.setAmountInBaseCurrency(chargeRequest.amount());
+        ledgerEntry.setIdempotencyKey(chargeRequest.idempotencyKey());
+
+        return ledgerEntry;
     }
 }

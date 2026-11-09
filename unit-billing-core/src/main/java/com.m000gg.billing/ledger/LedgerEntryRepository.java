@@ -24,6 +24,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, UUID> {
@@ -59,5 +60,7 @@ public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, UUID> 
                              @Param("dateFrom") Instant dateFrom,
                              @Param("dateTo") Instant dateTo,
                              Pageable pageable);
+
+    Optional<LedgerEntry> findByIdempotencyKey(String idempotencyKey);
 
 }
