@@ -19,6 +19,7 @@ package com.m000gg.billing.plugin;
 import com.m000gg.billing.plugin.context.DefaultPluginContext;
 import com.m000gg.billing.plugin.context.DefaultPluginSettings;
 import com.m000gg.billing.plugin.context.DefaultPluginUi;
+import com.m000gg.billing.plugin.web.RenderedDashboardSection;
 import com.m000gg.plugin.api.Plugin;
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
@@ -35,12 +36,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+import com.m000gg.plugin.api.ui.ClientDashboardSection;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -69,6 +72,8 @@ public class PluginManager {
     private final ConcurrentMap<String, RunningPlugin> runningPlugins = new ConcurrentHashMap<>();
     private static final Pattern PLUGIN_ID_PATTERN = Pattern.compile("[a-z0-9-]+");
     private static final String ASSET_FOLDER = "plugin-static/";
+    private static final String DASHBOARD_TEMPLATE_FOLDER = "templates/client/";
+    private static final int MAX_DASHBOARD_TEMPLATE_SIZE = 256 * 1024;
 
     @PostConstruct
     void startPlugins() {
@@ -306,6 +311,81 @@ public class PluginManager {
         }
     }
 
+    private Optional<String> readDashboardTemplate(
+            RunningPlugin runningPlugin,
+            String templatePath
+    ) {
+        if (templatePath == null || templatePath.isBlank()) {
+            log.warn(
+                    "Dashboard template path is empty for plugin '{}'",
+                    runningPlugin.id()
+            );
+            return Optional.empty();
+        }
+
+        String relative = templatePath.startsWith("/")
+                ? templatePath.substring(1)
+                : templatePath;
+
+        if (!relative.startsWith(DASHBOARD_TEMPLATE_FOLDER)
+                || relative.contains("..")
+                || relative.contains("\\")
+                || relative.contains("//")) {
+            log.warn(
+                    "Invalid dashboard template path '{}' in plugin '{}'",
+                    templatePath,
+                    runningPlugin.id()
+            );
+            return Optional.empty();
+        }
+
+        URL resource = runningPlugin.loadedPlugin()
+                .classLoader()
+                .findResource(relative);
+
+        if (resource == null) {
+            log.warn(
+                    "Dashboard template '{}' not found in plugin '{}'",
+                    relative,
+                    runningPlugin.id()
+            );
+            return Optional.empty();
+        }
+
+        try {
+            URLConnection connection = resource.openConnection();
+            connection.setUseCaches(false);
+
+            try (InputStream input = connection.getInputStream()) {
+                byte[] content = input.readNBytes(
+                        MAX_DASHBOARD_TEMPLATE_SIZE + 1
+                );
+
+                if (content.length > MAX_DASHBOARD_TEMPLATE_SIZE) {
+                    log.warn(
+                            "Dashboard template '{}' in plugin '{}' exceeds size limit",
+                            relative,
+                            runningPlugin.id()
+                    );
+                    return Optional.empty();
+                }
+
+                return Optional.of(
+                        new String(content, StandardCharsets.UTF_8)
+                );
+            }
+        } catch (IOException e) {
+            log.warn(
+                    "Could not read dashboard template '{}' from plugin '{}'",
+                    relative,
+                    runningPlugin.id(),
+                    e
+            );
+
+            return Optional.empty();
+        }
+    }
+
     @PreDestroy
     void stopPlugins() {
         List<RunningPlugin> pluginsToStop =
@@ -426,6 +506,45 @@ public class PluginManager {
                 .toList();
     }
 
+    public List<RenderedDashboardSection> getRenderedClientDashboardSections() {
+        return runningPlugins.values()
+                .stream()
+                .flatMap(runningPlugin -> {
+                    DefaultPluginUi ui = runningPlugin
+                            .defaultPluginContext()
+                            .getPluginUi();
+
+                    return ui.getClientDashboardSections()
+                            .stream()
+                            .map(section -> readDashboardTemplate(
+                                    runningPlugin,
+                                    section.getTemplate()
+                            ).map(content -> new RenderedDashboardSection(
+                                    runningPlugin.id(),
+                                    section.getId(),
+                                    section.getTitle(),
+                                    section.getOrder(),
+                                    content,
+                                    section.getStylesheets().stream()
+                                            .map(path -> dashboardAssetUrl(runningPlugin.id(), path))
+                                            .filter(Objects::nonNull)
+                                            .toList(),
+                                    section.getScripts().stream()
+                                            .map(path -> dashboardAssetUrl(runningPlugin.id(), path))
+                                            .filter(Objects::nonNull)
+                                            .toList()
+                            )))
+                            .flatMap(Optional::stream);
+                })
+                .sorted(
+                        Comparator
+                                .comparingInt(RenderedDashboardSection::order)
+                                .thenComparing(RenderedDashboardSection::pluginId)
+                                .thenComparing(RenderedDashboardSection::id)
+                )
+                .toList();
+    }
+
     private void disableAfterFailedStart(
             Plugin plugin,
             Path jarPath
@@ -449,6 +568,25 @@ public class PluginManager {
         }
     }
 
+    private String dashboardAssetUrl(String pluginId, String path) {
+        if (path == null || path.isBlank()
+                || path.startsWith("/")
+                || path.contains("..")
+                || path.contains("\\")
+                || path.contains("//")) {
+
+            log.warn(
+                    "Invalid dashboard asset path '{}' in plugin '{}'",
+                    path,
+                    pluginId
+            );
+
+            return null;
+        }
+
+        return "/plugin-assets/" + pluginId + "/" + path;
+    }
+
     static void validatePluginId(String pluginId) {
         if (pluginId == null || !PLUGIN_ID_PATTERN.matcher(pluginId).matches()) {
             throw new IllegalArgumentException("Plugin id must match [a-z0-9-]+: " + pluginId);
@@ -460,6 +598,12 @@ public class PluginManager {
             String title,
             String icon,
             String href
+    ) {
+    }
+
+    public record RegisteredDashboardSection(
+            String pluginId,
+            ClientDashboardSection section
     ) {
     }
 }

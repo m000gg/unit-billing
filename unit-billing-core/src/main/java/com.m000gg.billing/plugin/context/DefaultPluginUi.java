@@ -16,17 +16,23 @@
 
 package com.m000gg.billing.plugin.context;
 
+import com.m000gg.plugin.api.ui.ClientDashboardSection;
 import com.m000gg.plugin.api.ui.PluginPageHandler;
 import com.m000gg.plugin.api.ui.PluginUi;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DefaultPluginUi implements PluginUi {
 
     private volatile PluginPageHandler adminPageHandler;
     private volatile PluginPageHandler clientPageHandler;
     private volatile AdminNavigation adminNavigation;
+
+    private final List<ClientDashboardSection> clientDashboardSections =
+            new CopyOnWriteArrayList<>();
 
     @Override
     public void registerAdminPages(PluginPageHandler handler) {
@@ -59,6 +65,50 @@ public class DefaultPluginUi implements PluginUi {
         }
 
         this.adminNavigation = new AdminNavigation(title, icon);
+    }
+
+    @Override
+    public synchronized void registerClientDashboardSection(
+            ClientDashboardSection section
+    ) {
+        Objects.requireNonNull(
+                section,
+                "Dashboard section must not be null"
+        );
+
+        if (section.getId() == null || section.getId().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Dashboard section ID must not be null or blank"
+            );
+        }
+
+        if (section.getTitle() == null || section.getTitle().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Dashboard section title must not be null or blank"
+            );
+        }
+
+        if (section.getTemplate() == null || section.getTemplate().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Dashboard section template must not be null or blank"
+            );
+        }
+
+        boolean alreadyRegistered = clientDashboardSections.stream()
+                .anyMatch(existing -> existing.getId().equals(section.getId()));
+
+        if (alreadyRegistered) {
+            throw new IllegalArgumentException(
+                    "Dashboard section with ID '" + section.getId()
+                            + "' is already registered"
+            );
+        }
+
+        clientDashboardSections.add(section);
+    }
+
+    public List<ClientDashboardSection> getClientDashboardSections() {
+        return List.copyOf(clientDashboardSections);
     }
 
     public Optional<PluginPageHandler> getAdminPageHandler() {
