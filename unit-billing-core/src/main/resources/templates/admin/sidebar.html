@@ -31,6 +31,7 @@
             <li><a href="/admin/users/registration"><span class="nav-icon">◦</span><span th:text="#{admin.sidebar.userRegistration}">User Registration</span></a></li>
             <li><a href="/admin/users/"><span class="nav-icon">◦</span><span th:text="#{admin.sidebar.usersList}">Users List</span></a></li>
             <li><a href="/admin/billing-configuration"><span class="nav-icon">◦</span><span th:text="#{admin.billing.settings.title}">Billing Settings</span></a></li>
+            <li th:each="plugin : ${adminPluginNavigation}"><a th:href="${plugin.href}"><span class="nav-icon">◦</span><span th:text="${plugin.title}">Plugin</span></a></li>
         </ul>
     </nav>
 

@@ -59,6 +59,21 @@
             </a>
         </div>
     </section>
+    <section class="task-panel" th:if="${!#lists.isEmpty(adminPluginNavigation)}">
+        <h3>Plugins</h3>
+
+        <div class="grid-container">
+            <a th:each="plugin : ${adminPluginNavigation}"
+               th:href="${plugin.href}"
+               class="card">
+
+                <div class="card-glow"></div>
+                <div class="icon" th:text="${plugin.icon}">🔌</div>
+                <p th:text="${plugin.title}">Plugin</p>
+                <span class="card-arrow">→</span>
+            </a>
+        </div>
+    </section>
 </div>
 </body>
 </html>
