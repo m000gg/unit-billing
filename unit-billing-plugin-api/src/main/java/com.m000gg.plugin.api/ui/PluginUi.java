@@ -48,4 +48,13 @@ public interface PluginUi {
      */
     void registerAdminNavigation(String title, String icon);
 
+
+    /**
+     * Registers a section on the client's main dashboard.
+     *
+     * @param section dashboard section provided by the plugin
+     */
+    void registerClientDashboardSection(ClientDashboardSection section);
+
+
 }

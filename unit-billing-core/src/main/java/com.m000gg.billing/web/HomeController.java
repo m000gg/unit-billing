@@ -18,6 +18,7 @@ package com.m000gg.billing.web;
 
 import com.m000gg.billing.ledger.LedgerEntryUserViewModel;
 import com.m000gg.billing.ledger.LedgerService;
+import com.m000gg.billing.plugin.PluginManager;
 import com.m000gg.billing.subscribers.AccountOverviewViewModel;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserManagementService;
@@ -38,6 +39,9 @@ public class HomeController {
     @Autowired
     private LedgerService ledgerService;
 
+    @Autowired
+    private PluginManager pluginManager;
+
     @GetMapping({"/client/"})
     public String indexClient(Model model) {
 
@@ -48,6 +52,7 @@ public class HomeController {
             AccountOverviewViewModel accountOverviewViewModel = applicationUserManagementService.getUserInformationForMainPage(user);
             model.addAttribute("userViewModel", accountOverviewViewModel);
             model.addAttribute("ledgerEntryUserViewModelList", ledgerEntryUserViewModelList);
+            model.addAttribute("dashboardSections", pluginManager.getRenderedClientDashboardSections());
         } else {
             return "redirect:/login";
         }
