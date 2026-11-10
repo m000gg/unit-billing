@@ -414,6 +414,18 @@ public class PluginManager {
                 .toList();
     }
 
+    public List<String> getClientPluginIds() {
+        return runningPlugins.values()
+                .stream()
+                .filter(plugin -> plugin.defaultPluginContext()
+                        .getPluginUi()
+                        .getClientPageHandler()
+                        .isPresent())
+                .map(RunningPlugin::id)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
     private void disableAfterFailedStart(
             Plugin plugin,
             Path jarPath
