@@ -35,9 +35,18 @@
         </a>
 
         <nav class="topnav">
-            <a class="topnav__link topnav__link--active" href="/client/" th:text="#{client.index.nav.home}">Home</a>
-            <a class="topnav__link" href="#" th:text="#{client.index.nav.invoices}">Invoices</a>
-            <a class="topnav__link" href="#" th:text="#{client.index.nav.paymentMethod}">Payment method</a>
+
+            <a class="topnav__link" th:classappend="${currentUri == '/client/'} ? 'topnav__link--active' : ''" href="/client/" th:text="#{client.index.nav.home}">Home</a>
+
+            <th:block th:if="${not #lists.isEmpty(activePlugins)}">
+                <a th:each="pluginId : ${activePlugins}"
+                   class="topnav__link"
+                   th:classappend="${currentUri != null and currentUri.startsWith('/client/plugins/' + pluginId)} ? 'topnav__link--active' : ''"
+                   th:href="@{${pluginBaseUrl} + ${pluginId}}"
+                   th:text="${#strings.capitalizeWords(#strings.replace(pluginId, '-', ' '))}">
+                    Plugin Name
+                </a>
+            </th:block>
         </nav>
 
         <div class="topbar__account">
