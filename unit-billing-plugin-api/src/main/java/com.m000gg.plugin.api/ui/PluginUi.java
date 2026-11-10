@@ -31,4 +31,21 @@ public interface PluginUi {
      * Registers the handler for the pages under {@code /client/plugins/{pluginId}/}, visible to subscribers.
      */
     void registerClientPages(PluginPageHandler handler);
+
+    /**
+     * Registers an administrative navigation entry for this plugin.
+     *
+     * <p>The entry can be displayed in the administration sidebar
+     * and on the administration dashboard.
+     *
+     * <p>The navigation entry is displayed only if the plugin has
+     * also registered an administrative page handler.
+     *
+     * @param title the display name of the navigation entry;
+     *              must not be {@code null} or blank
+     * @param icon  the icon identifier used by the host application's
+     *              UI; must not be {@code null} or blank
+     */
+    void registerAdminNavigation(String title, String icon);
+
 }

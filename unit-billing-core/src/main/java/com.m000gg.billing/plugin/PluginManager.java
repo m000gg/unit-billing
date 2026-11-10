@@ -386,6 +386,34 @@ public class PluginManager {
         }
     }
 
+    public List<AdminNavigationItem> getAdminNavigationItems() {
+        return runningPlugins.values()
+                .stream()
+                .map(runningPlugin -> {
+                    DefaultPluginUi ui = runningPlugin
+                            .defaultPluginContext()
+                            .getPluginUi();
+
+                    if (ui.getAdminPageHandler().isEmpty()) {
+                        return Optional.<AdminNavigationItem>empty();
+                    }
+
+                    return ui.getAdminNavigation()
+                            .map(navigation -> new AdminNavigationItem(
+                                    runningPlugin.id(),
+                                    navigation.title(),
+                                    navigation.icon(),
+                                    "/admin/plugins/" + runningPlugin.id() + "/"
+                            ));
+                })
+                .flatMap(Optional::stream)
+                .sorted(Comparator.comparing(
+                        AdminNavigationItem::title,
+                        String.CASE_INSENSITIVE_ORDER
+                ))
+                .toList();
+    }
+
     private void disableAfterFailedStart(
             Plugin plugin,
             Path jarPath
@@ -413,5 +441,13 @@ public class PluginManager {
         if (pluginId == null || !PLUGIN_ID_PATTERN.matcher(pluginId).matches()) {
             throw new IllegalArgumentException("Plugin id must match [a-z0-9-]+: " + pluginId);
         }
+    }
+
+    public record AdminNavigationItem(
+            String pluginId,
+            String title,
+            String icon,
+            String href
+    ) {
     }
 }
