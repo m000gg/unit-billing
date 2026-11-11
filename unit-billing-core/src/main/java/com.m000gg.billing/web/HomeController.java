@@ -23,6 +23,7 @@ import com.m000gg.billing.subscribers.AccountOverviewViewModel;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,7 +53,7 @@ public class HomeController {
             AccountOverviewViewModel accountOverviewViewModel = applicationUserManagementService.getUserInformationForMainPage(user);
             model.addAttribute("userViewModel", accountOverviewViewModel);
             model.addAttribute("ledgerEntryUserViewModelList", ledgerEntryUserViewModelList);
-            model.addAttribute("dashboardSections", pluginManager.getRenderedClientDashboardSections());
+            model.addAttribute("dashboardSections", pluginManager.getRenderedClientDashboardSections(LocaleContextHolder.getLocale()));
         } else {
             return "redirect:/login";
         }
