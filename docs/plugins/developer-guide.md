@@ -7,6 +7,7 @@
 | 0.1      | 2026-10-10 | Initial draft: dependency setup and planned shape of a plugin       | Draft   | [m000gg](https://github.com/m000gg) |
 | 0.2      | 2026-10-13 | Rewrite the guide around the general plugin lifecycle               | Draft   | [m000gg](https://github.com/m000gg) |
 | 0.3      | 2026-11-10 | Add documentation for plugin UI registration and dashboard sections | Draft   | [m000gg](https://github.com/m000gg) |
+| 0.4      | 2026-11-11 | Add documentation for plugin UI localization (i18n)                 | Draft   | [m000gg](https://github.com/m000gg) |
 
 ---
 
@@ -484,6 +485,64 @@ The host performs the following steps:
 The client dashboard template must render the section content and include its resources. If a plugin section does not appear, check that its template path and registration are valid. If its styling or JavaScript does not work, check the generated asset URLs and browser Network tab.
 
 The host inserts dashboard template content as HTML. Thymeleaf expressions inside plugin-provided fragments are not processed. Plugins should provide ready-to-render HTML.
+
+#### Localization
+
+Plugins ship their own translations. The host replaces `{{i18n:key}}` placeholders with text in the user's language, so a plugin needs no locale handling in code.
+
+Add one properties file per language to the plugin JAR:
+
+```text
+src/main/resources/i18n/
+├── messages.properties        # default, used when nothing else matches
+├── messages_de.properties
+└── messages_ru.properties
+```
+
+Files are read as UTF-8, so non-ASCII characters can be written as they are. Keys may contain letters, digits, `.`, `_` and `-`.
+
+```properties
+network.title=Network Status
+network.status=All systems operational
+```
+
+Use the placeholders in templates and in Java:
+
+```html
+<span class="network-dashboard__status">{{i18n:network.status}}</span>
+```
+
+```java
+context.ui().registerAdminNavigation("{{i18n:test.nav}}", "🧪");
+
+@Override
+public String getTitle() {
+    return "{{i18n:network.title}}";
+}
+```
+
+Placeholders are replaced in:
+
+- the `title` and `body` of `PluginPageResponse.Html`;
+- the admin navigation title;
+- the title and template of a client dashboard section.
+
+They are **not** replaced in CSS or JavaScript files from `plugin-static/`. To give a script a translated string, put it into the HTML as a data attribute and read it with `dataset`:
+
+```html
+<button id="testButton" data-msg-clicked="{{i18n:test.hint.clicked}}">
+    {{i18n:test.button}}
+</button>
+```
+
+The host looks for a key in this order: `messages_<lang>_<COUNTRY>`, `messages_<lang>`, the host's default language (`unitbilling.configuration.plugins.default-locale`, default `en`), `messages.properties`. If the key is missing everywhere, the key itself is shown and the host logs a warning. Always put every key into `messages.properties`, so no user sees a raw key.
+
+Notes:
+
+- Translations are HTML-escaped by the host. Do not put markup into them.
+- Placeholders cover static text only. A plugin inserts dynamic values (numbers, user data) itself and must escape them.
+- Translations belong to the plugin, so keys of different plugins never conflict.
+
 
 ### API compatibility
 
