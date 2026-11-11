@@ -33,6 +33,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -74,6 +75,9 @@ public class PluginManager {
     private static final String ASSET_FOLDER = "plugin-static/";
     private static final String DASHBOARD_TEMPLATE_FOLDER = "templates/client/";
     private static final int MAX_DASHBOARD_TEMPLATE_SIZE = 256 * 1024;
+
+    @Value("${unitbilling.configuration.plugins.default-locale:en}")
+    private String defaultLocale;
 
     @PostConstruct
     void startPlugins() {
@@ -146,6 +150,7 @@ public class PluginManager {
             String pluginId = plugin.getId();
 
             validatePluginId(pluginId);
+            PluginMessages messages = new PluginMessages(pluginId, loaded.classLoader(), defaultLocale);
 
             if (runningPlugins.containsKey(pluginId)) {
                 throw new IllegalArgumentException(
@@ -171,7 +176,8 @@ public class PluginManager {
                     jarPath,
                     loaded,
                     context,
-                    eventWorker
+                    eventWorker,
+                    messages
             );
         } catch (RuntimeException | LinkageError | ServiceConfigurationError e) {
             if (eventWorker != null) {
@@ -270,10 +276,8 @@ public class PluginManager {
         thread.setContextClassLoader(runningPlugin.loadedPlugin().classLoader());
         try {
             PluginPageResponse response = handler.handle(request);
-            if (response == null) {
-                throw new IllegalStateException("Page handler returned null");
-            }
-            return response;
+            if (response == null) { throw new IllegalStateException("Page handler returned null"); }
+            return localize(runningPlugin, response, LocaleContextHolder.getLocale());
         } catch (Exception | LinkageError e) {
             log.error("Plugin '{}' failed to render the {} page '{}'", pluginId, area, request.path(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -466,7 +470,7 @@ public class PluginManager {
         }
     }
 
-    public List<AdminNavigationItem> getAdminNavigationItems() {
+    public List<AdminNavigationItem> getAdminNavigationItems(Locale locale) {
         return runningPlugins.values()
                 .stream()
                 .map(runningPlugin -> {
@@ -481,7 +485,7 @@ public class PluginManager {
                     return ui.getAdminNavigation()
                             .map(navigation -> new AdminNavigationItem(
                                     runningPlugin.id(),
-                                    navigation.title(),
+                                    runningPlugin.messages().apply(navigation.title(), locale, false),
                                     navigation.icon(),
                                     "/admin/plugins/" + runningPlugin.id() + "/"
                             ));
@@ -506,7 +510,7 @@ public class PluginManager {
                 .toList();
     }
 
-    public List<RenderedDashboardSection> getRenderedClientDashboardSections() {
+    public List<RenderedDashboardSection> getRenderedClientDashboardSections(Locale locale) {
         return runningPlugins.values()
                 .stream()
                 .flatMap(runningPlugin -> {
@@ -522,9 +526,9 @@ public class PluginManager {
                             ).map(content -> new RenderedDashboardSection(
                                     runningPlugin.id(),
                                     section.getId(),
-                                    section.getTitle(),
+                                    runningPlugin.messages().apply(section.getTitle(), locale, false),
                                     section.getOrder(),
-                                    content,
+                                    runningPlugin.messages().apply(content, locale, true),
                                     section.getStylesheets().stream()
                                             .map(path -> dashboardAssetUrl(runningPlugin.id(), path))
                                             .filter(Objects::nonNull)
@@ -585,6 +589,19 @@ public class PluginManager {
         }
 
         return "/plugin-assets/" + pluginId + "/" + path;
+    }
+
+    private PluginPageResponse localize(RunningPlugin plugin, PluginPageResponse response, Locale locale) {
+        if (response instanceof PluginPageResponse.Html html) {
+            PluginMessages messages = plugin.messages();
+            return new PluginPageResponse.Html(
+                    messages.apply(html.title(), locale, false),
+                    messages.apply(html.body(), locale, true),
+                    html.stylesheets(),
+                    html.scripts()
+            );
+        }
+        return response;
     }
 
     static void validatePluginId(String pluginId) {
