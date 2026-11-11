@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 
 import java.util.List;
+import java.util.Locale;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -33,14 +34,13 @@ public class PluginNavigationAdvice {
 
     @ModelAttribute("adminPluginNavigation")
     public List<PluginManager.AdminNavigationItem> adminPluginNavigation(
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request,  Locale locale) {
         String adminPath = request.getContextPath() + "/admin/";
 
         if (!request.getRequestURI().startsWith(adminPath)) {
             return List.of();
         }
 
-        return pluginManager.getAdminNavigationItems();
+        return pluginManager.getAdminNavigationItems(locale);
     }
 }
