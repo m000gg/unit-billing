@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
@@ -36,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -411,5 +413,36 @@ class PluginManagerTest {
         Field field = PluginManager.class.getDeclaredField(fieldName);
         field.setAccessible(true);
         field.set(target, value);
+    }
+
+    @Test
+    void adminNavigationIsEmptyWhenNoPluginsAreRunning() {
+        PluginManager manager = new PluginManager(null, null, null);
+
+        assertTrue(manager.getAdminNavigationItems(Locale.ENGLISH).isEmpty());
+    }
+
+    @Test
+    void clientDashboardSectionsAreEmptyWhenNoPluginsAreRunning() {
+        PluginManager manager = new PluginManager(null, null, null);
+
+        assertTrue(manager.getRenderedClientDashboardSections(Locale.ENGLISH).isEmpty());
+    }
+
+    @Test
+    void renderPageThrowsNotFoundForUnknownPlugin() {
+        PluginManager manager = new PluginManager(null, null, null);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> manager.renderPage("unknown", PluginArea.ADMIN, null));
+
+        assertEquals(404, ex.getStatusCode().value());
+    }
+
+    @Test
+    void readAssetReturnsEmptyForUnknownPlugin() {
+        PluginManager manager = new PluginManager(null, null, null);
+
+        assertTrue(manager.readAsset("unknown", "style.css").isEmpty());
     }
 }
