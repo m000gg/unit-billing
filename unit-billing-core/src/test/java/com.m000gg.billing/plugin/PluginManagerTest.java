@@ -88,7 +88,7 @@ class PluginManagerTest {
     }
 
     private static PluginManager newEmptyManager() {
-        return new PluginManager(null, null, null, null, null);
+        return new PluginManager(null, null, null, null, null, null);
     }
 
     @Test
@@ -417,21 +417,21 @@ class PluginManagerTest {
 
     @Test
     void adminNavigationIsEmptyWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertTrue(manager.getAdminNavigationItems(Locale.ENGLISH).isEmpty());
     }
 
     @Test
     void clientDashboardSectionsAreEmptyWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertTrue(manager.getRenderedClientDashboardSections(Locale.ENGLISH).isEmpty());
     }
 
     @Test
     void renderPageThrowsNotFoundForUnknownPlugin() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> manager.renderPage("unknown", PluginArea.ADMIN, null));
@@ -441,7 +441,7 @@ class PluginManagerTest {
 
     @Test
     void readAssetReturnsEmptyForUnknownPlugin() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertTrue(manager.readAsset("unknown", "style.css").isEmpty());
     }
