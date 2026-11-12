@@ -36,7 +36,7 @@ class PluginManagerTest {
 
     @Test
     void startPluginsReturnsWhenDirectoryIsNotConfigured() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertDoesNotThrow(manager::startPlugins);
     }
@@ -44,7 +44,7 @@ class PluginManagerTest {
     @Test
     void startPluginsDoesNotCreateDirectoryWhenQueueCapacityIsInvalid() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 0);
 
@@ -56,7 +56,7 @@ class PluginManagerTest {
     @Test
     void startPluginsCreatesConfiguredDirectoryWhenNoJarsArePresent() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 1);
 
@@ -67,7 +67,7 @@ class PluginManagerTest {
 
     @Test
     void dispatchBalanceChangedDoesNothingWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertDoesNotThrow(() -> manager.dispatchBalanceChanged(null));
     }
@@ -98,21 +98,21 @@ class PluginManagerTest {
 
     @Test
     void adminNavigationIsEmptyWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertTrue(manager.getAdminNavigationItems(Locale.ENGLISH).isEmpty());
     }
 
     @Test
     void clientDashboardSectionsAreEmptyWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertTrue(manager.getRenderedClientDashboardSections(Locale.ENGLISH).isEmpty());
     }
 
     @Test
     void renderPageThrowsNotFoundForUnknownPlugin() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> manager.renderPage("unknown", PluginArea.ADMIN, null));
@@ -122,7 +122,7 @@ class PluginManagerTest {
 
     @Test
     void readAssetReturnsEmptyForUnknownPlugin() {
-        PluginManager manager = new PluginManager(null, null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertTrue(manager.readAsset("unknown", "style.css").isEmpty());
     }

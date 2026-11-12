@@ -69,6 +69,7 @@ public class PluginManager {
     private final PluginProperties pluginProperties;
     private final BalanceCharger balanceCharger;
     private final PluginLoader pluginLoader = new PluginLoader();
+    private final PluginMigrationRunner pluginMigrationRunner;
 
     private final ConcurrentMap<String, RunningPlugin> runningPlugins = new ConcurrentHashMap<>();
     private static final Pattern PLUGIN_ID_PATTERN = Pattern.compile("[a-z0-9-]+");
@@ -157,6 +158,21 @@ public class PluginManager {
                         "Plugin id is already loaded: " + pluginId
                 );
             }
+
+            if (runningPlugins.containsKey(pluginId)) {
+                throw new IllegalArgumentException(
+                        "Plugin id is already loaded: " + pluginId
+                );
+            }
+
+            try {
+                pluginMigrationRunner.migrate(pluginId, loaded.classLoader());
+            } catch (RuntimeException e) {
+                throw new IllegalStateException(
+                        "Migration failed for plugin '" + pluginId + "'", e);
+            }
+
+            eventWorker = createBalanceEventWorker(pluginId);
 
             eventWorker = createBalanceEventWorker(pluginId);
 
