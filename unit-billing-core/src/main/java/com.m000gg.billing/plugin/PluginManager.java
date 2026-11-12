@@ -18,24 +18,39 @@ package com.m000gg.billing.plugin;
 
 import com.m000gg.billing.plugin.context.DefaultPluginContext;
 import com.m000gg.billing.plugin.context.DefaultPluginSettings;
+import com.m000gg.billing.plugin.context.DefaultPluginUi;
+import com.m000gg.billing.plugin.web.RenderedDashboardSection;
 import com.m000gg.plugin.api.Plugin;
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
+import com.m000gg.plugin.api.ui.PluginPageHandler;
+import com.m000gg.plugin.api.ui.PluginPageRequest;
+import com.m000gg.plugin.api.ui.PluginPageResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+import com.m000gg.plugin.api.ui.ClientDashboardSection;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -52,10 +67,18 @@ public class PluginManager {
 
     private final UserDirectory userDirectory;
     private final PluginProperties pluginProperties;
+    private final BalanceCharger balanceCharger;
     private final PluginLoader pluginLoader = new PluginLoader();
+    private final PluginMigrationRunner pluginMigrationRunner;
 
-    private final ConcurrentMap<String, RunningPlugin> runningPlugins =
-            new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, RunningPlugin> runningPlugins = new ConcurrentHashMap<>();
+    private static final Pattern PLUGIN_ID_PATTERN = Pattern.compile("[a-z0-9-]+");
+    private static final String ASSET_FOLDER = "plugin-static/";
+    private static final String DASHBOARD_TEMPLATE_FOLDER = "templates/client/";
+    private static final int MAX_DASHBOARD_TEMPLATE_SIZE = 256 * 1024;
+
+    @Value("${unitbilling.configuration.plugins.default-locale:en}")
+    private String defaultLocale;
 
     @PostConstruct
     void startPlugins() {
@@ -127,9 +150,12 @@ public class PluginManager {
             Plugin plugin = loaded.plugin();
             String pluginId = plugin.getId();
 
-            if (pluginId == null || pluginId.isBlank()) {
+            validatePluginId(pluginId);
+            PluginMessages messages = new PluginMessages(pluginId, loaded.classLoader(), defaultLocale);
+
+            if (runningPlugins.containsKey(pluginId)) {
                 throw new IllegalArgumentException(
-                        "Plugin id must not be null or blank: " + jarPath
+                        "Plugin id is already loaded: " + pluginId
                 );
             }
 
@@ -139,14 +165,22 @@ public class PluginManager {
                 );
             }
 
+            try {
+                pluginMigrationRunner.migrate(pluginId, loaded.classLoader());
+            } catch (RuntimeException e) {
+                throw new IllegalStateException(
+                        "Migration failed for plugin '" + pluginId + "'", e);
+            }
+
+            eventWorker = createBalanceEventWorker(pluginId);
+
             eventWorker = createBalanceEventWorker(pluginId);
 
             Map<String, String> values = pluginProperties.getPlugins()
                     .getOrDefault(pluginId, Map.of());
 
             PluginSettings settings = new DefaultPluginSettings(values);
-            DefaultPluginContext context =
-                    new DefaultPluginContext(userDirectory, settings);
+            DefaultPluginContext context = new DefaultPluginContext(userDirectory, settings, balanceCharger);
 
             enableAttempted = true;
             plugin.onEnable(context);
@@ -158,7 +192,8 @@ public class PluginManager {
                     jarPath,
                     loaded,
                     context,
-                    eventWorker
+                    eventWorker,
+                    messages
             );
         } catch (RuntimeException | LinkageError | ServiceConfigurationError e) {
             if (eventWorker != null) {
@@ -233,6 +268,141 @@ public class PluginManager {
                     );
                 }
             }
+        }
+    }
+
+    public PluginPageResponse renderPage(String pluginId, PluginArea area, PluginPageRequest request) {
+        if (stuckPlugins.containsKey(pluginId)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        RunningPlugin runningPlugin = runningPlugins.get(pluginId);
+        if (runningPlugin == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        DefaultPluginUi ui = runningPlugin.defaultPluginContext().getPluginUi();
+        PluginPageHandler handler = (area == PluginArea.ADMIN
+                ? ui.getAdminPageHandler()
+                : ui.getClientPageHandler())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        Thread thread = Thread.currentThread();
+        ClassLoader previous = thread.getContextClassLoader();
+        thread.setContextClassLoader(runningPlugin.loadedPlugin().classLoader());
+        try {
+            PluginPageResponse response = handler.handle(request);
+            if (response == null) { throw new IllegalStateException("Page handler returned null"); }
+            return localize(runningPlugin, response, LocaleContextHolder.getLocale());
+        } catch (Exception | LinkageError e) {
+            log.error("Plugin '{}' failed to render the {} page '{}'", pluginId, area, request.path(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            thread.setContextClassLoader(previous);
+        }
+    }
+
+    public Optional<byte[]> readAsset(String pluginId, String assetPath) {
+        RunningPlugin runningPlugin = runningPlugins.get(pluginId);
+        if (runningPlugin == null) {
+            return Optional.empty();
+        }
+
+        String relative = assetPath.startsWith("/") ? assetPath.substring(1) : assetPath;
+        if (relative.isEmpty() || relative.contains("..")
+                || relative.contains("\\") || relative.contains("//")) {
+            return Optional.empty();
+        }
+
+        URL url = runningPlugin.loadedPlugin().classLoader().findResource(ASSET_FOLDER + relative);
+        if (url == null) {
+            return Optional.empty();
+        }
+
+        try {
+            URLConnection connection = url.openConnection();
+            connection.setUseCaches(false);
+            try (InputStream in = connection.getInputStream()) {
+                return Optional.of(in.readAllBytes());
+            }
+        } catch (IOException e) {
+            log.warn("Could not read asset '{}' of plugin '{}'", relative, pluginId, e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> readDashboardTemplate(
+            RunningPlugin runningPlugin,
+            String templatePath
+    ) {
+        if (templatePath == null || templatePath.isBlank()) {
+            log.warn(
+                    "Dashboard template path is empty for plugin '{}'",
+                    runningPlugin.id()
+            );
+            return Optional.empty();
+        }
+
+        String relative = templatePath.startsWith("/")
+                ? templatePath.substring(1)
+                : templatePath;
+
+        if (!relative.startsWith(DASHBOARD_TEMPLATE_FOLDER)
+                || relative.contains("..")
+                || relative.contains("\\")
+                || relative.contains("//")) {
+            log.warn(
+                    "Invalid dashboard template path '{}' in plugin '{}'",
+                    templatePath,
+                    runningPlugin.id()
+            );
+            return Optional.empty();
+        }
+
+        URL resource = runningPlugin.loadedPlugin()
+                .classLoader()
+                .findResource(relative);
+
+        if (resource == null) {
+            log.warn(
+                    "Dashboard template '{}' not found in plugin '{}'",
+                    relative,
+                    runningPlugin.id()
+            );
+            return Optional.empty();
+        }
+
+        try {
+            URLConnection connection = resource.openConnection();
+            connection.setUseCaches(false);
+
+            try (InputStream input = connection.getInputStream()) {
+                byte[] content = input.readNBytes(
+                        MAX_DASHBOARD_TEMPLATE_SIZE + 1
+                );
+
+                if (content.length > MAX_DASHBOARD_TEMPLATE_SIZE) {
+                    log.warn(
+                            "Dashboard template '{}' in plugin '{}' exceeds size limit",
+                            relative,
+                            runningPlugin.id()
+                    );
+                    return Optional.empty();
+                }
+
+                return Optional.of(
+                        new String(content, StandardCharsets.UTF_8)
+                );
+            }
+        } catch (IOException e) {
+            log.warn(
+                    "Could not read dashboard template '{}' from plugin '{}'",
+                    relative,
+                    runningPlugin.id(),
+                    e
+            );
+
+            return Optional.empty();
         }
     }
 
@@ -316,6 +486,85 @@ public class PluginManager {
         }
     }
 
+    public List<AdminNavigationItem> getAdminNavigationItems(Locale locale) {
+        return runningPlugins.values()
+                .stream()
+                .map(runningPlugin -> {
+                    DefaultPluginUi ui = runningPlugin
+                            .defaultPluginContext()
+                            .getPluginUi();
+
+                    if (ui.getAdminPageHandler().isEmpty()) {
+                        return Optional.<AdminNavigationItem>empty();
+                    }
+
+                    return ui.getAdminNavigation()
+                            .map(navigation -> new AdminNavigationItem(
+                                    runningPlugin.id(),
+                                    runningPlugin.messages().apply(navigation.title(), locale, false),
+                                    navigation.icon(),
+                                    "/admin/plugins/" + runningPlugin.id() + "/"
+                            ));
+                })
+                .flatMap(Optional::stream)
+                .sorted(Comparator.comparing(
+                        AdminNavigationItem::title,
+                        String.CASE_INSENSITIVE_ORDER
+                ))
+                .toList();
+    }
+
+    public List<String> getClientPluginIds() {
+        return runningPlugins.values()
+                .stream()
+                .filter(plugin -> plugin.defaultPluginContext()
+                        .getPluginUi()
+                        .getClientPageHandler()
+                        .isPresent())
+                .map(RunningPlugin::id)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
+    public List<RenderedDashboardSection> getRenderedClientDashboardSections(Locale locale) {
+        return runningPlugins.values()
+                .stream()
+                .flatMap(runningPlugin -> {
+                    DefaultPluginUi ui = runningPlugin
+                            .defaultPluginContext()
+                            .getPluginUi();
+
+                    return ui.getClientDashboardSections()
+                            .stream()
+                            .map(section -> readDashboardTemplate(
+                                    runningPlugin,
+                                    section.getTemplate()
+                            ).map(content -> new RenderedDashboardSection(
+                                    runningPlugin.id(),
+                                    section.getId(),
+                                    runningPlugin.messages().apply(section.getTitle(), locale, false),
+                                    section.getOrder(),
+                                    runningPlugin.messages().apply(content, locale, true),
+                                    section.getStylesheets().stream()
+                                            .map(path -> dashboardAssetUrl(runningPlugin.id(), path))
+                                            .filter(Objects::nonNull)
+                                            .toList(),
+                                    section.getScripts().stream()
+                                            .map(path -> dashboardAssetUrl(runningPlugin.id(), path))
+                                            .filter(Objects::nonNull)
+                                            .toList()
+                            )))
+                            .flatMap(Optional::stream);
+                })
+                .sorted(
+                        Comparator
+                                .comparingInt(RenderedDashboardSection::order)
+                                .thenComparing(RenderedDashboardSection::pluginId)
+                                .thenComparing(RenderedDashboardSection::id)
+                )
+                .toList();
+    }
+
     private void disableAfterFailedStart(
             Plugin plugin,
             Path jarPath
@@ -337,5 +586,57 @@ public class PluginManager {
                     e
             );
         }
+    }
+
+    private String dashboardAssetUrl(String pluginId, String path) {
+        if (path == null || path.isBlank()
+                || path.startsWith("/")
+                || path.contains("..")
+                || path.contains("\\")
+                || path.contains("//")) {
+
+            log.warn(
+                    "Invalid dashboard asset path '{}' in plugin '{}'",
+                    path,
+                    pluginId
+            );
+
+            return null;
+        }
+
+        return "/plugin-assets/" + pluginId + "/" + path;
+    }
+
+    private PluginPageResponse localize(RunningPlugin plugin, PluginPageResponse response, Locale locale) {
+        if (response instanceof PluginPageResponse.Html html) {
+            PluginMessages messages = plugin.messages();
+            return new PluginPageResponse.Html(
+                    messages.apply(html.title(), locale, false),
+                    messages.apply(html.body(), locale, true),
+                    html.stylesheets(),
+                    html.scripts()
+            );
+        }
+        return response;
+    }
+
+    static void validatePluginId(String pluginId) {
+        if (pluginId == null || !PLUGIN_ID_PATTERN.matcher(pluginId).matches()) {
+            throw new IllegalArgumentException("Plugin id must match [a-z0-9-]+: " + pluginId);
+        }
+    }
+
+    public record AdminNavigationItem(
+            String pluginId,
+            String title,
+            String icon,
+            String href
+    ) {
+    }
+
+    public record RegisteredDashboardSection(
+            String pluginId,
+            ClientDashboardSection section
+    ) {
     }
 }

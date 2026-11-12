@@ -18,14 +18,16 @@ package com.m000gg.billing.plugin;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PluginManagerTest {
 
@@ -34,7 +36,7 @@ class PluginManagerTest {
 
     @Test
     void startPluginsReturnsWhenDirectoryIsNotConfigured() {
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertDoesNotThrow(manager::startPlugins);
     }
@@ -42,7 +44,7 @@ class PluginManagerTest {
     @Test
     void startPluginsDoesNotCreateDirectoryWhenQueueCapacityIsInvalid() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 0);
 
@@ -54,7 +56,7 @@ class PluginManagerTest {
     @Test
     void startPluginsCreatesConfiguredDirectoryWhenNoJarsArePresent() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 1);
 
@@ -65,9 +67,26 @@ class PluginManagerTest {
 
     @Test
     void dispatchBalanceChangedDoesNothingWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertDoesNotThrow(() -> manager.dispatchBalanceChanged(null));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"subscriptions", "email-notifier", "hello-ui", "p2p"})
+    void validatePluginIdAcceptsLowercaseDigitsAndHyphens(String id) {
+        assertDoesNotThrow(() -> PluginManager.validatePluginId(id));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "Subscriptions", "sub_scriptions", "sub:scriptions", "sub/scriptions", "sub scriptions"})
+    void validatePluginIdRejectsOtherValues(String id) {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(id));
+    }
+
+    @Test
+    void validatePluginIdRejectsNull() {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(null));
     }
 
     private static void setField(Object target, String fieldName, Object value)
@@ -75,5 +94,36 @@ class PluginManagerTest {
         Field field = PluginManager.class.getDeclaredField(fieldName);
         field.setAccessible(true);
         field.set(target, value);
+    }
+
+    @Test
+    void adminNavigationIsEmptyWhenNoPluginsAreRunning() {
+        PluginManager manager = new PluginManager(null, null, null, null);
+
+        assertTrue(manager.getAdminNavigationItems(Locale.ENGLISH).isEmpty());
+    }
+
+    @Test
+    void clientDashboardSectionsAreEmptyWhenNoPluginsAreRunning() {
+        PluginManager manager = new PluginManager(null, null, null, null);
+
+        assertTrue(manager.getRenderedClientDashboardSections(Locale.ENGLISH).isEmpty());
+    }
+
+    @Test
+    void renderPageThrowsNotFoundForUnknownPlugin() {
+        PluginManager manager = new PluginManager(null, null, null, null);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> manager.renderPage("unknown", PluginArea.ADMIN, null));
+
+        assertEquals(404, ex.getStatusCode().value());
+    }
+
+    @Test
+    void readAssetReturnsEmptyForUnknownPlugin() {
+        PluginManager manager = new PluginManager(null, null, null, null);
+
+        assertTrue(manager.readAsset("unknown", "style.css").isEmpty());
     }
 }

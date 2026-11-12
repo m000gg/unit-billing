@@ -17,9 +17,11 @@
 package com.m000gg.billing.plugin.context;
 
 import com.m000gg.plugin.api.PluginContext;
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
+import com.m000gg.plugin.api.ui.PluginUi;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -30,10 +32,14 @@ public class DefaultPluginContext implements PluginContext {
     private final List<Consumer<BalanceChanged>> balanceChangedHandlers = new CopyOnWriteArrayList<>();
     private final UserDirectory userDirectory;
     private final PluginSettings pluginSettings;
+    private final BalanceCharger balanceCharger;
+    private final DefaultPluginUi pluginUi = new DefaultPluginUi();
 
-    public DefaultPluginContext(UserDirectory userDirectory, PluginSettings pluginSettings) {
+
+    public DefaultPluginContext(UserDirectory userDirectory, PluginSettings pluginSettings, BalanceCharger balanceCharger) {
         this.userDirectory = userDirectory;
         this.pluginSettings = pluginSettings;
+        this.balanceCharger = balanceCharger;
     }
 
     @Override
@@ -53,5 +59,19 @@ public class DefaultPluginContext implements PluginContext {
 
     public List<Consumer<BalanceChanged>> getBalanceChangedHandlers() {
         return List.copyOf(balanceChangedHandlers);
+    }
+
+    @Override
+    public BalanceCharger balanceCharger() {
+        return balanceCharger;
+    }
+
+    @Override
+    public PluginUi ui() {
+        return pluginUi;
+    }
+
+    public DefaultPluginUi getPluginUi() {
+        return pluginUi;
     }
 }
