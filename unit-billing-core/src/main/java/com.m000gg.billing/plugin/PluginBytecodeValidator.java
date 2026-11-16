@@ -20,8 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.ClassModel;
+import java.lang.classfile.CodeElement;
+import java.lang.classfile.MethodModel;
 import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.classfile.constantpool.PoolEntry;
+import java.lang.classfile.instruction.InvokeInstruction;
 import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.List;
@@ -45,12 +48,10 @@ public class PluginBytecodeValidator {
             "org/hibernate/",
             "org/flywaydb/",
             "com/zaxxer/hikari/",
-            "java/lang/reflect/",
             "jdk/internal/"
     );
 
     private static final List<String> FORBIDDEN_EXACT_CLASSES = List.of(
-            "java/lang/invoke/MethodHandles",
             "sun/misc/Unsafe"
     );
 
@@ -98,6 +99,34 @@ public class PluginBytecodeValidator {
                 }
             }
         }
+
+        // Check actual bytecode invocations for MethodHandles/reflection bypasses so
+        // javac's InnerClasses metadata from lambdas and string '+' concat is allowed.
+        for (MethodModel method : model.methods()) {
+            method.code().ifPresent(code -> {
+                for (CodeElement element : code) {
+                    if (element instanceof InvokeInstruction invoke) {
+                        String owner = invoke.owner().asInternalName();
+                        String name = invoke.name().stringValue();
+                        if ("java/lang/invoke/MethodHandles".equals(owner)
+                                && ("privateLookupIn".equals(name) || "lookup".equals(name))) {
+                            throw new SecurityException(
+                                    "Plugin class '" + entryName + "' calls forbidden API 'java.lang.invoke.MethodHandles."
+                                            + name + "'");
+                        }
+                        if (isPluginOwnClass(thisClass) && owner.startsWith("java/lang/reflect/")) {
+                            throw new SecurityException(
+                                    "Plugin class '" + entryName + "' references forbidden API '"
+                                            + owner.replace('/', '.') + "'");
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private static boolean isPluginOwnClass(String internalName) {
+        return internalName.startsWith("com/m000gg/plugins/");
     }
 
     private static String unwrapArrayType(String internalName) {

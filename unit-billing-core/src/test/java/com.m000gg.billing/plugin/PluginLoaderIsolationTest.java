@@ -26,6 +26,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.lang.classfile.ClassFile;
 import java.lang.constant.ClassDesc;
+import java.lang.constant.DirectMethodHandleDesc;
+import java.lang.constant.DynamicCallSiteDesc;
+import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,7 +36,10 @@ import java.nio.file.Path;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
+import static java.lang.constant.ConstantDescs.CD_Class;
+import static java.lang.constant.ConstantDescs.CD_Object;
 import static java.lang.constant.ConstantDescs.CD_String;
+import static java.lang.constant.ConstantDescs.CD_boolean;
 import static java.lang.constant.ConstantDescs.CD_void;
 import static java.lang.constant.ConstantDescs.INIT_NAME;
 import static java.lang.constant.ConstantDescs.MTD_void;
@@ -76,9 +82,7 @@ class PluginLoaderIsolationTest {
             "org.postgresql.Driver",
             "com.m000gg.billing.ledger.LedgerService",
             "org.springframework.jdbc.core.JdbcTemplate",
-            "jakarta.persistence.EntityManager",
-            "java.lang.reflect.Field",
-            "java.lang.invoke.MethodHandles"
+            "jakarta.persistence.EntityManager"
     })
     void rejectsPluginJarReferencingForbiddenClass(String forbiddenBinaryName) throws Exception {
         byte[] badClass = ClassFile.of().build(
@@ -99,6 +103,78 @@ class PluginLoaderIsolationTest {
         }
 
         assertThrows(SecurityException.class, () -> pluginLoader.load(jarPath));
+    }
+
+    @Test
+    void rejectsMethodHandlesPrivateLookupInAndReflectionInPluginCode() throws Exception {
+        ClassDesc methodHandles = ClassDesc.of("java.lang.invoke.MethodHandles");
+        ClassDesc lookup = ClassDesc.of("java.lang.invoke.MethodHandles$Lookup");
+        byte[] lookupUser = ClassFile.of().build(
+                ClassDesc.of("com.m000gg.plugins.evil.LookupPlugin"),
+                cb -> cb.withMethodBody("hack", MTD_void, ClassFile.ACC_PUBLIC, code -> {
+                    code.aconst_null();
+                    code.aconst_null();
+                    code.invokestatic(
+                            methodHandles,
+                            "privateLookupIn",
+                            MethodTypeDesc.of(lookup, CD_Class, lookup)
+                    );
+                    code.pop();
+                    code.return_();
+                })
+        );
+        assertThrows(SecurityException.class, () ->
+                bytecodeValidator.validateClassBytes("com/m000gg/plugins/evil/LookupPlugin.class", lookupUser));
+
+        byte[] reflectUser = ClassFile.of().build(
+                ClassDesc.of("com.m000gg.plugins.evil.ReflectPlugin"),
+                cb -> cb.withMethodBody("hack", MTD_void, ClassFile.ACC_PUBLIC, code -> {
+                    code.aconst_null();
+                    code.iconst_1();
+                    code.invokevirtual(
+                            ClassDesc.of("java.lang.reflect.Field"),
+                            "setAccessible",
+                            MethodTypeDesc.of(CD_void, CD_boolean)
+                    );
+                    code.return_();
+                })
+        );
+        assertThrows(SecurityException.class, () ->
+                bytecodeValidator.validateClassBytes("com/m000gg/plugins/evil/ReflectPlugin.class", reflectUser));
+    }
+
+    @Test
+    void allowsStringConcatenationAndLambdasUsingIndy() {
+        ClassDesc stringConcatFactory = ClassDesc.of("java.lang.invoke.StringConcatFactory");
+        ClassDesc lookup = ClassDesc.of("java.lang.invoke.MethodHandles$Lookup");
+        DirectMethodHandleDesc bsm = MethodHandleDesc.ofMethod(
+                DirectMethodHandleDesc.Kind.STATIC,
+                stringConcatFactory,
+                "makeConcatWithConstants",
+                MethodTypeDesc.of(
+                        ClassDesc.of("java.lang.invoke.CallSite"),
+                        lookup,
+                        CD_String,
+                        ClassDesc.of("java.lang.invoke.MethodType"),
+                        CD_String,
+                        CD_Object.arrayType()
+                )
+        );
+        byte[] concatClass = ClassFile.of().build(
+                ClassDesc.of("com.m000gg.plugins.ok.Greeting"),
+                cb -> cb.withMethodBody("greet", MethodTypeDesc.of(CD_String, CD_String), ClassFile.ACC_PUBLIC, code -> {
+                    code.aload(1);
+                    code.invokedynamic(DynamicCallSiteDesc.of(
+                            bsm,
+                            "makeConcatWithConstants",
+                            MethodTypeDesc.of(CD_String, CD_String),
+                            "hi \u0001"
+                    ));
+                    code.areturn();
+                })
+        );
+
+        bytecodeValidator.validateClassBytes("com/m000gg/plugins/ok/Greeting.class", concatClass);
     }
 
     @Test
