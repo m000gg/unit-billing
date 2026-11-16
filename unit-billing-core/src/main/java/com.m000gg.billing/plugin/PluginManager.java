@@ -20,9 +20,11 @@ import com.m000gg.billing.plugin.context.DefaultPluginContext;
 import com.m000gg.billing.plugin.context.DefaultPluginSettings;
 import com.m000gg.billing.plugin.context.DefaultPluginUi;
 import com.m000gg.billing.plugin.context.PluginExchangeRateRegistry;
+import com.m000gg.billing.plugin.db.PluginDatabaseFactory;
 import com.m000gg.billing.plugin.web.RenderedDashboardSection;
 import com.m000gg.plugin.api.Plugin;
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
+import com.m000gg.plugin.api.db.PluginDatabase;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
@@ -74,6 +76,7 @@ public class PluginManager {
     private final PluginExchangeRateRegistry exchangeRateRegistry;
     private final PluginLoader pluginLoader = new PluginLoader();
     private final PluginMigrationRunner pluginMigrationRunner;
+    private final PluginDatabaseFactory pluginDatabaseFactory;
 
     private final ConcurrentMap<String, RunningPlugin> runningPlugins = new ConcurrentHashMap<>();
     private static final Pattern PLUGIN_ID_PATTERN = Pattern.compile("[a-z0-9-]+");
@@ -165,12 +168,6 @@ public class PluginManager {
                 );
             }
 
-            if (runningPlugins.containsKey(pluginId)) {
-                throw new IllegalArgumentException(
-                        "Plugin id is already loaded: " + pluginId
-                );
-            }
-
             try {
                 pluginMigrationRunner.migrate(pluginId, loaded.classLoader());
             } catch (RuntimeException e) {
@@ -180,17 +177,17 @@ public class PluginManager {
 
             eventWorker = createBalanceEventWorker(pluginId);
 
-            eventWorker = createBalanceEventWorker(pluginId);
-
             Map<String, String> values = pluginProperties.getPlugins()
                     .getOrDefault(pluginId, Map.of());
 
             PluginSettings settings = new DefaultPluginSettings(values);
+            PluginDatabase database = pluginDatabaseFactory.create(pluginId);
             context = new DefaultPluginContext(
                     pluginId,
                     userDirectory,
                     settings,
                     balanceCharger,
+                    database,
                     exchangeRateDirectory,
                     exchangeRateRegistry
             );

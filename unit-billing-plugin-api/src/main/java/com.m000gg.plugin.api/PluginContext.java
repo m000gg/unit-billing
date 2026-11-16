@@ -17,6 +17,7 @@
 package com.m000gg.plugin.api;
 
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
+import com.m000gg.plugin.api.db.PluginDatabase;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
@@ -50,4 +51,6 @@ public interface PluginContext {
     BalanceCharger balanceCharger();
 
     PluginUi ui();
+
+    PluginDatabase database();
 }

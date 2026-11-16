@@ -17,21 +17,35 @@
 package com.m000gg.billing.plugin;
 
 
+import com.m000gg.billing.plugin.db.PluginSqlValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 /**
  * Applies the SQL migrations shipped inside a plugin JAR.
  *
  * <p>Each plugin gets its own schema ({@code plugin_<id>}) that also holds its own
  * Flyway history table. Migrations are read from {@code plugin-db/migration} of the
- * plugin class loader. The folder must differ from the core's {@code db/migration},
- * because the core classes are visible from the plugin class loader.
+ * plugin class loader and validated against {@code plugin_<id>} before execution.
  */
 @Slf4j
 @Component
@@ -39,10 +53,12 @@ import javax.sql.DataSource;
 public class PluginMigrationRunner {
 
     private static final String MIGRATION_LOCATION = "classpath:plugin-db/migration";
+    private static final String MIGRATION_RESOURCE_PATTERN = "classpath*:plugin-db/migration/**/*.sql";
     private static final String SCHEMA_PREFIX = "plugin_";
     private static final int MAX_SCHEMA_NAME_LENGTH = 63;
 
     private final DataSource dataSource;
+    private final PluginSqlValidator sqlValidator;
 
     /**
      * @return number of migrations applied; 0 when the plugin has no migrations
@@ -50,6 +66,7 @@ public class PluginMigrationRunner {
      */
     public int migrate(String pluginId, ClassLoader pluginClassLoader) {
         String schema = schemaName(pluginId);
+        validateMigrationResources(pluginId, schema, pluginClassLoader);
 
         Flyway flyway = Flyway.configure(pluginClassLoader)
                 .dataSource(dataSource)
@@ -74,7 +91,91 @@ public class PluginMigrationRunner {
         return result.migrationsExecuted;
     }
 
-    static String schemaName(String pluginId) {
+    private static final String MIGRATION_PREFIX = "plugin-db/migration/";
+
+    private void validateMigrationResources(
+            String pluginId,
+            String schema,
+            ClassLoader pluginClassLoader
+    ) {
+        try {
+            if (pluginClassLoader instanceof URLClassLoader urlClassLoader) {
+                for (URL url : urlClassLoader.getURLs()) {
+                    validateUrlMigrations(pluginId, schema, url);
+                }
+                return;
+            }
+
+            PathMatchingResourcePatternResolver resolver =
+                    new PathMatchingResourcePatternResolver(pluginClassLoader);
+            Resource[] resources = resolver.getResources(MIGRATION_RESOURCE_PATTERN);
+            for (Resource resource : resources) {
+                validateMigrationSql(
+                        pluginId,
+                        schema,
+                        resource.getFilename(),
+                        resource.getContentAsString(StandardCharsets.UTF_8)
+                );
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new IllegalStateException(
+                    "Failed to read migrations for plugin '" + pluginId + "'", e);
+        }
+    }
+
+    private void validateUrlMigrations(String pluginId, String schema, URL url)
+            throws IOException, URISyntaxException {
+        if (!"file".equalsIgnoreCase(url.getProtocol())) {
+            return;
+        }
+        Path path = Path.of(url.toURI());
+        if (Files.isRegularFile(path)) {
+            try (JarFile jarFile = new JarFile(path.toFile())) {
+                Enumeration<JarEntry> entries = jarFile.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (!entry.isDirectory()
+                            && entry.getName().startsWith(MIGRATION_PREFIX)
+                            && entry.getName().endsWith(".sql")) {
+                        try (InputStream in = jarFile.getInputStream(entry)) {
+                            String sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+                            validateMigrationSql(pluginId, schema, entry.getName(), sql);
+                        }
+                    }
+                }
+            }
+        } else if (Files.isDirectory(path)) {
+            Path migrationDir = path.resolve(MIGRATION_PREFIX);
+            if (Files.isDirectory(migrationDir)) {
+                try (Stream<Path> walk = Files.walk(migrationDir)) {
+                    for (Path file : walk.filter(Files::isRegularFile).toList()) {
+                        if (file.getFileName().toString().endsWith(".sql")) {
+                            validateMigrationSql(
+                                    pluginId,
+                                    schema,
+                                    file.getFileName().toString(),
+                                    Files.readString(file, StandardCharsets.UTF_8)
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void validateMigrationSql(String pluginId, String schema, String name, String sql) {
+        try {
+            sqlValidator.validateMigrationSql(sql, schema);
+        } catch (RuntimeException e) {
+            throw new IllegalStateException(
+                    "Invalid migration '" + name + "' in plugin '"
+                            + pluginId + "': " + e.getMessage(),
+                    e
+            );
+        }
+    }
+
+    public static String schemaName(String pluginId) {
         PluginManager.validatePluginId(pluginId);
 
         String schema = SCHEMA_PREFIX + pluginId.replace('-', '_');
