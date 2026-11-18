@@ -46,7 +46,7 @@ public class ExchangeRateService {
         if (fromCurrency.equalsIgnoreCase(toCurrency)) {
             return Optional.of(new ExchangeRateQuote(BigDecimal.ONE.setScale(6), "identity", Instant.now()));
         }
-        String activeId = systemSettingService.getExchangeRateProviderId(); // например "none" или "privatbank"
+        String activeId = systemSettingService.getExchangeRateProviderId();
         ExchangeRateProvider provider = providersById.get(activeId);
         return provider == null ? Optional.empty() : provider.findRate(fromCurrency, toCurrency);
     }
