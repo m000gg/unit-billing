@@ -16,6 +16,7 @@
 
 package com.m000gg.billing.web.admin;
 
+import com.m000gg.billing.ledger.fx.ExchangeRateService;
 import com.m000gg.billing.settings.BillingSetupDto;
 import com.m000gg.billing.settings.SystemSettingService;
 import com.m000gg.billing.settings.exception.InvalidCurrencyException;
@@ -42,6 +43,9 @@ public class AdminSetupController {
 
     @Autowired
     private SystemSettingService systemSettingService;
+
+    @Autowired
+    private ExchangeRateService exchangeRateService;
 
     @GetMapping("/admin/billing-setup")
     public String showBillingSetupPage(Model model) {
@@ -82,6 +86,7 @@ public class AdminSetupController {
     public String showBillingConfiguration(Model model) {
         String baseCurrency = systemSettingService.getBaseCurrency();
         model.addAttribute("baseCurrency", baseCurrency);
+        model.addAttribute("providers", exchangeRateService.getProviders());
         return "admin/billing-settings-page";
     }
 }

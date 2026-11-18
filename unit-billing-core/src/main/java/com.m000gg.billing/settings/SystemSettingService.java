@@ -35,6 +35,8 @@ public class SystemSettingService {
     private SystemSettingRepository systemSettingRepository;
 
     private static final String BASE_CURRENCY_KEY = "BASE_CURRENCY";
+    private static final String EXCHANGE_RATE_PROVIDER_KEY = "EXCHANGE_RATE_PROVIDER";
+    private static final String DEFAULT_EXCHANGE_RATE_PROVIDER = "none";
 
     private static final Set<String> VALID_CURRENCIES = Currency.getAvailableCurrencies()
             .stream()
@@ -60,6 +62,30 @@ public class SystemSettingService {
         }
 
         saveSingleSetting(BASE_CURRENCY_KEY, billingSetupDto.getBaseCurrency(), "Base currency of platform.");
+    }
+    @Cacheable("exchangeRateProvider")
+    public String getExchangeRateProviderId() {
+        return systemSettingRepository.findValueByKey(EXCHANGE_RATE_PROVIDER_KEY)
+                .filter(value -> !value.isBlank())
+                .orElse(DEFAULT_EXCHANGE_RATE_PROVIDER);
+    }
+
+    @CacheEvict(value = "exchangeRateProvider", allEntries = true)
+    public void saveExchangeRateProvider(String providerId) {
+        String normalized = (providerId == null || providerId.isBlank())
+                ? DEFAULT_EXCHANGE_RATE_PROVIDER
+                : providerId.trim().toLowerCase();
+
+        SystemSetting setting = systemSettingRepository.findById(EXCHANGE_RATE_PROVIDER_KEY)
+                .orElseGet(() -> {
+                    SystemSetting s = new SystemSetting();
+                    s.setKey(EXCHANGE_RATE_PROVIDER_KEY);
+                    return s;
+                });
+        setting.setSettingValue(normalized);
+        setting.setDescription("Active exchange rate provider.");
+        setting.setUpdatedAt(Instant.now());
+        systemSettingRepository.save(setting);
     }
 
     private void saveSingleSetting(String key, String value, String description) {
