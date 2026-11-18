@@ -17,6 +17,7 @@
 package com.m000gg.billing.settings;
 
 
+import com.m000gg.billing.ledger.fx.ExchangeRateProvider;
 import com.m000gg.billing.settings.exception.InvalidCurrencyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Currency;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,9 +36,12 @@ public class SystemSettingService {
     @Autowired
     private SystemSettingRepository systemSettingRepository;
 
+    @Autowired(required = false)
+    private List<ExchangeRateProvider> exchangeRateProviders = List.of();
+
     private static final String BASE_CURRENCY_KEY = "BASE_CURRENCY";
     private static final String EXCHANGE_RATE_PROVIDER_KEY = "EXCHANGE_RATE_PROVIDER";
-    private static final String DEFAULT_EXCHANGE_RATE_PROVIDER = "none";
+    private static final String DEFAULT_EXCHANGE_RATE_PROVIDER = "privatbank";
 
     private static final Set<String> VALID_CURRENCIES = Currency.getAvailableCurrencies()
             .stream()
@@ -75,6 +80,13 @@ public class SystemSettingService {
         String normalized = (providerId == null || providerId.isBlank())
                 ? DEFAULT_EXCHANGE_RATE_PROVIDER
                 : providerId.trim().toLowerCase();
+
+        boolean supported = DEFAULT_EXCHANGE_RATE_PROVIDER.equals(normalized)
+                || exchangeRateProviders.stream()
+                        .anyMatch(provider -> provider.id() != null && provider.id().equalsIgnoreCase(normalized));
+        if (!supported) {
+            throw new IllegalArgumentException("Unsupported exchange rate provider: " + providerId);
+        }
 
         SystemSetting setting = systemSettingRepository.findById(EXCHANGE_RATE_PROVIDER_KEY)
                 .orElseGet(() -> {

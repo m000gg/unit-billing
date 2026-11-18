@@ -43,6 +43,9 @@ public class ExchangeRateService {
     }
 
     public Optional<ExchangeRateQuote> getRate(String fromCurrency, String toCurrency) {
+        if (fromCurrency == null || toCurrency == null) {
+            return Optional.empty();
+        }
         if (fromCurrency.equalsIgnoreCase(toCurrency)) {
             return Optional.of(new ExchangeRateQuote(BigDecimal.ONE.setScale(6), "identity", Instant.now()));
         }
