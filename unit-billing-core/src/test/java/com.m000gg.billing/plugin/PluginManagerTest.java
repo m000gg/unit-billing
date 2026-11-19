@@ -16,14 +16,30 @@
 
 package com.m000gg.billing.plugin;
 
+import com.m000gg.billing.plugin.context.DefaultExchangeRateDirectory;
+import com.m000gg.billing.plugin.context.PluginExchangeRateRegistry;
+import com.m000gg.billing.settings.SystemSettingService;
+import com.m000gg.plugin.api.query.fx.ExchangeRate;
+import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.tools.JavaCompiler;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,7 +50,7 @@ class PluginManagerTest {
 
     @Test
     void startPluginsReturnsWhenDirectoryIsNotConfigured() {
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertDoesNotThrow(manager::startPlugins);
     }
@@ -42,7 +58,7 @@ class PluginManagerTest {
     @Test
     void startPluginsDoesNotCreateDirectoryWhenQueueCapacityIsInvalid() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 0);
 
@@ -54,7 +70,7 @@ class PluginManagerTest {
     @Test
     void startPluginsCreatesConfiguredDirectoryWhenNoJarsArePresent() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 1);
 
@@ -65,9 +81,202 @@ class PluginManagerTest {
 
     @Test
     void dispatchBalanceChangedDoesNothingWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null);
+        PluginManager manager = new PluginManager(null, null, null, null);
 
         assertDoesNotThrow(() -> manager.dispatchBalanceChanged(null));
+    }
+
+    @Test
+    void loadsFxProviderPluginServesRatesAcrossPluginsRegardlessOfStartOrderAndUnregistersOnStop() throws Exception {
+        Path pluginDirectory = Files.createDirectories(tempDir.resolve("plugins"));
+        buildPluginJar(
+                pluginDirectory.resolve("aaa-consumer-plugin.jar"),
+                "com.example.consumer.ConsumerTestPlugin",
+                """
+                package com.example.consumer;
+
+                import com.m000gg.plugin.api.Plugin;
+                import com.m000gg.plugin.api.PluginContext;
+                import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
+
+                public class ConsumerTestPlugin implements Plugin {
+                    private ExchangeRateDirectory exchangeRates;
+
+                    @Override
+                    public String getId() {
+                        return "consumer";
+                    }
+
+                    @Override
+                    public void onEnable(PluginContext context) {
+                        this.exchangeRates = context.exchangeRates();
+                    }
+
+                    @Override
+                    public void onDisable() {
+                    }
+
+                    public String queryGbpToEur() {
+                        return exchangeRates.findRate("GBP", "EUR")
+                                .map(rate -> rate.rate().toPlainString() + ":" + rate.source())
+                                .orElse("missing");
+                    }
+                }
+                """
+        );
+        buildPluginJar(
+                pluginDirectory.resolve("nbu-fx-plugin.jar"),
+                "com.example.fx.NbuTestPlugin",
+                """
+                package com.example.fx;
+
+                import com.m000gg.plugin.api.Plugin;
+                import com.m000gg.plugin.api.PluginContext;
+                import com.m000gg.plugin.api.query.fx.ExchangeRate;
+                import java.math.BigDecimal;
+                import java.time.Instant;
+                import java.util.Optional;
+
+                public class NbuTestPlugin implements Plugin {
+                    @Override
+                    public String getId() {
+                        return "nbu-fx";
+                    }
+
+                    @Override
+                    public void onEnable(PluginContext context) {
+                        context.registerExchangeRateProvider((from, to) -> {
+                            if ("GBP".equals(from) && "EUR".equals(to)) {
+                                return Optional.of(new ExchangeRate(new BigDecimal("1.18"), "nbu", Instant.now()));
+                            }
+                            return Optional.empty();
+                        });
+                    }
+
+                    @Override
+                    public void onDisable() {
+                    }
+                }
+                """
+        );
+
+        PluginExchangeRateRegistry registry = new PluginExchangeRateRegistry();
+        ExchangeRateDirectory directory = new DefaultExchangeRateDirectory(
+                new SystemSettingService() {
+                    @Override
+                    public String getBaseCurrency() {
+                        return "USD";
+                    }
+                },
+                registry
+        );
+        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
+        setField(manager, "pluginDirectory", pluginDirectory.toString());
+        setField(manager, "eventQueueCapacity", 4);
+
+        manager.startPlugins();
+
+        Optional<ExchangeRate> quote = directory.findRate("GBP", "EUR");
+        assertTrue(quote.isPresent());
+        assertEquals(0, new BigDecimal("1.18").compareTo(quote.get().rate()));
+        assertEquals("nbu", quote.get().source());
+        assertEquals("USD", directory.baseCurrency());
+
+        // Verify a consumer plugin loaded before the FX provider resolves the rate dynamically.
+        var runningField = PluginManager.class.getDeclaredField("runningPlugins");
+        runningField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        var running = (java.util.Map<String, RunningPlugin>) runningField.get(manager);
+        Object consumerPlugin = running.get("consumer").loadedPlugin().plugin();
+        assertEquals("1.18:nbu", consumerPlugin.getClass().getMethod("queryGbpToEur").invoke(consumerPlugin));
+
+        manager.stopPlugins();
+
+        assertTrue(registry.getActiveProviderPluginId().isEmpty());
+        assertTrue(directory.findRate("GBP", "EUR").isEmpty());
+    }
+
+    @Test
+    void unregistersFxProviderWhenPluginFailsDuringOnEnable() throws Exception {
+        Path pluginDirectory = Files.createDirectories(tempDir.resolve("plugins"));
+        buildPluginJar(
+                pluginDirectory.resolve("broken-fx-plugin.jar"),
+                "com.example.fx.BrokenFxPlugin",
+                """
+                package com.example.fx;
+
+                import com.m000gg.plugin.api.Plugin;
+                import com.m000gg.plugin.api.PluginContext;
+                import com.m000gg.plugin.api.query.fx.ExchangeRate;
+                import java.math.BigDecimal;
+                import java.time.Instant;
+                import java.util.Optional;
+
+                public class BrokenFxPlugin implements Plugin {
+                    @Override
+                    public String getId() {
+                        return "broken-fx";
+                    }
+
+                    @Override
+                    public void onEnable(PluginContext context) {
+                        context.registerExchangeRateProvider((from, to) ->
+                                Optional.of(new ExchangeRate(BigDecimal.TEN, "broken", Instant.now())));
+                        throw new IllegalStateException("startup failed after registration");
+                    }
+
+                    @Override
+                    public void onDisable() {
+                    }
+                }
+                """
+        );
+
+        PluginExchangeRateRegistry registry = new PluginExchangeRateRegistry();
+        ExchangeRateDirectory directory = new DefaultExchangeRateDirectory(null, registry);
+        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
+        setField(manager, "pluginDirectory", pluginDirectory.toString());
+        setField(manager, "eventQueueCapacity", 4);
+
+        manager.startPlugins();
+
+        assertTrue(registry.getActiveProviderPluginId().isEmpty());
+        assertTrue(directory.findRate("USD", "EUR").isEmpty());
+    }
+
+    private void buildPluginJar(Path targetJar, String className, String source) throws IOException {
+        Path workDir = Files.createTempDirectory(tempDir, "compile");
+        Path srcFile = workDir.resolve(className.replace('.', '/') + ".java");
+        Files.createDirectories(srcFile.getParent());
+        Files.writeString(srcFile, source, StandardCharsets.UTF_8);
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8)) {
+            boolean ok = compiler.getTask(
+                    null,
+                    fileManager,
+                    null,
+                    List.of("-d", workDir.toString()),
+                    null,
+                    fileManager.getJavaFileObjects(srcFile)
+            ).call();
+            assertTrue(ok, "Failed to compile test plugin " + className);
+        }
+
+        try (JarOutputStream jarOut = new JarOutputStream(Files.newOutputStream(targetJar))) {
+            jarOut.putNextEntry(new JarEntry("META-INF/services/com.m000gg.plugin.api.Plugin"));
+            jarOut.write((className + "\n").getBytes(StandardCharsets.UTF_8));
+            jarOut.closeEntry();
+
+            try (var paths = Files.walk(workDir)) {
+                for (Path p : paths.filter(p -> p.toString().endsWith(".class")).toList()) {
+                    String entryName = workDir.relativize(p).toString().replace('\\', '/');
+                    jarOut.putNextEntry(new JarEntry(entryName));
+                    jarOut.write(Files.readAllBytes(p));
+                    jarOut.closeEntry();
+                }
+            }
+        }
     }
 
     private static void setField(Object target, String fieldName, Object value)

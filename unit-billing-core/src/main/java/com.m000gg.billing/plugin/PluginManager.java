@@ -18,8 +18,10 @@ package com.m000gg.billing.plugin;
 
 import com.m000gg.billing.plugin.context.DefaultPluginContext;
 import com.m000gg.billing.plugin.context.DefaultPluginSettings;
+import com.m000gg.billing.plugin.context.PluginExchangeRateRegistry;
 import com.m000gg.plugin.api.Plugin;
 import com.m000gg.plugin.api.event.BalanceChanged;
+import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
 import jakarta.annotation.PostConstruct;
@@ -52,6 +54,8 @@ public class PluginManager {
 
     private final UserDirectory userDirectory;
     private final PluginProperties pluginProperties;
+    private final ExchangeRateDirectory exchangeRateDirectory;
+    private final PluginExchangeRateRegistry exchangeRateRegistry;
     private final PluginLoader pluginLoader = new PluginLoader();
 
     private final ConcurrentMap<String, RunningPlugin> runningPlugins =
@@ -122,10 +126,11 @@ public class PluginManager {
         PluginLoader.LoadedPlugin loaded = pluginLoader.load(jarPath);
         ThreadPoolExecutor eventWorker = null;
         boolean enableAttempted = false;
+        String pluginId = null;
 
         try {
             Plugin plugin = loaded.plugin();
-            String pluginId = plugin.getId();
+            pluginId = plugin.getId();
 
             if (pluginId == null || pluginId.isBlank()) {
                 throw new IllegalArgumentException(
@@ -145,8 +150,13 @@ public class PluginManager {
                     .getOrDefault(pluginId, Map.of());
 
             PluginSettings settings = new DefaultPluginSettings(values);
-            DefaultPluginContext context =
-                    new DefaultPluginContext(userDirectory, settings);
+            DefaultPluginContext context = new DefaultPluginContext(
+                    pluginId,
+                    userDirectory,
+                    settings,
+                    exchangeRateDirectory,
+                    exchangeRateRegistry
+            );
 
             enableAttempted = true;
             plugin.onEnable(context);
@@ -161,8 +171,10 @@ public class PluginManager {
                     eventWorker
             );
         } catch (RuntimeException | LinkageError | ServiceConfigurationError e) {
+            unregisterFxProvider(pluginId);
+
             if (eventWorker != null) {
-                shutdownWorker(loaded.plugin().getId(), eventWorker);
+                shutdownWorker(pluginId, eventWorker);
             }
 
             if (enableAttempted) {
@@ -249,7 +261,9 @@ public class PluginManager {
     private final ConcurrentMap<String, RunningPlugin> stuckPlugins = new ConcurrentHashMap<>();
 
     private void stopPlugin(RunningPlugin runningPlugin) {
-        runningPlugins.remove(runningPlugin.id(), runningPlugin);
+        if (runningPlugins.remove(runningPlugin.id(), runningPlugin)) {
+            unregisterFxProvider(runningPlugin.id());
+        }
 
         if (!shutdownWorker(runningPlugin.id(), runningPlugin.balanceEventWorker())) {
             stuckPlugins.put(runningPlugin.id(), runningPlugin);
@@ -336,6 +350,12 @@ public class PluginManager {
                     plugin.plugin().getId(),
                     e
             );
+        }
+    }
+
+    private void unregisterFxProvider(String pluginId) {
+        if (exchangeRateRegistry != null && pluginId != null && !pluginId.isBlank()) {
+            exchangeRateRegistry.unregister(pluginId);
         }
     }
 }
