@@ -17,6 +17,7 @@
 package com.m000gg.billing.plugin.context;
 
 import com.m000gg.plugin.api.PluginContext;
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
@@ -35,6 +36,7 @@ public class DefaultPluginContext implements PluginContext {
     private final List<Consumer<BalanceChanged>> balanceChangedHandlers = new CopyOnWriteArrayList<>();
     private final UserDirectory userDirectory;
     private final PluginSettings pluginSettings;
+    private final BalanceCharger balanceCharger;
     private final ExchangeRateDirectory exchangeRateDirectory;
     private final PluginExchangeRateRegistry exchangeRateRegistry;
     private final AtomicBoolean active = new AtomicBoolean(true);
@@ -43,12 +45,14 @@ public class DefaultPluginContext implements PluginContext {
             String pluginId,
             UserDirectory userDirectory,
             PluginSettings pluginSettings,
+            BalanceCharger balanceCharger,
             ExchangeRateDirectory exchangeRateDirectory,
             PluginExchangeRateRegistry exchangeRateRegistry
     ) {
         this.pluginId = Objects.requireNonNull(pluginId, "pluginId must not be null");
         this.userDirectory = userDirectory;
         this.pluginSettings = pluginSettings;
+        this.balanceCharger = balanceCharger;
         this.exchangeRateDirectory = exchangeRateDirectory;
         this.exchangeRateRegistry = exchangeRateRegistry;
     }
@@ -94,5 +98,10 @@ public class DefaultPluginContext implements PluginContext {
 
     public List<Consumer<BalanceChanged>> getBalanceChangedHandlers() {
         return List.copyOf(balanceChangedHandlers);
+    }
+
+    @Override
+    public BalanceCharger balanceCharger() {
+        return balanceCharger;
     }
 }

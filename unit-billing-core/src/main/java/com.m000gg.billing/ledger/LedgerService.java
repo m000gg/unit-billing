@@ -23,6 +23,9 @@ import com.m000gg.billing.ledger.exception.InvalidRefundTargetException;
 import com.m000gg.billing.ledger.exception.RefundExceedsOriginalChargeException;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
+import com.m000gg.plugin.api.command.balance.ChargeRequest;
+import com.m000gg.plugin.api.command.balance.ChargeResult;
+import com.m000gg.plugin.api.command.balance.ChargeStatus;
 import com.m000gg.plugin.api.event.BalanceChangeDirection;
 import com.m000gg.plugin.api.event.BalanceChangeType;
 import com.m000gg.plugin.api.event.BalanceChanged;
@@ -38,6 +41,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -185,5 +189,33 @@ public class LedgerService {
                 entry,
                 refundableChargeIds.contains(entry.getId())
         ));
+    }
+
+    /**
+     * Charges a subscriber on behalf of a plugin. Runs in its own transaction, which is
+     * committed when the method returns. Insufficient funds is a regular outcome, not an exception.
+     */
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public ChargeResult chargeForPlugin(ChargeRequest request) {
+        ApplicationUser user = applicationUserRepository.findByIdForUpdate(request.subscriberId())
+                .orElseThrow(() -> new IllegalArgumentException("Unknown subscriber: " + request.subscriberId()));
+
+        Optional<LedgerEntry> existing = ledgerEntryRepository.findByIdempotencyKey(request.idempotencyKey());
+        if (existing.isPresent()) {
+            LedgerEntry entry = existing.get();
+            if (!entry.getSubscriberId().equals(user.getId())
+                    || entry.getAmount().compareTo(request.amount()) != 0) {
+                throw new IllegalArgumentException("Idempotency key reused with different subscriber or amount");
+            }
+            return new ChargeResult(ChargeStatus.SUCCESS, entry.getId());
+        }
+
+        if (request.amount().compareTo(user.getBalance()) > 0) {
+            return new ChargeResult(ChargeStatus.INSUFFICIENT_FUNDS, null);
+        }
+
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromChargeRequest(request, user.getUserCurrency());
+        applyLedgerAction(user, entry, request.amount(), false);
+        return new ChargeResult(ChargeStatus.SUCCESS, entry.getId());
     }
 }

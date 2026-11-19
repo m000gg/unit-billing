@@ -67,6 +67,20 @@ public class LedgerEntry {
     @Column(name = "exchange_rate", nullable = false, precision = 19, scale = 6)
     private BigDecimal exchangeRate;
 
+    /**
+     * Idempotency key of a plugin-initiated charge, or {@code null}.
+     * <p>
+     * Set only for entries created through {@code BalanceCharger}; manual operations
+     * (top-up, bill, correction, refund) and entries created before this field was
+     * introduced leave it {@code null}. When set, the value is unique across the whole
+     * table and starts with the plugin id, for example
+     * {@code subscriptions:<subscriptionId>:<periodNo>}.
+     * <p>
+     * It exists only to detect a repeated request; it is not meant for reporting or filtering.
+     */
+    @Column(name = "idempotency_key", updatable = false)
+    private String idempotencyKey;
+
     public EntrySource getSource() {
         return source;
     }
@@ -172,6 +186,14 @@ public class LedgerEntry {
 
     public void setExchangeRate(BigDecimal exchangeRate) {
         this.exchangeRate = exchangeRate;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 }
 
