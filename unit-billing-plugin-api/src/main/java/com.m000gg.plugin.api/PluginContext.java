@@ -16,11 +16,14 @@
 
 package com.m000gg.plugin.api;
 
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
+import com.m000gg.plugin.api.db.PluginDatabase;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
 import com.m000gg.plugin.api.spi.fx.ExchangeRateProvider;
+import com.m000gg.plugin.api.ui.PluginUi;
 
 import java.util.function.Consumer;
 
@@ -44,4 +47,10 @@ public interface PluginContext {
      * The registration is automatically removed when the plugin is stopped.
      */
     void registerExchangeRateProvider(ExchangeRateProvider provider);
+
+    BalanceCharger balanceCharger();
+
+    PluginUi ui();
+
+    PluginDatabase database();
 }

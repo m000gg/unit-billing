@@ -18,11 +18,16 @@ package com.m000gg.billing.plugin;
 
 import com.m000gg.billing.plugin.context.DefaultExchangeRateDirectory;
 import com.m000gg.billing.plugin.context.PluginExchangeRateRegistry;
+import com.m000gg.billing.plugin.db.PluginDatabaseFactory;
 import com.m000gg.billing.settings.SystemSettingService;
+import com.m000gg.plugin.api.db.PluginDatabase;
 import com.m000gg.plugin.api.query.fx.ExchangeRate;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
@@ -34,14 +39,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PluginManagerTest {
 
@@ -50,7 +53,7 @@ class PluginManagerTest {
 
     @Test
     void startPluginsReturnsWhenDirectoryIsNotConfigured() {
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
 
         assertDoesNotThrow(manager::startPlugins);
     }
@@ -58,7 +61,7 @@ class PluginManagerTest {
     @Test
     void startPluginsDoesNotCreateDirectoryWhenQueueCapacityIsInvalid() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 0);
 
@@ -70,7 +73,7 @@ class PluginManagerTest {
     @Test
     void startPluginsCreatesConfiguredDirectoryWhenNoJarsArePresent() throws Exception {
         Path pluginDirectory = tempDir.resolve("plugins");
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 1);
 
@@ -81,9 +84,13 @@ class PluginManagerTest {
 
     @Test
     void dispatchBalanceChangedDoesNothingWhenNoPluginsAreRunning() {
-        PluginManager manager = new PluginManager(null, null, null, null);
+        PluginManager manager = newEmptyManager();
 
         assertDoesNotThrow(() -> manager.dispatchBalanceChanged(null));
+    }
+
+    private static PluginManager newEmptyManager() {
+        return new PluginManager(null, null, null, null, null, null, null);
     }
 
     @Test
@@ -170,9 +177,7 @@ class PluginManagerTest {
                 },
                 registry
         );
-        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
-        setField(manager, "pluginDirectory", pluginDirectory.toString());
-        setField(manager, "eventQueueCapacity", 4);
+        PluginManager manager = newManagerWithDir(pluginDirectory, directory, registry);
 
         manager.startPlugins();
 
@@ -347,7 +352,27 @@ class PluginManagerTest {
             ExchangeRateDirectory directory,
             PluginExchangeRateRegistry registry
     ) throws ReflectiveOperationException {
-        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
+        PluginMigrationRunner noOpMigrations = new PluginMigrationRunner(null, null) {
+            @Override
+            public int migrate(String pluginId, ClassLoader pluginClassLoader) {
+                return 0;
+            }
+        };
+        PluginDatabaseFactory noOpDatabaseFactory = new PluginDatabaseFactory(null, null, null) {
+            @Override
+            public PluginDatabase create(String pluginId) {
+                return null;
+            }
+        };
+        PluginManager manager = new PluginManager(
+                null,
+                new PluginProperties(),
+                null,
+                directory,
+                registry,
+                noOpMigrations,
+                noOpDatabaseFactory
+        );
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 4);
         return manager;
@@ -388,10 +413,58 @@ class PluginManagerTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"subscriptions", "email-notifier", "hello-ui", "p2p"})
+    void validatePluginIdAcceptsLowercaseDigitsAndHyphens(String id) {
+        assertDoesNotThrow(() -> PluginManager.validatePluginId(id));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "Subscriptions", "sub_scriptions", "sub:scriptions", "sub/scriptions", "sub scriptions"})
+    void validatePluginIdRejectsOtherValues(String id) {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(id));
+    }
+
+    @Test
+    void validatePluginIdRejectsNull() {
+        assertThrows(IllegalArgumentException.class, () -> PluginManager.validatePluginId(null));
+    }
+
     private static void setField(Object target, String fieldName, Object value)
             throws ReflectiveOperationException {
         Field field = PluginManager.class.getDeclaredField(fieldName);
         field.setAccessible(true);
         field.set(target, value);
+    }
+
+    @Test
+    void adminNavigationIsEmptyWhenNoPluginsAreRunning() {
+        PluginManager manager = newEmptyManager();
+
+        assertTrue(manager.getAdminNavigationItems(Locale.ENGLISH).isEmpty());
+    }
+
+    @Test
+    void clientDashboardSectionsAreEmptyWhenNoPluginsAreRunning() {
+        PluginManager manager = newEmptyManager();
+
+        assertTrue(manager.getRenderedClientDashboardSections(Locale.ENGLISH).isEmpty());
+    }
+
+    @Test
+    void renderPageThrowsNotFoundForUnknownPlugin() {
+        PluginManager manager = newEmptyManager();
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> manager.renderPage("unknown", PluginArea.ADMIN, null));
+
+        assertEquals(404, ex.getStatusCode().value());
+    }
+
+    @Test
+    void readAssetReturnsEmptyForUnknownPlugin() {
+        PluginManager manager = newEmptyManager();
+
+        assertTrue(manager.readAsset("unknown", "style.css").isEmpty());
     }
 }

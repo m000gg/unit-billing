@@ -17,11 +17,14 @@
 package com.m000gg.billing.plugin.context;
 
 import com.m000gg.plugin.api.PluginContext;
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
+import com.m000gg.plugin.api.db.PluginDatabase;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
 import com.m000gg.plugin.api.spi.fx.ExchangeRateProvider;
+import com.m000gg.plugin.api.ui.PluginUi;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,20 +38,27 @@ public class DefaultPluginContext implements PluginContext {
     private final List<Consumer<BalanceChanged>> balanceChangedHandlers = new CopyOnWriteArrayList<>();
     private final UserDirectory userDirectory;
     private final PluginSettings pluginSettings;
+    private final BalanceCharger balanceCharger;
+    private final PluginDatabase pluginDatabase;
     private final ExchangeRateDirectory exchangeRateDirectory;
     private final PluginExchangeRateRegistry exchangeRateRegistry;
     private final AtomicBoolean active = new AtomicBoolean(true);
+    private final DefaultPluginUi pluginUi = new DefaultPluginUi();
 
     public DefaultPluginContext(
             String pluginId,
             UserDirectory userDirectory,
             PluginSettings pluginSettings,
+            BalanceCharger balanceCharger,
+            PluginDatabase pluginDatabase,
             ExchangeRateDirectory exchangeRateDirectory,
             PluginExchangeRateRegistry exchangeRateRegistry
     ) {
         this.pluginId = Objects.requireNonNull(pluginId, "pluginId must not be null");
         this.userDirectory = userDirectory;
         this.pluginSettings = pluginSettings;
+        this.balanceCharger = balanceCharger;
+        this.pluginDatabase = pluginDatabase;
         this.exchangeRateDirectory = exchangeRateDirectory;
         this.exchangeRateRegistry = exchangeRateRegistry;
     }
@@ -94,5 +104,24 @@ public class DefaultPluginContext implements PluginContext {
 
     public List<Consumer<BalanceChanged>> getBalanceChangedHandlers() {
         return List.copyOf(balanceChangedHandlers);
+    }
+
+    @Override
+    public BalanceCharger balanceCharger() {
+        return balanceCharger;
+    }
+
+    @Override
+    public PluginUi ui() {
+        return pluginUi;
+    }
+
+    @Override
+    public PluginDatabase database() {
+        return pluginDatabase;
+    }
+
+    public DefaultPluginUi getPluginUi() {
+        return pluginUi;
     }
 }

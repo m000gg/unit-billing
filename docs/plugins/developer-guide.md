@@ -2,11 +2,12 @@
 
 ## Changelog
 
-| Version | Date       | Description                                                                     | Status | Authors                             |
-|---------|------------|---------------------------------------------------------------------------------|--------|-------------------------------------|
-| 0.1     | 2026-10-10 | Initial draft: dependency setup and planned shape of a plugin                   | Draft  | [m000gg](https://github.com/m000gg) |
-| 0.2     | 2026-10-13 | Rewrite the guide around the general plugin lifecycle                           | Draft  | [m000gg](https://github.com/m000gg) |
-
+| Version  | Date       | Description                                                         | Status  | Authors                             |
+|----------|------------|---------------------------------------------------------------------|---------|-------------------------------------|
+| 0.1      | 2026-10-10 | Initial draft: dependency setup and planned shape of a plugin       | Draft   | [m000gg](https://github.com/m000gg) |
+| 0.2      | 2026-10-13 | Rewrite the guide around the general plugin lifecycle               | Draft   | [m000gg](https://github.com/m000gg) |
+| 0.3      | 2026-11-10 | Add documentation for plugin UI registration and dashboard sections | Draft   | [m000gg](https://github.com/m000gg) |
+| 0.4      | 2026-11-11 | Add documentation for plugin UI localization (i18n)                 | Draft   | [m000gg](https://github.com/m000gg) |
 
 ---
 
@@ -71,7 +72,6 @@ During `onEnable`, the plugin can read settings and register callbacks for the e
 
 When the application shuts down, the host calls `onDisable` and closes the plugin class loader.
 
-
 ## 1. Add the API dependency
 
 Add the API dependency to the plugin module's `pom.xml`:
@@ -129,7 +129,7 @@ The plugin ID should be stable and unique. The host uses it to find the plugin's
 
 `onEnable` is called when the host starts the plugin. Validate configuration and initialize resources there. `onDisable` is the place to stop plugin-owned threads, close connections, and release other resources.
 
-The host currently treats a plugin as loaded if its `onEnable` method returns normally. If a plugin detects invalid configuration and simply returns, the manager does not receive a separate “disabled” or “failed” status. Log configuration problems clearly and do not assume the host can infer them.
+The host currently treats a plugin as loaded if its `onEnable` method returns normally. If a plugin detects invalid configuration and simply returns, the manager does not receive a separate "disabled" or "failed" status. Log configuration problems clearly and do not assume the host can infer them.
 
 ## 3. Configure the plugin
 
@@ -232,7 +232,319 @@ Callbacks are queued after commit and run asynchronously on a single worker per 
 
 This is in-process event delivery, not a durable queue. The current implementation does not guarantee retry, persistence, or exactly-once processing.
 
-## API compatibility
+### Plugin UI
+
+The plugin API provides UI registration through `PluginContext.ui()`.
+
+A plugin can register admin pages, client pages, admin navigation entries, and client dashboard sections. All registrations are optional.
+
+#### Admin and client pages
+
+Use the following methods to register page handlers:
+
+```java
+context.ui().registerAdminPages(request -> {
+    return new PluginPageResponse.Html(
+            "Example Plugin",
+            adminHtml,
+            List.of("/plugin-assets/example-plugin/admin.css"),
+            List.of("/plugin-assets/example-plugin/admin.js")
+    );
+});
+
+context.ui().registerClientPages(request -> {
+    return new PluginPageResponse.Html(
+            "Example Plugin",
+            clientHtml,
+            List.of("/plugin-assets/example-plugin/client.css"),
+            List.of("/plugin-assets/example-plugin/client.js")
+    );
+});
+```
+
+The handler receives a `PluginPageRequest` and returns a `PluginPageResponse`.
+
+`PluginPageResponse.Html` contains:
+
+- Page title.
+- HTML content.
+- Stylesheet URLs.
+- JavaScript URLs.
+
+The HTML can be loaded from the plugin's resources. For example:
+
+```java
+private String readResource(String path) {
+    try (InputStream input = getClass().getResourceAsStream(path)) {
+        if (input == null) {
+            throw new IllegalStateException("Resource not found: " + path);
+        }
+
+        return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+        throw new IllegalStateException("Could not read resource: " + path, e);
+    }
+}
+```
+
+The host provides the page routes:
+
+- `/admin/plugins/{pluginId}/`
+- `/client/plugins/{pluginId}/`
+
+#### Admin navigation
+
+Register an entry in the admin navigation using:
+
+```java
+context.ui().registerAdminNavigation("Example Plugin", "🧩");
+```
+
+The first argument is the displayed title; the second is the icon.
+
+Registering navigation does not automatically register a page. Use `registerAdminPages()` separately if the entry should open a plugin page.
+
+#### Client dashboard sections
+
+A plugin can add small sections to the client's main dashboard without replacing the host's existing balance, account information, or transaction history.
+
+Implement `ClientDashboardSection`:
+
+```java
+package com.example.billingplugin;
+
+import com.m000gg.plugin.api.ui.ClientDashboardSection;
+
+import java.util.List;
+
+public class NetworkDashboardSection implements ClientDashboardSection {
+
+    @Override
+    public String getId() {
+        return "network-status";
+    }
+
+    @Override
+    public String getTitle() {
+        return "Network Status";
+    }
+
+    @Override
+    public int getOrder() {
+        return 10;
+    }
+
+    @Override
+    public String getTemplate() {
+        return "templates/client/network-dashboard.html";
+    }
+
+    @Override
+    public List<String> getStylesheets() {
+        return List.of("network-dashboard.css");
+    }
+
+    @Override
+    public List<String> getScripts() {
+        return List.of("network-dashboard.js");
+    }
+}
+```
+
+The interface defines:
+
+| Method | Purpose |
+|---|---|
+| `getId()` | Unique section ID within the plugin. |
+| `getTitle()` | Section title displayed by the host. |
+| `getOrder()` | Display order. Lower values appear first. Default: `100`. |
+| `getTemplate()` | Path to the HTML fragment inside the plugin JAR. |
+| `getStylesheets()` | CSS filenames. Defaults to an empty list. |
+| `getScripts()` | JavaScript filenames. Defaults to an empty list. |
+
+Register the section during `onEnable()`:
+
+```java
+@Override
+public void onEnable(PluginContext context) {
+    context.ui().registerClientDashboardSection(
+            new NetworkDashboardSection()
+    );
+}
+```
+
+Multiple sections can be registered by the same plugin. Each section must have a unique ID within that plugin.
+
+The host sorts sections by order, then by plugin ID and section ID.
+
+#### Dashboard resources
+
+Dashboard templates must be HTML fragments, not complete HTML documents. Do not include `<html>`, `<head>`, or `<body>` elements.
+
+Use the following resource structure:
+
+```text
+src/main/resources/
+├── templates/
+│   └── client/
+│       └── network-dashboard.html
+└── plugin-static/
+    ├── network-dashboard.css
+    └── network-dashboard.js
+```
+
+The template path returned by `getTemplate()` must point inside `templates/client/`.
+
+For example:
+
+```html
+<div class="network-dashboard">
+    <div class="network-dashboard__header">
+        <span class="network-dashboard__indicator"></span>
+        <span class="network-dashboard__status">
+            All systems operational
+        </span>
+    </div>
+
+    <div class="network-dashboard__metric">
+        <span class="network-dashboard__label">Connection</span>
+        <span class="network-dashboard__value">Online</span>
+    </div>
+</div>
+```
+
+#### CSS and JavaScript
+
+CSS and JavaScript files belong in `plugin-static/`. Return their filenames from `getStylesheets()` and `getScripts()`:
+
+```java
+@Override
+public List<String> getStylesheets() {
+    return List.of("network-dashboard.css");
+}
+
+@Override
+public List<String> getScripts() {
+    return List.of("network-dashboard.js");
+}
+```
+
+The host serves plugin assets under:
+
+```text
+/plugin-assets/{pluginId}/
+```
+
+For the example plugin, the resulting URLs are:
+
+```text
+/plugin-assets/example-plugin/network-dashboard.css
+/plugin-assets/example-plugin/network-dashboard.js
+```
+
+Example CSS:
+
+```css
+.network-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.network-dashboard__indicator {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+```
+
+Example JavaScript:
+
+```javascript
+document.querySelectorAll(".network-dashboard").forEach((dashboard) => {
+    console.log("Network dashboard initialized", dashboard);
+});
+```
+
+Scope CSS selectors and JavaScript DOM operations to the plugin's own section. Avoid global selectors or global modifications that could affect other plugins or the host application.
+
+#### Host rendering
+
+The host is responsible for loading dashboard templates and assets. Plugin developers only need to register the section and provide the resources described above.
+
+The host performs the following steps:
+
+1. Collects registered sections from enabled plugins.
+2. Loads each template from the plugin JAR.
+3. Resolves the stylesheet and script filenames to plugin asset URLs.
+4. Sorts the sections by their configured order.
+5. Passes the rendered sections to the client dashboard controller.
+6. Renders the HTML fragments and includes their CSS and JavaScript resources.
+
+The client dashboard template must render the section content and include its resources. If a plugin section does not appear, check that its template path and registration are valid. If its styling or JavaScript does not work, check the generated asset URLs and browser Network tab.
+
+The host inserts dashboard template content as HTML. Thymeleaf expressions inside plugin-provided fragments are not processed. Plugins should provide ready-to-render HTML.
+
+#### Localization
+
+Plugins ship their own translations. The host replaces `{{i18n:key}}` placeholders with text in the user's language, so a plugin needs no locale handling in code.
+
+Add one properties file per language to the plugin JAR:
+
+```text
+src/main/resources/i18n/
+├── messages.properties        # default, used when nothing else matches
+├── messages_de.properties
+└── messages_ru.properties
+```
+
+Files are read as UTF-8, so non-ASCII characters can be written as they are. Keys may contain letters, digits, `.`, `_` and `-`.
+
+```properties
+network.title=Network Status
+network.status=All systems operational
+```
+
+Use the placeholders in templates and in Java:
+
+```html
+<span class="network-dashboard__status">{{i18n:network.status}}</span>
+```
+
+```java
+context.ui().registerAdminNavigation("{{i18n:test.nav}}", "🧪");
+
+@Override
+public String getTitle() {
+    return "{{i18n:network.title}}";
+}
+```
+
+Placeholders are replaced in:
+
+- the `title` and `body` of `PluginPageResponse.Html`;
+- the admin navigation title;
+- the title and template of a client dashboard section.
+
+They are **not** replaced in CSS or JavaScript files from `plugin-static/`. To give a script a translated string, put it into the HTML as a data attribute and read it with `dataset`:
+
+```html
+<button id="testButton" data-msg-clicked="{{i18n:test.hint.clicked}}">
+    {{i18n:test.button}}
+</button>
+```
+
+The host looks for a key in this order: `messages_<lang>_<COUNTRY>`, `messages_<lang>`, the host's default language (`unitbilling.configuration.plugins.default-locale`, default `en`), `messages.properties`. If the key is missing everywhere, the key itself is shown and the host logs a warning. Always put every key into `messages.properties`, so no user sees a raw key.
+
+Notes:
+
+- Translations are HTML-escaped by the host. Do not put markup into them.
+- Placeholders cover static text only. A plugin inserts dynamic values (numbers, user data) itself and must escape them.
+- Translations belong to the plugin, so keys of different plugins never conflict.
+
+
+### API compatibility
 
 The plugin API is a binary contract. Adding an abstract method, removing or renaming a type, changing a method signature, or changing event fields may break plugins compiled against an earlier API.
 
@@ -242,8 +554,9 @@ The current host does not check an API compatibility range when it loads a JAR. 
 
 ## Operational and security guidance
 
-| ✅ Do                                                         | ❌ Don't                                                                         |
+|                                                              |                                                                                 |
 |--------------------------------------------------------------|---------------------------------------------------------------------------------|
+| **Do**                                                       | **Don't**                                                                       |
 | Depend on `unit-billing-plugin-api` only.                    | Compile against host entities, repositories, controllers, or services.          |
 | Keep the plugin ID stable and use it as the settings prefix. | Change the ID without updating its configuration.                               |
 | Validate settings and report actionable errors.              | Assume that the host can detect invalid configuration returned from `onEnable`. |
@@ -254,5 +567,7 @@ The current host does not check an API compatibility range when it loads a JAR. 
 | Load only trusted plugin JARs.                               | Treat a class loader as a security sandbox.                                     |
 
 Plugins execute inside the host application's JVM and have the process's privileges. A class loader separates classes; it does not prevent plugin code from accessing resources available to the process, such as the file system or network. Only load plugin code you trust.
+
+Plugin-provided HTML, CSS, and JavaScript are also trusted code. JavaScript executes in the client's browser in the context of the host page. Do not load untrusted plugin UI resources.
 
 For a working example, see the `email-notifier` module. For the architectural rationale and known trade-offs, see [ADR0009](../adr/0009-multi-module-and-plugins.md).
