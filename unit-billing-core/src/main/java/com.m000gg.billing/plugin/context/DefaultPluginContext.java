@@ -18,27 +18,44 @@ package com.m000gg.billing.plugin.context;
 
 import com.m000gg.plugin.api.PluginContext;
 import com.m000gg.plugin.api.event.BalanceChanged;
+import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
+import com.m000gg.plugin.api.spi.fx.ExchangeRateProvider;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class DefaultPluginContext implements PluginContext {
 
+    private final String pluginId;
     private final List<Consumer<BalanceChanged>> balanceChangedHandlers = new CopyOnWriteArrayList<>();
     private final UserDirectory userDirectory;
     private final PluginSettings pluginSettings;
+    private final ExchangeRateDirectory exchangeRateDirectory;
+    private final PluginExchangeRateRegistry exchangeRateRegistry;
+    private final AtomicBoolean active = new AtomicBoolean(true);
 
-    public DefaultPluginContext(UserDirectory userDirectory, PluginSettings pluginSettings) {
+    public DefaultPluginContext(
+            String pluginId,
+            UserDirectory userDirectory,
+            PluginSettings pluginSettings,
+            ExchangeRateDirectory exchangeRateDirectory,
+            PluginExchangeRateRegistry exchangeRateRegistry
+    ) {
+        this.pluginId = Objects.requireNonNull(pluginId, "pluginId must not be null");
         this.userDirectory = userDirectory;
         this.pluginSettings = pluginSettings;
+        this.exchangeRateDirectory = exchangeRateDirectory;
+        this.exchangeRateRegistry = exchangeRateRegistry;
     }
 
     @Override
     public void onBalanceChanged(Consumer<BalanceChanged> handler) {
-        balanceChangedHandlers.add(java.util.Objects.requireNonNull(handler, "handler must not be null"));
+        balanceChangedHandlers.add(Objects.requireNonNull(handler, "handler must not be null"));
     }
 
     @Override
@@ -49,6 +66,30 @@ public class DefaultPluginContext implements PluginContext {
     @Override
     public PluginSettings settings() {
         return pluginSettings;
+    }
+
+    @Override
+    public ExchangeRateDirectory exchangeRates() {
+        return exchangeRateDirectory;
+    }
+
+    @Override
+    public void registerExchangeRateProvider(ExchangeRateProvider provider) {
+        Objects.requireNonNull(provider, "provider must not be null");
+        if (!active.get()) {
+            throw new IllegalStateException("Plugin context is no longer active");
+        }
+        if (exchangeRateRegistry == null) {
+            throw new IllegalStateException("Exchange rate registry is not available");
+        }
+        exchangeRateRegistry.register(pluginId, provider);
+    }
+
+    /**
+     * Marks this context inactive so a stopping or stopped plugin cannot register new extensions.
+     */
+    public void deactivate() {
+        active.set(false);
     }
 
     public List<Consumer<BalanceChanged>> getBalanceChangedHandlers() {

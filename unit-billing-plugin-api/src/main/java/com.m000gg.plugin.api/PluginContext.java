@@ -17,8 +17,10 @@
 package com.m000gg.plugin.api;
 
 import com.m000gg.plugin.api.event.BalanceChanged;
+import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
+import com.m000gg.plugin.api.spi.fx.ExchangeRateProvider;
 
 import java.util.function.Consumer;
 
@@ -34,4 +36,12 @@ public interface PluginContext {
     UserDirectory users();
 
     PluginSettings settings();
+
+    ExchangeRateDirectory exchangeRates();
+
+    /**
+     * Registers an exchange rate provider supplied by this plugin.
+     * The registration is automatically removed when the plugin is stopped.
+     */
+    void registerExchangeRateProvider(ExchangeRateProvider provider);
 }
