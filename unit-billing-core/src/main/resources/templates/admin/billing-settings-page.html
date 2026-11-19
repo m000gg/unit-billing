@@ -50,36 +50,6 @@
         <div class="currency-hero__icon" th:text="${baseCurrency}">UAH</div>
     </div>
 
-    <div class="settings-section">
-        <div class="settings-section__header">
-            <p class="section-heading" th:text="#{admin.billing.settings.fx.heading}">Exchange Rate Sources</p>
-            <span class="settings-section__count"
-                  th:text="#{admin.billing.settings.fx.available(${#lists.size(providers)})}">1 available</span>
-        </div>
-
-        <div class="providers-empty" th:if="${#lists.isEmpty(providers)}">
-            <p class="providers-empty__title" th:text="#{admin.billing.settings.fx.empty.title}">
-                No exchange rate providers registered
-            </p>
-            <p class="providers-empty__hint" th:text="#{admin.billing.settings.fx.empty.hint}">
-                Add an ExchangeRateProvider implementation to enable automatic FX lookups.
-            </p>
-        </div>
-
-        <div class="providers-grid" th:if="${!#lists.isEmpty(providers)}">
-            <div class="provider-card" th:each="provider : ${providers}">
-                <div class="provider-card__top">
-                    <div class="provider-card__icon">FX</div>
-                    <span class="provider-card__id" th:text="${provider.id()}">privatbank</span>
-                </div>
-                <h3 class="provider-card__name" th:text="${provider.displayName()}">PrivatBank</h3>
-                <p class="provider-card__hint" th:text="#{admin.billing.settings.fx.provider.hint}">
-                    Connected FX rate API provider
-                </p>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 </body>
