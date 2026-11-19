@@ -26,6 +26,7 @@ import com.m000gg.plugin.api.spi.fx.ExchangeRateProvider;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class DefaultPluginContext implements PluginContext {
@@ -36,6 +37,7 @@ public class DefaultPluginContext implements PluginContext {
     private final PluginSettings pluginSettings;
     private final ExchangeRateDirectory exchangeRateDirectory;
     private final PluginExchangeRateRegistry exchangeRateRegistry;
+    private final AtomicBoolean active = new AtomicBoolean(true);
 
     public DefaultPluginContext(
             String pluginId,
@@ -74,10 +76,20 @@ public class DefaultPluginContext implements PluginContext {
     @Override
     public void registerExchangeRateProvider(ExchangeRateProvider provider) {
         Objects.requireNonNull(provider, "provider must not be null");
+        if (!active.get()) {
+            throw new IllegalStateException("Plugin context is no longer active");
+        }
         if (exchangeRateRegistry == null) {
             throw new IllegalStateException("Exchange rate registry is not available");
         }
         exchangeRateRegistry.register(pluginId, provider);
+    }
+
+    /**
+     * Marks this context inactive so a stopping or stopped plugin cannot register new extensions.
+     */
+    public void deactivate() {
+        active.set(false);
     }
 
     public List<Consumer<BalanceChanged>> getBalanceChangedHandlers() {

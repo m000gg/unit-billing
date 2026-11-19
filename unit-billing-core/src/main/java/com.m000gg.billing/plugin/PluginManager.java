@@ -125,6 +125,7 @@ public class PluginManager {
     private RunningPlugin startPlugin(Path jarPath) throws IOException {
         PluginLoader.LoadedPlugin loaded = pluginLoader.load(jarPath);
         ThreadPoolExecutor eventWorker = null;
+        DefaultPluginContext context = null;
         boolean enableAttempted = false;
         String pluginId = null;
 
@@ -150,7 +151,7 @@ public class PluginManager {
                     .getOrDefault(pluginId, Map.of());
 
             PluginSettings settings = new DefaultPluginSettings(values);
-            DefaultPluginContext context = new DefaultPluginContext(
+            context = new DefaultPluginContext(
                     pluginId,
                     userDirectory,
                     settings,
@@ -171,14 +172,18 @@ public class PluginManager {
                     eventWorker
             );
         } catch (RuntimeException | LinkageError | ServiceConfigurationError e) {
-            unregisterFxProvider(pluginId);
+            if (context != null) {
+                context.deactivate();
+            }
 
             if (eventWorker != null) {
                 shutdownWorker(pluginId, eventWorker);
             }
 
             if (enableAttempted) {
+                unregisterFxProvider(pluginId);
                 disableAfterFailedStart(loaded.plugin(), jarPath);
+                unregisterFxProvider(pluginId);
             }
 
             closeQuietly(loaded);
@@ -261,7 +266,9 @@ public class PluginManager {
     private final ConcurrentMap<String, RunningPlugin> stuckPlugins = new ConcurrentHashMap<>();
 
     private void stopPlugin(RunningPlugin runningPlugin) {
-        if (runningPlugins.remove(runningPlugin.id(), runningPlugin)) {
+        boolean removedActive = runningPlugins.remove(runningPlugin.id(), runningPlugin);
+        if (removedActive) {
+            runningPlugin.defaultPluginContext().deactivate();
             unregisterFxProvider(runningPlugin.id());
         }
 
@@ -280,6 +287,9 @@ public class PluginManager {
         } catch (Exception | LinkageError | ServiceConfigurationError e) {
             log.error("Plugin '{}' failed on disable", runningPlugin.id(), e);
         } finally {
+            if (removedActive) {
+                unregisterFxProvider(runningPlugin.id());
+            }
             closeQuietly(runningPlugin.loadedPlugin());
         }
     }

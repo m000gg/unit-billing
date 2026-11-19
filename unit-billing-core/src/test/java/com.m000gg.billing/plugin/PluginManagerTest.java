@@ -234,14 +234,123 @@ class PluginManagerTest {
 
         PluginExchangeRateRegistry registry = new PluginExchangeRateRegistry();
         ExchangeRateDirectory directory = new DefaultExchangeRateDirectory(null, registry);
-        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
-        setField(manager, "pluginDirectory", pluginDirectory.toString());
-        setField(manager, "eventQueueCapacity", 4);
+        PluginManager manager = newManagerWithDir(pluginDirectory, directory, registry);
 
         manager.startPlugins();
 
         assertTrue(registry.getActiveProviderPluginId().isEmpty());
         assertTrue(directory.findRate("USD", "EUR").isEmpty());
+    }
+
+    @Test
+    void rejectingDuplicatePluginDoesNotUnregisterActiveFxProvider() throws Exception {
+        Path pluginDirectory = Files.createDirectories(tempDir.resolve("plugins"));
+        String source = """
+                package com.example.fx;
+
+                import com.m000gg.plugin.api.Plugin;
+                import com.m000gg.plugin.api.PluginContext;
+                import com.m000gg.plugin.api.query.fx.ExchangeRate;
+                import java.math.BigDecimal;
+                import java.time.Instant;
+                import java.util.Optional;
+
+                public class DupFxPlugin implements Plugin {
+                    @Override
+                    public String getId() {
+                        return "nbu-fx";
+                    }
+
+                    @Override
+                    public void onEnable(PluginContext context) {
+                        context.registerExchangeRateProvider((from, to) ->
+                                Optional.of(new ExchangeRate(new BigDecimal("41.50"), "nbu", Instant.now())));
+                    }
+
+                    @Override
+                    public void onDisable() {
+                    }
+                }
+                """;
+        buildPluginJar(pluginDirectory.resolve("a-nbu-fx.jar"), "com.example.fx.DupFxPlugin", source);
+        buildPluginJar(pluginDirectory.resolve("b-nbu-fx-dup.jar"), "com.example.fx.DupFxPlugin", source);
+
+        PluginExchangeRateRegistry registry = new PluginExchangeRateRegistry();
+        ExchangeRateDirectory directory = new DefaultExchangeRateDirectory(null, registry);
+        PluginManager manager = newManagerWithDir(pluginDirectory, directory, registry);
+
+        manager.startPlugins();
+        try {
+            assertEquals(Optional.of("nbu-fx"), registry.getActiveProviderPluginId());
+            Optional<ExchangeRate> quote = directory.findRate("USD", "UAH");
+            assertTrue(quote.isPresent());
+            assertEquals(0, new BigDecimal("41.50").compareTo(quote.get().rate()));
+        } finally {
+            manager.stopPlugins();
+        }
+    }
+
+    @Test
+    void pluginCannotReRegisterFxProviderDuringOnDisable() throws Exception {
+        Path pluginDirectory = Files.createDirectories(tempDir.resolve("plugins"));
+        buildPluginJar(
+                pluginDirectory.resolve("re-register-on-disable.jar"),
+                "com.example.fx.ReRegisterOnDisablePlugin",
+                """
+                package com.example.fx;
+
+                import com.m000gg.plugin.api.Plugin;
+                import com.m000gg.plugin.api.PluginContext;
+                import com.m000gg.plugin.api.query.fx.ExchangeRate;
+                import java.math.BigDecimal;
+                import java.time.Instant;
+                import java.util.Optional;
+
+                public class ReRegisterOnDisablePlugin implements Plugin {
+                    private PluginContext retainedContext;
+
+                    @Override
+                    public String getId() {
+                        return "sneaky-fx";
+                    }
+
+                    @Override
+                    public void onEnable(PluginContext context) {
+                        this.retainedContext = context;
+                        context.registerExchangeRateProvider((from, to) ->
+                                Optional.of(new ExchangeRate(BigDecimal.TWO, "sneaky", Instant.now())));
+                    }
+
+                    @Override
+                    public void onDisable() {
+                        retainedContext.registerExchangeRateProvider((from, to) ->
+                                Optional.of(new ExchangeRate(BigDecimal.TEN, "sneaky-after-stop", Instant.now())));
+                    }
+                }
+                """
+        );
+
+        PluginExchangeRateRegistry registry = new PluginExchangeRateRegistry();
+        ExchangeRateDirectory directory = new DefaultExchangeRateDirectory(null, registry);
+        PluginManager manager = newManagerWithDir(pluginDirectory, directory, registry);
+
+        manager.startPlugins();
+        assertEquals(Optional.of("sneaky-fx"), registry.getActiveProviderPluginId());
+
+        manager.stopPlugins();
+        assertTrue(registry.getActiveProviderPluginId().isEmpty());
+        assertTrue(directory.findRate("USD", "EUR").isEmpty());
+    }
+
+    private static PluginManager newManagerWithDir(
+            Path pluginDirectory,
+            ExchangeRateDirectory directory,
+            PluginExchangeRateRegistry registry
+    ) throws ReflectiveOperationException {
+        PluginManager manager = new PluginManager(null, new PluginProperties(), directory, registry);
+        setField(manager, "pluginDirectory", pluginDirectory.toString());
+        setField(manager, "eventQueueCapacity", 4);
+        return manager;
     }
 
     private void buildPluginJar(Path targetJar, String className, String source) throws IOException {
