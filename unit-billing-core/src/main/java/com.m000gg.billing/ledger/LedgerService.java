@@ -204,7 +204,13 @@ public class LedgerService {
                 || entry.getAmountInBaseCurrency().compareTo(request.amount()) != 0) {
             throw new IllegalArgumentException("Idempotency key reused with different subscriber or amount");
         }
-        return Optional.of(new ChargeResult(ChargeStatus.SUCCESS, entry.getId()));
+        return Optional.of(new ChargeResult(
+                ChargeStatus.SUCCESS,
+                entry.getId(),
+                entry.getAmount(),
+                entry.getUserCurrency(),
+                entry.getExchangeRate()
+        ));
     }
 
     /**
@@ -239,6 +245,6 @@ public class LedgerService {
 
         LedgerEntry entry = ledgerMapper.createLedgerEntryFromChargeRequest(request, user.getUserCurrency(), baseCurrency, amountInUserCurrency, exchangeRate, exchangeRateSource);
         applyLedgerAction(user, entry, amountInUserCurrency, false);
-        return new ChargeResult(ChargeStatus.SUCCESS, entry.getId());
+        return new ChargeResult(ChargeStatus.SUCCESS, entry.getId(), entry.getAmount(), entry.getUserCurrency(), entry.getExchangeRate());
     }
 }

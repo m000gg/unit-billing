@@ -36,7 +36,8 @@ public interface BalanceCharger {
      * when this method returns.
      *
      * @param request the charge to perform
-     * @return the outcome; the ledger entry id is set only for {@code SUCCESS}
+     * @return the outcome; on {@code SUCCESS}, the ledger entry id along with the deducted
+     *         amount, subscriber currency, and applied exchange rate are populated
      * @throws IllegalArgumentException if the amount is not positive, the subscriber
      *         does not exist, or the key was already used with a different subscriber
      *         or amount
