@@ -16,8 +16,12 @@
 
 package com.m000gg.plugin.api.query.user;
 
-public record UserContact(String email, String preferredUserLanguage) {
+public record UserContact(String email, String preferredUserLanguage, String userCurrency) {
     public UserContact(String email) {
-        this(email, "en");
+        this(email, "en", null);
+    }
+
+    public UserContact(String email, String preferredUserLanguage) {
+        this(email, preferredUserLanguage, null);
     }
 }

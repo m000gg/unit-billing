@@ -19,7 +19,9 @@ package com.m000gg.plugin.api.command.balance;
 public interface BalanceCharger {
 
     /**
-     * Charges the subscriber's balance by the requested amount.
+     * Charges the subscriber's balance by the requested amount (denominated in the
+     * platform's base currency, converted to the subscriber's currency using the active
+     * exchange rate source when needed).
      * <p>
      * The call is idempotent: repeating it with the same idempotency key returns
      * {@link ChargeStatus#SUCCESS} with the id of the entry created by the first call.
@@ -36,8 +38,11 @@ public interface BalanceCharger {
      * @param request the charge to perform
      * @return the outcome; the ledger entry id is set only for {@code SUCCESS}
      * @throws IllegalArgumentException if the amount is not positive, the subscriber
-     *         does not exist, the subscriber's currency differs from the base currency,
-     *         or the key was already used with a different subscriber or amount
+     *         does not exist, or the key was already used with a different subscriber
+     *         or amount
+     * @throws IllegalStateException if the platform base currency is not configured,
+     *         an exchange rate is required for currency conversion and is unavailable,
+     *         or the subscriber's currency changes concurrently during the charge
      */
     ChargeResult charge(ChargeRequest request);
 }
