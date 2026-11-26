@@ -18,6 +18,8 @@ package com.m000gg.billing.ledger;
 
 import com.m000gg.billing.identity.Admin;
 import com.m000gg.billing.identity.AdminRepository;
+import com.m000gg.billing.settings.BillingSetupDto;
+import com.m000gg.billing.settings.SystemSettingService;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
@@ -76,6 +78,9 @@ public class BalanceChargerIntegrationTest {
     @Autowired
     private ApplicationEvents events;
 
+    @Autowired
+    private SystemSettingService systemSettingService;
+
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18");
 
@@ -92,6 +97,12 @@ public class BalanceChargerIntegrationTest {
     @BeforeEach
     void setUp() {
         user = createUser("charger_test_user@example.com", "100.00");
+
+        if (!systemSettingService.isBaseCurrencyConfigured()) {
+            BillingSetupDto billingSetupDto = new BillingSetupDto();
+            billingSetupDto.setBaseCurrency("USD");
+            systemSettingService.saveInitialSetup(billingSetupDto);
+        }
 
         admin = new Admin();
         admin.setEmail("charger_test_admin@example.com");
