@@ -27,6 +27,8 @@ import java.util.ServiceLoader;
 
 public class PluginLoader {
 
+    private final PluginBytecodeValidator bytecodeValidator = new PluginBytecodeValidator();
+
     public record LoadedPlugin(Plugin plugin, URLClassLoader classLoader) {
     }
 
@@ -35,8 +37,11 @@ public class PluginLoader {
             throw new IllegalArgumentException("Plugin jar not found: " + jarPath);
         }
 
+        bytecodeValidator.validateJar(jarPath);
+
         URL url = jarPath.toUri().toURL();
-        URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, Plugin.class.getClassLoader());
+        ClassLoader parent = new PluginApiClassLoader(Plugin.class.getClassLoader());
+        URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, parent);
 
         try {
             Plugin plugin = ServiceLoader.load(Plugin.class, classLoader)
