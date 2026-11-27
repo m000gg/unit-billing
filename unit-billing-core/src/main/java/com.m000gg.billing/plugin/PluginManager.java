@@ -20,6 +20,7 @@ import com.m000gg.billing.plugin.context.DefaultPluginContext;
 import com.m000gg.billing.plugin.context.DefaultPluginSettings;
 import com.m000gg.billing.plugin.context.PluginExchangeRateRegistry;
 import com.m000gg.plugin.api.Plugin;
+import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
@@ -54,6 +55,7 @@ public class PluginManager {
 
     private final UserDirectory userDirectory;
     private final PluginProperties pluginProperties;
+    private final BalanceCharger balanceCharger;
     private final ExchangeRateDirectory exchangeRateDirectory;
     private final PluginExchangeRateRegistry exchangeRateRegistry;
     private final PluginLoader pluginLoader = new PluginLoader();
@@ -155,6 +157,7 @@ public class PluginManager {
                     pluginId,
                     userDirectory,
                     settings,
+                    balanceCharger,
                     exchangeRateDirectory,
                     exchangeRateRegistry
             );
