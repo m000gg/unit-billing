@@ -22,6 +22,7 @@ import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
 import com.m000gg.plugin.api.query.user.UserDirectory;
 import com.m000gg.plugin.api.spi.fx.ExchangeRateProvider;
+import com.m000gg.plugin.api.ui.PluginUi;
 
 import java.util.function.Consumer;
 
@@ -47,4 +48,6 @@ public interface PluginContext {
     void registerExchangeRateProvider(ExchangeRateProvider provider);
 
     BalanceCharger balanceCharger();
+
+    PluginUi ui();
 }
