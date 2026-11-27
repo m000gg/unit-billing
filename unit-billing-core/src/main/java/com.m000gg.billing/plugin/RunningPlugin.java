@@ -22,5 +22,6 @@ import java.nio.file.Path;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public record RunningPlugin(String id, Path pathToJar, PluginLoader.LoadedPlugin loadedPlugin,
-                            DefaultPluginContext defaultPluginContext, ThreadPoolExecutor balanceEventWorker) {
+                            DefaultPluginContext defaultPluginContext, ThreadPoolExecutor balanceEventWorker,
+                            PluginMessages messages) {
 }
