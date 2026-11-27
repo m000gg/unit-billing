@@ -18,7 +18,9 @@ package com.m000gg.billing.plugin;
 
 import com.m000gg.billing.plugin.context.DefaultExchangeRateDirectory;
 import com.m000gg.billing.plugin.context.PluginExchangeRateRegistry;
+import com.m000gg.billing.plugin.db.PluginDatabaseFactory;
 import com.m000gg.billing.settings.SystemSettingService;
+import com.m000gg.plugin.api.db.PluginDatabase;
 import com.m000gg.plugin.api.query.fx.ExchangeRate;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import org.junit.jupiter.api.Test;
@@ -88,7 +90,7 @@ class PluginManagerTest {
     }
 
     private static PluginManager newEmptyManager() {
-        return new PluginManager(null, null, null, null, null);
+        return new PluginManager(null, null, null, null, null, null, null);
     }
 
     @Test
@@ -350,7 +352,27 @@ class PluginManagerTest {
             ExchangeRateDirectory directory,
             PluginExchangeRateRegistry registry
     ) throws ReflectiveOperationException {
-        PluginManager manager = new PluginManager(null, new PluginProperties(), null, directory, registry);
+        PluginMigrationRunner noOpMigrations = new PluginMigrationRunner(null, null) {
+            @Override
+            public int migrate(String pluginId, ClassLoader pluginClassLoader) {
+                return 0;
+            }
+        };
+        PluginDatabaseFactory noOpDatabaseFactory = new PluginDatabaseFactory(null, null, null) {
+            @Override
+            public PluginDatabase create(String pluginId) {
+                return null;
+            }
+        };
+        PluginManager manager = new PluginManager(
+                null,
+                new PluginProperties(),
+                null,
+                directory,
+                registry,
+                noOpMigrations,
+                noOpDatabaseFactory
+        );
         setField(manager, "pluginDirectory", pluginDirectory.toString());
         setField(manager, "eventQueueCapacity", 4);
         return manager;
