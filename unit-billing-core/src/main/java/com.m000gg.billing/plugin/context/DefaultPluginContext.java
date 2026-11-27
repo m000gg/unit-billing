@@ -18,6 +18,7 @@ package com.m000gg.billing.plugin.context;
 
 import com.m000gg.plugin.api.PluginContext;
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
+import com.m000gg.plugin.api.db.PluginDatabase;
 import com.m000gg.plugin.api.event.BalanceChanged;
 import com.m000gg.plugin.api.query.fx.ExchangeRateDirectory;
 import com.m000gg.plugin.api.query.settings.PluginSettings;
@@ -38,6 +39,7 @@ public class DefaultPluginContext implements PluginContext {
     private final UserDirectory userDirectory;
     private final PluginSettings pluginSettings;
     private final BalanceCharger balanceCharger;
+    private final PluginDatabase pluginDatabase;
     private final ExchangeRateDirectory exchangeRateDirectory;
     private final PluginExchangeRateRegistry exchangeRateRegistry;
     private final AtomicBoolean active = new AtomicBoolean(true);
@@ -48,6 +50,7 @@ public class DefaultPluginContext implements PluginContext {
             UserDirectory userDirectory,
             PluginSettings pluginSettings,
             BalanceCharger balanceCharger,
+            PluginDatabase pluginDatabase,
             ExchangeRateDirectory exchangeRateDirectory,
             PluginExchangeRateRegistry exchangeRateRegistry
     ) {
@@ -55,6 +58,7 @@ public class DefaultPluginContext implements PluginContext {
         this.userDirectory = userDirectory;
         this.pluginSettings = pluginSettings;
         this.balanceCharger = balanceCharger;
+        this.pluginDatabase = pluginDatabase;
         this.exchangeRateDirectory = exchangeRateDirectory;
         this.exchangeRateRegistry = exchangeRateRegistry;
     }
@@ -110,6 +114,11 @@ public class DefaultPluginContext implements PluginContext {
     @Override
     public PluginUi ui() {
         return pluginUi;
+    }
+
+    @Override
+    public PluginDatabase database() {
+        return pluginDatabase;
     }
 
     public DefaultPluginUi getPluginUi() {
