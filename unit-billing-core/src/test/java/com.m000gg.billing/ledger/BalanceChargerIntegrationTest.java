@@ -18,6 +18,9 @@ package com.m000gg.billing.ledger;
 
 import com.m000gg.billing.identity.Admin;
 import com.m000gg.billing.identity.AdminRepository;
+import com.m000gg.billing.plugin.context.PluginExchangeRateRegistry;
+import com.m000gg.billing.settings.BillingSetupDto;
+import com.m000gg.billing.settings.SystemSettingService;
 import com.m000gg.billing.subscribers.ApplicationUser;
 import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
@@ -25,6 +28,7 @@ import com.m000gg.plugin.api.command.balance.ChargeRequest;
 import com.m000gg.plugin.api.command.balance.ChargeResult;
 import com.m000gg.plugin.api.command.balance.ChargeStatus;
 import com.m000gg.plugin.api.event.BalanceChanged;
+import com.m000gg.plugin.api.query.fx.ExchangeRate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +43,10 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -76,6 +82,12 @@ public class BalanceChargerIntegrationTest {
     @Autowired
     private ApplicationEvents events;
 
+    @Autowired
+    private SystemSettingService systemSettingService;
+
+    @Autowired
+    private PluginExchangeRateRegistry exchangeRateRegistry;
+
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18");
 
@@ -92,6 +104,12 @@ public class BalanceChargerIntegrationTest {
     @BeforeEach
     void setUp() {
         user = createUser("charger_test_user@example.com", "100.00");
+
+        if (!systemSettingService.isBaseCurrencyConfigured()) {
+            BillingSetupDto billingSetupDto = new BillingSetupDto();
+            billingSetupDto.setBaseCurrency("USD");
+            systemSettingService.saveInitialSetup(billingSetupDto);
+        }
 
         admin = new Admin();
         admin.setEmail("charger_test_admin@example.com");
@@ -114,6 +132,9 @@ public class BalanceChargerIntegrationTest {
 
         assertThat(result.status()).isEqualTo(ChargeStatus.SUCCESS);
         assertThat(result.ledgerEntryId()).isNotNull();
+        assertThat(result.chargedAmount()).isEqualByComparingTo("30.00");
+        assertThat(result.chargedCurrency()).isEqualTo("USD");
+        assertThat(result.exchangeRate()).isEqualByComparingTo("1");
         assertThat(balanceOf(user)).isEqualByComparingTo("70.00");
 
         LedgerEntry entry = ledgerEntryRepository.findByIdempotencyKey(key).orElseThrow();
@@ -143,6 +164,9 @@ public class BalanceChargerIntegrationTest {
 
         assertThat(result.status()).isEqualTo(ChargeStatus.INSUFFICIENT_FUNDS);
         assertThat(result.ledgerEntryId()).isNull();
+        assertThat(result.chargedAmount()).isNull();
+        assertThat(result.chargedCurrency()).isNull();
+        assertThat(result.exchangeRate()).isNull();
         assertThat(balanceOf(user)).isEqualByComparingTo("100.00");
         assertThat(ledgerEntryRepository.findByIdempotencyKey(key)).isEmpty();
         assertThat(entriesOf(user)).isZero();
@@ -175,6 +199,9 @@ public class BalanceChargerIntegrationTest {
 
         assertThat(second.status()).isEqualTo(ChargeStatus.SUCCESS);
         assertThat(second.ledgerEntryId()).isEqualTo(first.ledgerEntryId());
+        assertThat(second.chargedAmount()).isEqualByComparingTo(first.chargedAmount());
+        assertThat(second.chargedCurrency()).isEqualTo(first.chargedCurrency());
+        assertThat(second.exchangeRate()).isEqualByComparingTo(first.exchangeRate());
         assertThat(balanceOf(user)).isEqualByComparingTo("70.00");
         assertThat(entriesOf(user)).isEqualTo(1);
         assertThat(events.stream(BalanceChanged.class).count()).isEqualTo(1);
@@ -296,6 +323,43 @@ public class BalanceChargerIntegrationTest {
         assertThat(balanceOf(user)).isEqualByComparingTo("100.00");
         assertThat(ledgerEntryRepository
                 .existsByOriginalEntryIdAndType(charge.ledgerEntryId(), EntryType.REFUND)).isTrue();
+    }
+
+    @Test
+    void charge_ConvertedCurrency_PopulatesDeductedAmountCurrencyAndRateInResult() {
+        ApplicationUser uahUser = new ApplicationUser();
+        uahUser.setFirstName("UAH");
+        uahUser.setLastName("User");
+        uahUser.setEmail("charger_uah@example.com");
+        uahUser.setBalance(new BigDecimal("1000.00"));
+        uahUser.setUserCurrency("UAH");
+        uahUser = applicationUserRepository.save(uahUser);
+
+        String pluginId = "fx-test-provider";
+        exchangeRateRegistry.register(pluginId, (from, to) -> {
+            if ("USD".equals(from) && "UAH".equals(to)) {
+                return Optional.of(new ExchangeRate(new BigDecimal("41.50"), pluginId, Instant.now()));
+            }
+            return Optional.empty();
+        });
+
+        try {
+            String key = key();
+            ChargeResult first = balanceCharger.charge(request(uahUser.getId(), "10.00", key));
+            assertThat(first.status()).isEqualTo(ChargeStatus.SUCCESS);
+            assertThat(first.chargedAmount()).isEqualByComparingTo("415.00");
+            assertThat(first.chargedCurrency()).isEqualTo("UAH");
+            assertThat(first.exchangeRate()).isEqualByComparingTo("41.50");
+            assertThat(balanceOf(uahUser)).isEqualByComparingTo("585.00");
+
+            ChargeResult repeated = balanceCharger.charge(request(uahUser.getId(), "10.00", key));
+            assertThat(repeated.ledgerEntryId()).isEqualTo(first.ledgerEntryId());
+            assertThat(repeated.chargedAmount()).isEqualByComparingTo("415.00");
+            assertThat(repeated.chargedCurrency()).isEqualTo("UAH");
+            assertThat(repeated.exchangeRate()).isEqualByComparingTo("41.50");
+        } finally {
+            exchangeRateRegistry.unregister(pluginId);
+        }
     }
 
     private ApplicationUser createUser(String email, String balance) {

@@ -39,6 +39,6 @@ public class DefaultUserDirectory implements UserDirectory {
     }
 
     private UserContact createUserContactFromApplicationUser(ApplicationUser applicationUser) {
-        return new UserContact(applicationUser.getEmail(), applicationUser.getPreferredLanguage());
+        return new UserContact(applicationUser.getEmail(), applicationUser.getPreferredLanguage(), applicationUser.getUserCurrency());
     }
 }

@@ -174,17 +174,18 @@ public class LedgerMapper {
         }
     }
 
-    public LedgerEntry createLedgerEntryFromChargeRequest(ChargeRequest chargeRequest, String userCurrency) {
+    public LedgerEntry createLedgerEntryFromChargeRequest(ChargeRequest chargeRequest, String userCurrency, String baseCurrency, BigDecimal amountInUserCurrency, BigDecimal exchangeRate, String exchangeRateSource) {
         LedgerEntry ledgerEntry = new LedgerEntry();
-        ledgerEntry.setAmount(chargeRequest.amount());
         ledgerEntry.setSource(EntrySource.PLUGIN);
         ledgerEntry.setType(EntryType.CHARGE);
         ledgerEntry.setCreatedAt(Instant.now());
         ledgerEntry.setDescription(chargeRequest.description());
         ledgerEntry.setSubscriberId(chargeRequest.subscriberId());
         ledgerEntry.setUserCurrency(userCurrency);
-        ledgerEntry.setBaseCurrency(userCurrency);
-        ledgerEntry.setExchangeRate(BigDecimal.ONE);
+        ledgerEntry.setBaseCurrency(baseCurrency);
+        ledgerEntry.setExchangeRate(exchangeRate);
+        ledgerEntry.setExchangeRateSource(exchangeRateSource);
+        ledgerEntry.setAmount(amountInUserCurrency);
         ledgerEntry.setAmountInBaseCurrency(chargeRequest.amount());
         ledgerEntry.setIdempotencyKey(chargeRequest.idempotencyKey());
 

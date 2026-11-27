@@ -17,22 +17,44 @@
 package com.m000gg.billing.plugin.context;
 
 import com.m000gg.billing.ledger.LedgerService;
+import com.m000gg.billing.settings.SystemSettingService;
+import com.m000gg.billing.subscribers.ApplicationUser;
+import com.m000gg.billing.subscribers.ApplicationUserRepository;
 import com.m000gg.plugin.api.command.balance.BalanceCharger;
 import com.m000gg.plugin.api.command.balance.ChargeRequest;
 import com.m000gg.plugin.api.command.balance.ChargeResult;
+import com.m000gg.plugin.api.query.fx.ExchangeRate;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
+@RequiredArgsConstructor
 public class DefaultBalanceCharger implements BalanceCharger {
 
     private final LedgerService ledgerService;
-
-    public DefaultBalanceCharger(LedgerService ledgerService) {
-        this.ledgerService = ledgerService;
-    }
+    private final ApplicationUserRepository applicationUserRepository;
+    private final SystemSettingService systemSettingService;
+    private final PluginExchangeRateRegistry exchangeRateRegistry;
 
     @Override
     public ChargeResult charge(ChargeRequest request) {
-        return ledgerService.chargeForPlugin(request);
+        Optional<ChargeResult> existing = ledgerService.findExistingPluginCharge(request);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        ApplicationUser user = applicationUserRepository.findById(request.subscriberId())
+                .orElseThrow(() -> new IllegalArgumentException("Unknown subscriber: " + request.subscriberId()));
+
+        String userCurrency = user.getUserCurrency();
+        String baseCurrency = systemSettingService.getBaseCurrency();
+
+        ExchangeRate quote = exchangeRateRegistry.findRate(baseCurrency, userCurrency)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Exchange rate unavailable for " + baseCurrency + " -> " + userCurrency));
+
+        return ledgerService.chargeForPlugin(request, userCurrency, baseCurrency, quote.rate(), quote.source());
     }
 }

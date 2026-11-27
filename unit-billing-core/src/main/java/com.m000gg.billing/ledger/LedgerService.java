@@ -192,30 +192,59 @@ public class LedgerService {
     }
 
     /**
-     * Charges a subscriber on behalf of a plugin. Runs in its own transaction, which is
-     * committed when the method returns. Insufficient funds is a regular outcome, not an exception.
+     * Checks whether a plugin charge with the same idempotency key already exists.
+     */
+    public Optional<ChargeResult> findExistingPluginCharge(ChargeRequest request) {
+        Optional<LedgerEntry> existing = ledgerEntryRepository.findByIdempotencyKey(request.idempotencyKey());
+        if (existing.isEmpty()) {
+            return Optional.empty();
+        }
+        LedgerEntry entry = existing.get();
+        if (!entry.getSubscriberId().equals(request.subscriberId())
+                || entry.getAmountInBaseCurrency().compareTo(request.amount()) != 0) {
+            throw new IllegalArgumentException("Idempotency key reused with different subscriber or amount");
+        }
+        return Optional.of(new ChargeResult(
+                ChargeStatus.SUCCESS,
+                entry.getId(),
+                entry.getAmount(),
+                entry.getUserCurrency(),
+                entry.getExchangeRate()
+        ));
+    }
+
+    /**
+     * Charges a subscriber on behalf of a plugin using a pre-resolved exchange rate.
+     * Runs in its own transaction, which is committed when the method returns.
+     * Insufficient funds is a regular outcome, not an exception.
      */
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public ChargeResult chargeForPlugin(ChargeRequest request) {
+    public ChargeResult chargeForPlugin(ChargeRequest request, String expectedUserCurrency, String baseCurrency, BigDecimal exchangeRate, String exchangeRateSource) {
         ApplicationUser user = applicationUserRepository.findByIdForUpdate(request.subscriberId())
                 .orElseThrow(() -> new IllegalArgumentException("Unknown subscriber: " + request.subscriberId()));
 
-        Optional<LedgerEntry> existing = ledgerEntryRepository.findByIdempotencyKey(request.idempotencyKey());
+        Optional<ChargeResult> existing = findExistingPluginCharge(request);
         if (existing.isPresent()) {
-            LedgerEntry entry = existing.get();
-            if (!entry.getSubscriberId().equals(user.getId())
-                    || entry.getAmount().compareTo(request.amount()) != 0) {
-                throw new IllegalArgumentException("Idempotency key reused with different subscriber or amount");
-            }
-            return new ChargeResult(ChargeStatus.SUCCESS, entry.getId());
+            return existing.get();
         }
 
-        if (request.amount().compareTo(user.getBalance()) > 0) {
+        if (!user.getUserCurrency().equalsIgnoreCase(expectedUserCurrency)) {
+            throw new IllegalStateException("Subscriber currency changed concurrently for " + request.subscriberId());
+        }
+
+        BigDecimal amountInUserCurrency = request.amount()
+                .multiply(exchangeRate)
+                .setScale(2, RoundingMode.HALF_UP);
+        if (amountInUserCurrency.signum() <= 0) {
+            throw new IllegalArgumentException("Converted charge amount must be greater than zero");
+        }
+
+        if (amountInUserCurrency.compareTo(user.getBalance()) > 0) {
             return new ChargeResult(ChargeStatus.INSUFFICIENT_FUNDS, null);
         }
 
-        LedgerEntry entry = ledgerMapper.createLedgerEntryFromChargeRequest(request, user.getUserCurrency());
-        applyLedgerAction(user, entry, request.amount(), false);
-        return new ChargeResult(ChargeStatus.SUCCESS, entry.getId());
+        LedgerEntry entry = ledgerMapper.createLedgerEntryFromChargeRequest(request, user.getUserCurrency(), baseCurrency, amountInUserCurrency, exchangeRate, exchangeRateSource);
+        applyLedgerAction(user, entry, amountInUserCurrency, false);
+        return new ChargeResult(ChargeStatus.SUCCESS, entry.getId(), entry.getAmount(), entry.getUserCurrency(), entry.getExchangeRate());
     }
 }
