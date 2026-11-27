@@ -49,8 +49,8 @@ public record ChargeRequest(UUID subscriberId,
         Objects.requireNonNull(idempotencyKey, "idempotencyKey");
         Objects.requireNonNull(description, "description");
 
-        if (amount.signum() <= 0) {
-            throw new IllegalArgumentException("amount must be greater than zero");
+        if (amount.signum() <= 0 || amount.stripTrailingZeros().scale() > 2) {
+            throw new IllegalArgumentException("amount must be greater than zero and have at most 2 decimal places");
         }
         if (idempotencyKey.isBlank() || idempotencyKey.length() > MAX_KEY_LENGTH) {
             throw new IllegalArgumentException(

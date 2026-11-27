@@ -9,7 +9,7 @@
 
 ---
 
-- Issue #107 ➔ PR #TBD
+- Issue #107, #110, #111 ➔ PR #112
 
 ## Decision
 
